@@ -12,7 +12,7 @@ The idea is to store credentials in an config file in an encrypted form like thi
 
 The data consists of three parts separated by '$' characters:
 
-1. The format code. 1={IV}{AES-128-CBC-PKCS5Padding}
+1. The format code. 1=`{IV}{AES-128-CBC-PKCS5Padding}`
 2. The IV
 3. The AES-128 encrypted data
 
