@@ -30,8 +30,7 @@ The program is used like this ('d:\keyfile.bin' is the name of the key file):
 
 This generates the following output:
 
-    User = 1$Hl47qN6kiyziv4gsNM+bbQ==$MzKu+69m6ZmmGQty3PVcag==
-
+    User = 1$Hl47qN6kiyziv4gsNM+bbQ==$MzKu+69m6ZmmGQty3PVcag==
     Password = 1$wF31CPLL8F8KAEtKxOUjnw==$Ec7xItCNrdEd14rvG4oRO53CB9ZTthCWgZfcY2nzKFk=
 
 Of course, one would need the keyfile to decrypt this like so:
