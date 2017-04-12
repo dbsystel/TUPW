@@ -12,7 +12,7 @@ The idea is to store credentials in an config file in an encrypted form like thi
 
 The data consists of three parts separated by '$' characters:
 
-1. The format code. 1=`{IV}{AES-128-CBC-PKCS5Padding}`
+1. The format code: 1=`{IV}{AES-128-CBC-PKCS5Padding}`
 2. The IV
 3. The AES-128 encrypted data
 
@@ -32,6 +32,8 @@ This generates the following output:
 
     User = 1$Hl47qN6kiyziv4gsNM+bbQ==$MzKu+69m6ZmmGQty3PVcag==
     Password = 1$wF31CPLL8F8KAEtKxOUjnw==$Ec7xItCNrdEd14rvG4oRO53CB9ZTthCWgZfcY2nzKFk=
+
+Note that the "iv" result of the encryption will change with each invocation of the program as it is derived from a secure random number generator and hence the result of the encryption (which uses the random iv) will be different, as well, even if the same key file is used on these invocations.
 
 Of course, one would need the keyfile to decrypt this like so:
 
