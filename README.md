@@ -33,7 +33,7 @@ This generates the following output:
     User = 1$Hl47qN6kiyziv4gsNM+bbQ==$MzKu+69m6ZmmGQty3PVcag==
     Password = 1$wF31CPLL8F8KAEtKxOUjnw==$Ec7xItCNrdEd14rvG4oRO53CB9ZTthCWgZfcY2nzKFk=
 
-Note that the "iv" result of the encryption will change with each invocation of the program as it is derived from a secure random number generator and hence the result of the encryption (which uses the random iv) will be different, as well, even if the same key file is used on these invocations.
+Note that the "iv" part of the encryption will change with each invocation of the program as it is derived from a secure random number generator and hence the result of the encryption (which uses the random iv) will be different, as well, even if the same key file is used on these invocations.
 
 Of course, one would need the keyfile to decrypt this like so:
 
