@@ -56,7 +56,7 @@ Feel free to submit a pull request with new features, improvements on tests or d
 
 ## Contact
 
-Frank Schwab ([Mail](mailto:frank.schwab@deutschebahn.com "Mail")
+Frank Schwab ([Mail](mailto:frank.schwab@deutschebahn.com "Mail"))
 
 ## License
 
