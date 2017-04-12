@@ -49,3 +49,15 @@ This way one can store the credentials and the key file in configuration managem
 Of course, this is not perfectly safe, as an attacker can get access to the machine and extract the key file and the program classes and reverse engineer the way the key is calculated.
 
 This program just makes it harder to get at the credentials, as both the file and the program code are needed to reconstruct the encryption key.
+
+## Contributing
+
+Feel free to submit a pull request with new features, improvements on tests or documentation and bug fixes.
+
+## Contact
+
+Frank Schwab ([Mail](mailto:frank.schwab@deutschebahn.com "Mail")
+
+## License
+
+TUPW is released under the MIT license. See LICENSE for details.
