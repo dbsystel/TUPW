@@ -20,7 +20,8 @@
  * Author: Frank Schwab, DB Systel GmbH
  *
  * Changes: 
- *     2017-03-30: V1.0.0: Created
+ *     2017-03-30: V1.0.0: Created. fhs
+ *     2017-04-12: V1.0.1: Moved secure random number generator to class constant. fhs
  */
 package TUPW;
 
@@ -44,9 +45,17 @@ import dbscryptolib.SecureSecretKeySpec;
  * technical users. To be called from the command line.
  *
  * @author Frank Schwab
- * @version 1.0.0
+ * @version 1.0.1
  */
 public class TUPW {
+
+    /**
+     * Instance of secure random number generator
+     * 
+     * This is placed here so the expensive instantiation of the SecureRandom
+     * class is done only once.
+     */
+    private static final SecureRandom M_RANDOM = new SecureRandom();
 
     /**
      * Helper class to store IV and key in one place
@@ -230,8 +239,7 @@ public class TUPW {
         // Get a random iv which has the same size as the key
         encryptionParameters.iv = new byte[encryptionParameters.key.length];
 
-        SecureRandom random = new SecureRandom();
-        random.nextBytes(encryptionParameters.iv);
+        M_RANDOM.nextBytes(encryptionParameters.iv);
 
         try (SecureSecretKeySpec aesKey = new SecureSecretKeySpec(encryptionParameters.key, "AES")) {
             AesCipher.init(Cipher.ENCRYPT_MODE, aesKey, new IvParameterSpec(encryptionParameters.iv));
