@@ -60,4 +60,4 @@ Frank Schwab ([Mail](mailto:frank.schwab@deutschebahn.com "Mail"))
 
 ## License
 
-TUPW is released under the MIT license. See LICENSE for details.
+TUPW is released under the 2-clause BSD license. See LICENSE for details.
