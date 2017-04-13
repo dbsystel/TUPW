@@ -27,6 +27,8 @@ package TUPW;
 import java.util.ArrayList;
 
 /**
+ * Class to split a string at specified separator
+ * 
  * This class is a modified version of Apache Commons
  * StringUtil.splitByWholeSeparatorWorker.
  *
@@ -40,11 +42,15 @@ import java.util.ArrayList;
 public class StringSplitter {
 
     /**
-     * Splits the provided text into an array separated by separator.
+     * Splits the provided string into an array of strings with {@code separator} 
+     * separating the parts.
+     * 
+     * If {@code separator} is not found in the {@code searchString} an array
+     * with one element that contains the whole {@code searchString} is returned.
      *
-     * @param searchString the String to parse, may be {@code null}
+     * @param searchString The String to parse, may be {@code null}
      * @param separator String containing the String to be used as a separator
-     * @return an array of parsed Strings, {@code null} if null String input
+     * @return An array of parsed Strings, {@code null} if null String input
      */
     public static String[] split(
             final String searchString, final String separator) {
