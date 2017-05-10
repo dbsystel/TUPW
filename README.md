@@ -46,6 +46,8 @@ which yields (with the correct key file):
     
 This way one can store the credentials and the key file in configuration management systems without storing them in the clear.
 
+The decryption part of the program would typically be copied and used in an application to decrypt the credentials in the configuration file.
+
 Of course, this is not perfectly safe, as an attacker can get access to the machine and extract the key file and the program classes and reverse engineer the way the key is calculated.
 
 This program just makes it harder to get at the credentials, as both the file and the program code are needed to reconstruct the encryption key.
