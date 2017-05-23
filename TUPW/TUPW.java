@@ -22,6 +22,7 @@
  * Changes: 
  *     2017-03-30: V1.0.0: Created. fhs
  *     2017-04-12: V1.0.1: Moved secure random number generator to class constant. fhs
+ *     2017-05-23: V1.0.2: Corrected spelling of "aesCipher". fhs
  */
 package TUPW;
 
@@ -183,13 +184,13 @@ public class TUPW {
      * @throws UnsupportedEncodingException 
      */
     private static String decryptData(final IvAndKey encryptionParameters, final byte[] encryptedData) throws BadPaddingException, InvalidAlgorithmParameterException, IllegalBlockSizeException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
-        Cipher AesCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");  // Specifying mode and padding is necessary. Always use CBC and padding!
+        Cipher aesCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");  // Specifying mode and padding is necessary. Always use CBC and padding!
         String result;
 
         try (SecureSecretKeySpec aesKey = new SecureSecretKeySpec(encryptionParameters.key, "AES")) {
-            AesCipher.init(Cipher.DECRYPT_MODE, aesKey, new IvParameterSpec(encryptionParameters.iv));
+            aesCipher.init(Cipher.DECRYPT_MODE, aesKey, new IvParameterSpec(encryptionParameters.iv));
 
-            result = new String(AesCipher.doFinal(encryptedData), "UTF-8"); // Always specify UTF-8 encoding
+            result = new String(aesCipher.doFinal(encryptedData), "UTF-8"); // Always specify UTF-8 encoding
         }
 
         return result;
@@ -233,7 +234,7 @@ public class TUPW {
      * @throws UnsupportedEncodingException
      */
     private static byte[] encryptData(final String stringData, IvAndKey encryptionParameters) throws BadPaddingException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
-        Cipher AesCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");  // Specifying mode and padding is necessary. Always use CBC and padding!
+        Cipher aesCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");  // Specifying mode and padding is necessary. Always use CBC and padding!
         byte[] result;
 
         // Get a random iv which has the same size as the key
@@ -242,9 +243,9 @@ public class TUPW {
         M_RANDOM.nextBytes(encryptionParameters.iv);
 
         try (SecureSecretKeySpec aesKey = new SecureSecretKeySpec(encryptionParameters.key, "AES")) {
-            AesCipher.init(Cipher.ENCRYPT_MODE, aesKey, new IvParameterSpec(encryptionParameters.iv));
+            aesCipher.init(Cipher.ENCRYPT_MODE, aesKey, new IvParameterSpec(encryptionParameters.iv));
 
-            result = AesCipher.doFinal(stringData.getBytes("UTF-8")); // Always specify UTF-8 encoding (Remember that when decrypting!)
+            result = aesCipher.doFinal(stringData.getBytes("UTF-8")); // Always specify UTF-8 encoding (Remember that when decrypting!)
         }
 
         return result;
