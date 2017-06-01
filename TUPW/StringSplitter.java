@@ -20,7 +20,8 @@
  * Author: Frank Schwab, DB Systel GmbH
  *
  * Changes: 
- *     2017-04-10: V1.0.0: Created
+ *     2017-04-10: V1.0.0: Created. fhs
+ *     2017-06-01: V1.0.1: Create empty String array just once. fhs
  */
 package TUPW;
 
@@ -35,9 +36,9 @@ import java.util.ArrayList;
  * I wrote it because I absolutely do not like inefficiency in programming and I
  * do not want to load a full RegEx machinery just to split a string at a simple
  * character like Java's String.split method does.
- *
- * @author Frank Schwab
- * @version 1.0.0
+ * 
+ * @author Frank Schwab, DB Systel GmbH
+ * @version 1.0.1
  */
 public class StringSplitter {
 
@@ -60,8 +61,10 @@ public class StringSplitter {
 
         final int searchStringLength = searchString.length();
 
+        final String[] emptyStringArray = new String[0];
+        
         if (searchStringLength == 0) {
-            return new String[0];
+            return emptyStringArray;
         }
 
         final int separatorLength = separator.length();
@@ -96,6 +99,6 @@ public class StringSplitter {
         }
 
         // toArray needs a type model which should be empty as it is never used for anything else than casting
-        return substrings.toArray(new String[0]);
+        return substrings.toArray(emptyStringArray);
     }
 }

@@ -23,6 +23,7 @@
  *     2017-03-30: V1.0.0: Created. fhs
  *     2017-04-12: V1.0.1: Moved secure random number generator to class constant. fhs
  *     2017-05-23: V1.0.2: Corrected spelling of "aesCipher". fhs
+ *     2017-06-01: V1.0.3: Modified StringSplitter. fhs
  */
 package TUPW;
 
@@ -45,8 +46,8 @@ import dbscryptolib.SecureSecretKeySpec;
  * Example program to calculate the encryption of user and password for
  * technical users. To be called from the command line.
  *
- * @author Frank Schwab
- * @version 1.0.1
+ * @author Frank Schwab, DB Systel GmbH
+ * @version 1.0.3
  */
 public class TUPW {
 
