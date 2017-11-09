@@ -24,6 +24,7 @@
  *     2017-04-12: V1.0.1: Moved secure random number generator to class constant. fhs
  *     2017-05-23: V1.0.2: Corrected spelling of "aesCipher". fhs
  *     2017-06-01: V1.0.3: Modified StringSplitter. fhs
+ *     2017-11-09: V1.0.4: Use CFB modus to thwart padding oracle attacks. fhs
  */
 package TUPW;
 
@@ -47,7 +48,7 @@ import dbscryptolib.SecureSecretKeySpec;
  * technical users. To be called from the command line.
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.0.3
+ * @version 1.0.4
  */
 public class TUPW {
 
@@ -185,7 +186,7 @@ public class TUPW {
      * @throws UnsupportedEncodingException 
      */
     private static String decryptData(final IvAndKey encryptionParameters, final byte[] encryptedData) throws BadPaddingException, InvalidAlgorithmParameterException, IllegalBlockSizeException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
-        Cipher aesCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");  // Specifying mode and padding is necessary. Always use CBC and padding!
+        Cipher aesCipher = Cipher.getInstance("AES/CFB/PKCS5Padding");  // Specifying mode and padding is necessary. Always use CFB and padding!
         String result;
 
         try (SecureSecretKeySpec aesKey = new SecureSecretKeySpec(encryptionParameters.key, "AES")) {
@@ -235,7 +236,7 @@ public class TUPW {
      * @throws UnsupportedEncodingException
      */
     private static byte[] encryptData(final String stringData, IvAndKey encryptionParameters) throws BadPaddingException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
-        Cipher aesCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");  // Specifying mode and padding is necessary. Always use CBC and padding!
+        Cipher aesCipher = Cipher.getInstance("AES/CFB/PKCS5Padding");  // Specifying mode and padding is necessary. Always use CFB and padding!
         byte[] result;
 
         // Get a random iv which has the same size as the key
