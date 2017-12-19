@@ -23,7 +23,7 @@
  *     2017-04-10: V1.0.0: Created. fhs
  *     2017-06-01: V1.0.1: Create empty String array just once. fhs
  */
-package TUPW;
+package dbsstringlib;
 
 import java.util.ArrayList;
 
