@@ -34,7 +34,7 @@ This generates (for example) the following output:
     User = '1$8n4dJCWXjWA7lgllM7rX4Q==$yDRRANIkXfWWZNh7HA==$YvJn1gKgi9A9vDy2XtZHPICWeerda6y4wa+4ihLTcPs='
     Password = '1$pzAS0EpsjFL/YRnqhXboZA==$pIQTEzVQJpzvCooOMYYzm9WRD1Q6g0DB538+52NUScEXRQ2jky/adsiTbfcd$mqHGnN00bqMjdMAUDylrX1PMPg539zX0mKtp11SFJEM='
 
-Note that the "iv" part of the encryption will change with each invocation of the program as it is derived from a secure random number generator and hence the result of the encryption(which uses the random iv) and also the HMAC will be different, as well, even if the same key file is used in all of these invocations.
+Note that the "iv" part of the encryption will change with each invocation of the program as it is derived from a secure random number generator and hence the result of the encryption (which uses the random iv) and also the HMAC will be different, as well, even if the same key file is used in all of these invocations.
 
 Of course, one would need the keyfile to decrypt this like so:
 
