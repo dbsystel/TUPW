@@ -27,7 +27,7 @@ The above data can only be decrypted with the same file and the same HMAC key.
 
 The program is used like this ('d:\keyfile.bin' is the name of the key file):
 
-    java -jar tupw.jar encrypt d:\keyfile.bin dbUser TrulyBadPassword;-)
+    java -jar tupw.jar encrypt d:\keyfile.bin dbUser
 
 This generates (for example) the following output:
 
