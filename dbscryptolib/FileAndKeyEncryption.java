@@ -72,11 +72,6 @@ public class FileAndKeyEncryption implements AutoCloseable {
    private static final int FORMAT_1_HMAC_KEY_LENGTH = 32;
 
    /**
-    * Length of iv
-    */
-   private static final int FORMAT_1_IV_LENGTH = 32;
-
-   /**
     * Encryption algorithm
     */
    private static final String FORMAT_1_ENCRYPTION_ALGORITHM = "AES";

@@ -2,8 +2,6 @@
  * Copyright (c) 2017, DB Systel GmbH
  * All rights reserved.
  * 
- * Copyright 2017, DB Systel GmbH
- * 
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
  * 
  * 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
@@ -28,7 +26,8 @@
  *     2017-06-01: V1.0.3: Modified StringSplitter. fhs
  *     2017-11-09: V1.0.4: Use CFB modus to thwart padding oracle attacks. fhs
  *     2017-12-19: V2.0.0: Use CFB8 modus and arbitrary tail padding to thwart padding oracle attacks,
-*                          Refactored interface to encryption and decryption. fhs
+ *                         Refactored interface to encryption and decryption. fhs
+ *     2017-12-20: V2.1.0: Encrypt/decrypt only one item. fhs
  */
 package TUPW;
 
@@ -39,7 +38,7 @@ import dbscryptolib.FileAndKeyEncryption;
  * technical users. To be called from the command line.
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 2.0.0
+ * @version 2.1.0
  */
 public class TUPW {
 
@@ -55,14 +54,12 @@ public class TUPW {
          (byte) 0x9E, (byte) 0x15, (byte) 0x8E, (byte) 0xF4,
          (byte) 0x03, (byte) 0x04, (byte) 0xAA, (byte) 0x2C};
 
-      if (args.length >= 4) {
+      if (args.length >= 3) {
          try (FileAndKeyEncryption MyEncryptor = new FileAndKeyEncryption(HMAC_KEY, args[1])) {
             if (args[0].substring(0, 1).toLowerCase().equals("e")) {
-               printData("User", MyEncryptor.encryptData(args[2]));
-               printData("Password", MyEncryptor.encryptData(args[3]));
+               printData("Encryption", MyEncryptor.encryptData(args[2]));
             } else {
-               printData("User", MyEncryptor.decryptData(args[2]));
-               printData("Password", MyEncryptor.decryptData(args[3]));
+               printData("Decryption", MyEncryptor.decryptData(args[2]));
             }
          } catch (Exception e) {
             System.err.print(e.toString());
@@ -70,8 +67,8 @@ public class TUPW {
       } else {
          System.err.println("Not enough arguments");
          System.err.println("Usage:");
-         System.err.println("   tupw.jar encrypt {keyfile} {user} {password}");
-         System.err.println("   tupw.jar decrypt {keyfile} {encUser} {encPassword}");
+         System.err.println("   tupw.jar encrypt {keyfile} {clearItem}");
+         System.err.println("   tupw.jar decrypt {keyfile} {encryptedItem}");
       }
    }
 
