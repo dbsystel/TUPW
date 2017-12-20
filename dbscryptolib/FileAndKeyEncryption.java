@@ -466,7 +466,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
 
          return rawDecryptData(encryptionParts);
       } else
-         throw new IllegalArgumentException("Unknown format id " + Byte.toString(encryptionParts.formatId));
+         throw new IllegalArgumentException("Unknown format id '" + Byte.toString(encryptionParts.formatId) + "'");
    }
 
    /*

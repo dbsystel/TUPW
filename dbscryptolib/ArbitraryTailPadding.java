@@ -78,15 +78,21 @@ public class ArbitraryTailPadding {
     * 
     * The padding byte must not have the same value as the last data byte
     * 
-    * @param lastByte Last data byte
+    * @param unpaddedSourceData Unpadded source data (may be empty)
     * @return Random byte to be used as the padding byte
     */
-   private static byte getPaddingByteValue(final byte lastByte) {
+   private static byte getPaddingByteValue(final byte[] unpaddedSourceData) {
       byte[] padByte = new byte[1];
 
-      do {
+      if (unpaddedSourceData.length > 0) {
+         byte lastByte = unpaddedSourceData[unpaddedSourceData.length - 1];
+         
+         do {
+            SECURE_PRNG.nextBytes(padByte);
+         } while (padByte[0] == lastByte);
+      }
+      else
          SECURE_PRNG.nextBytes(padByte);
-      } while (padByte[0] == lastByte);
 
       return padByte[0];
    }
@@ -147,7 +153,7 @@ public class ArbitraryTailPadding {
       checkPaddingLengthLimits(minPaddingLength, maxPaddingLength);
 
       // Get pad byte value
-      final byte padByte = getPaddingByteValue(unpaddedSourceData[unpaddedSourceData.length - 1]);
+      final byte padByte = getPaddingByteValue(unpaddedSourceData);
 
       // Get padding size
       final int paddingLength = getPaddingLength(minPaddingLength, maxPaddingLength);
