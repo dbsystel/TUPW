@@ -212,7 +212,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
             result.encryptedData = b64Decoder.decode(parts[2]);
             result.checksum = b64Decoder.decode(parts[3]);
          } else {
-            throw new IllegalArgumentException("Number of '$' separated parts is not 4 in encrypted text '" + encryptionText + "'");
+            throw new IllegalArgumentException("Number of '$' separated parts in encrypted text is not 4");
          }
       }
 
