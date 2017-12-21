@@ -27,8 +27,8 @@ package dbscryptolib;
 
 import java.security.spec.KeySpec;
 import java.util.Arrays;
-import javax.security.auth.Destroyable;
 import javax.crypto.SecretKey;
+import javax.security.auth.Destroyable;
 
 /**
  * A key specification for a <code>SecretKey</code> and also a secret key
