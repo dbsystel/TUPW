@@ -21,6 +21,7 @@
  *
  * Changes: 
  *     2017-12-19: V1.0.0: Created. fhs
+ *     2017-12-21: V2.0.0: Pad to block size. fhs
  */
 package dbscryptolib;
 
@@ -31,7 +32,7 @@ import java.util.Arrays;
  * Implements arbitrary tail padding for block ciphers
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.0.0
+ * @version 2.0.0
  */
 public class ArbitraryTailPadding {
 
@@ -46,30 +47,28 @@ public class ArbitraryTailPadding {
     */
    private static final SecureRandom SECURE_PRNG = new SecureRandom();
 
-   private static final int MAX_MAX_PADDING_LENGTH = 10000;
-
+   /**
+    * Maximum block size (64 kiB)
+    */
+   private static final int MAX_BLOCK_SIZE = 64 * 1024;
+   
    /*
     * Private methods
     */
    
    /**
-    * Check padding limits
+    * Check block size
     * 
-    * @param minPaddingLength Minimum padding length
-    * @param maxPaddingLength Maximum padding length
+    * @param blockSize Block size
     * @throws java.lang.IllegalArgumentException 
     */
-   private static void checkPaddingLengthLimits(final int minPaddingLength, final int maxPaddingLength) throws IllegalArgumentException {
-      if (minPaddingLength < 0) {
-         throw new IllegalArgumentException("Minimum padding length must not be less than 0");
+   private static void checkBlockSize(final int blockSize) throws IllegalArgumentException {
+      if (blockSize < 0) {
+         throw new IllegalArgumentException("Block size must not be less than 0");
       }
 
-      if (maxPaddingLength < minPaddingLength) {
-         throw new IllegalArgumentException("Maximum padding length must not be less than minimum padding length");
-      }
-
-      if (maxPaddingLength > MAX_MAX_PADDING_LENGTH) {
-         throw new IllegalArgumentException("Maximum padding length must not be greater than " + Integer.toString(MAX_MAX_PADDING_LENGTH));
+      if (blockSize > MAX_BLOCK_SIZE) {
+         throw new IllegalArgumentException("Block size must not be greater than " + Integer.toString(MAX_BLOCK_SIZE));
       }
    }
 
@@ -100,12 +99,15 @@ public class ArbitraryTailPadding {
    /**
     * Calculate the padding length
     * 
-    * @param minPaddingLength Minimum padding length
-    * @param maxPaddingLength Maximum padding length
-    * @return 
+    * If the unpadded data already have a length that is a multiple of blockSize
+    * an additional block with only padding bytes is added.
+    * 
+    * @param unpaddedLength Length of the unpadded data
+    * @param blockSize Block size of which the padding size has to be a multiple
+    * @return Padding length that brings the total length to a multiple of {@code blockSize}
     */
-   private static int getPaddingLength(final int minPaddingLength, final int maxPaddingLength) {
-      return SECURE_PRNG.nextInt(maxPaddingLength - minPaddingLength + 1) + minPaddingLength;
+   private static int getPaddingLength(final int unpaddedLength, final int blockSize) {
+      return (blockSize - (unpaddedLength % blockSize));
    }
 
    /**
@@ -143,20 +145,19 @@ public class ArbitraryTailPadding {
     * Add padding bytes to source data
     *
     * @param unpaddedSourceData Data to be padded
-    * @param minPaddingLength Maximum padding length
-    * @param maxPaddingLength Maximum padding length
+    * @param blockSize Block size in bytes
     * @return Data with padding bytes added
     * @throws java.lang.IllegalArgumentException
     */
-   public static byte[] addPadding(final byte[] unpaddedSourceData, final int minPaddingLength, final int maxPaddingLength) throws IllegalArgumentException {
+   public static byte[] addPadding(final byte[] unpaddedSourceData, final int blockSize) throws IllegalArgumentException {
       // Check parameter validity
-      checkPaddingLengthLimits(minPaddingLength, maxPaddingLength);
+      checkBlockSize(blockSize);
 
       // Get pad byte value
       final byte padByte = getPaddingByteValue(unpaddedSourceData);
 
       // Get padding size
-      final int paddingLength = getPaddingLength(minPaddingLength, maxPaddingLength);
+      final int paddingLength = getPaddingLength(unpaddedSourceData.length, blockSize);
 
       // Create padded byte array
       final byte[] result = Arrays.copyOf(unpaddedSourceData, unpaddedSourceData.length + paddingLength);

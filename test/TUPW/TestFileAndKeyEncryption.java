@@ -20,7 +20,8 @@
  * Author: Frank Schwab, DB Systel GmbH
  *
  * Changes: 
- *     2015-12-20: V1.0.0: Created
+ *     2015-12-20: V1.0.0: Created. fhs
+ *     2015-12-21: V1.1.0: Change to correct padding format. fhs
  */
 package TUPW;
 
@@ -40,7 +41,7 @@ import org.junit.Test;
  * Test cases for file and key encryption.
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.0.0
+ * @version 1.1.0
  */
 public class TestFileAndKeyEncryption {
 
@@ -75,7 +76,7 @@ public class TestFileAndKeyEncryption {
    /**
     * Known encrypted text to decrypt
     */
-   private static final String ENCRYPTED_TEXT = "1$JumVT3xH5OQofQ/Ne6eV3w==$iXucAXVZpyDgP/MuNUoBy0B54jVnzOBrNqE/maFfz3rzQ2JVlLUjflxV3vqjJlJPaw==$ER6iskk97jIPcOmcT0m0TVicCcgW26m3Q2xcdfDm7Y4=";
+   private static final String ENCRYPTED_TEXT = "1$FrdPoJe0sXQj+5Y57GAIzw==$5GYyc5eXDGeyTDUvMHwxEJ/JGORgV7Ut/FHZH+ibscs=$J+5vEccKKg57KNKFnJYrTGiwJ4Y6N5fJ/87m5oCm36c=";
 
    /**
     * Known encrypted text to decrypt with invalid HMAC

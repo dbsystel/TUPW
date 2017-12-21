@@ -22,6 +22,7 @@
  * Changes: 
  *     2017-12-19: V1.0.0: Created. fhs
  *     2017-12-21: V1.0.1: Corrected comments, added safe data deletion in decryption interface. fhs
+ *     2017-12-21: V1.1.0: Correct AByt padding to use cipher block size. fhs
  */
 package dbscryptolib;
 
@@ -79,18 +80,12 @@ public class FileAndKeyEncryption implements AutoCloseable {
    /**
     * Encrpytion specification with algorithm, mode and padding
     */
-   private static final String FORMAT_1_ENCRYPTION_SPECIFICATION = FORMAT_1_ENCRYPTION_ALGORITHM + "/CFB8/NoPadding";
+   private static final String FORMAT_1_ENCRYPTION_SPECIFICATION = FORMAT_1_ENCRYPTION_ALGORITHM + "/CFB/NoPadding";
 
    /**
     * String encoding to be used for encrypted data strings
     */
    private static final String STRING_ENCODING_FOR_DATA = "UTF-8";
-
-   /**
-    * Minimum and maximum padding lengths
-    */
-   private static final int MIN_PADDING_LENGTH = 3;
-   private static final int MAX_PADDING_LENGTH = 33;
 
    /**
     * Maximum key file size
@@ -346,7 +341,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
 
       final byte[] unpaddedEncodedStringBytes = sourceString.getBytes(STRING_ENCODING_FOR_DATA);
 
-      final byte[] paddedEncodedStringBytes = ArbitraryTailPadding.addPadding(unpaddedEncodedStringBytes, MIN_PADDING_LENGTH, MAX_PADDING_LENGTH);
+      final byte[] paddedEncodedStringBytes = ArbitraryTailPadding.addPadding(unpaddedEncodedStringBytes, aesCipher.getBlockSize());
 
       Arrays.fill(unpaddedEncodedStringBytes, (byte) 0);
 
