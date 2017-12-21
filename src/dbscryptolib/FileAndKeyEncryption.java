@@ -491,7 +491,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * Method for AutoCloseable interface
     */
    /**
-    * Secure deletion of key and algorithm
+    * Secure deletion of keys
     *
     * This method is idempotent and never throws an exception.
     */
