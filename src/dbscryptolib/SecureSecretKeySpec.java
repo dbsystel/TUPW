@@ -92,7 +92,7 @@ public class SecureSecretKeySpec implements SecretKey, KeySpec, Destroyable, Aut
     * @throws IllegalArgumentException if <code>key</code> is null or
     * <code>algorithm</code> is null
     */
-   private void checkAlgorithm(String algorithm) {
+   private void checkAlgorithm(String algorithm) throws IllegalArgumentException {
       if (algorithm == null) {
          throw new IllegalArgumentException("algorithm == null");
       }

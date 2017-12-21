@@ -21,7 +21,8 @@
  *
  * Changes: 
  *     2016-09-26: V4.1.0: Created
- *     2016-11-24: V4.2.0: Make "isValid" preoperty of underlying array publicly available.
+ *     2016-11-24: V4.2.0: Make "isValid" property of underlying array publicly available.
+ *     2017-12-21: V4.2.1: Added "throws" tags.
  */
 package dbscryptolib;
 
@@ -37,7 +38,7 @@ import java.util.Arrays;
  * has been set with the constructor.
  *
  * @author Frank Schwab
- * @version 4.2.0
+ * @version 4.2.1
  */
 public final class ProtectedByteArray implements AutoCloseable {
 
@@ -50,7 +51,7 @@ public final class ProtectedByteArray implements AutoCloseable {
     * @param arrayToProtect The byte array to protect.
     * @throws IllegalArgumentException if <code>arrayToProtect</code> is null.
     */
-   public ProtectedByteArray(byte[] arrayToProtect) {
+   public ProtectedByteArray(byte[] arrayToProtect) throws IllegalArgumentException {
       this.protectedArray = new ShuffledByteArray(arrayToProtect);
 
       this.obfuscation = createNewObfuscationArray(arrayToProtect.length);
@@ -71,7 +72,7 @@ public final class ProtectedByteArray implements AutoCloseable {
     * long enough to get <code>len</code> bytes from position
     * <code>offset</code> in array <code>arrayToProtect</code>.
     */
-   public ProtectedByteArray(byte[] arrayToProtect, int offset, int len) {
+   public ProtectedByteArray(byte[] arrayToProtect, int offset, int len) throws ArrayIndexOutOfBoundsException, IllegalArgumentException {
       checkArray(arrayToProtect);
 
       checkOffsetAndLength(arrayToProtect, offset, len);
@@ -100,7 +101,7 @@ public final class ProtectedByteArray implements AutoCloseable {
     * @param arrayToProtect Key as byte array
     * @throws IllegalArgumentException if <code>arrayToProtect</code> is null
     */
-   private void checkArray(byte[] arrayToProtect) {
+   private void checkArray(byte[] arrayToProtect) throws IllegalArgumentException {
       if (arrayToProtect == null) {
          throw new IllegalArgumentException("arrayToProtect is null");
       }
@@ -118,8 +119,8 @@ public final class ProtectedByteArray implements AutoCloseable {
     * long enough to get <code>len</code> bytes from position
     * <code>offset</code> in array <code>arrayToProtect</code>.
     */
-   private void checkOffsetAndLength(byte[] arrayToProtect, int offset, int len) {
-      if (offset < 0 || len < 0) {
+   private void checkOffsetAndLength(byte[] arrayToProtect, int offset, int len) throws IllegalArgumentException {
+      if ((offset < 0) || (len < 0)) {
          throw new ArrayIndexOutOfBoundsException("offset < 0 || len < 0");
       }
 

@@ -24,19 +24,17 @@
  */
 package TUPW;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
-
+import dbscryptolib.FileAndKeyEncryption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Random;
-
-import dbscryptolib.FileAndKeyEncryption;
+import org.junit.After;
+import org.junit.AfterClass;
+import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * Test cases for file and key encryption.
@@ -286,7 +284,7 @@ public class TestFileAndKeyEncryption {
 
          fail("Expected exception not thrown");
       } catch (Exception e) {
-         assertEquals("Exception: " + e.toString(), "Unknown format id '99'", e.getMessage());
+         assertEquals("Exception: " + e.toString(), "Unknown format id", e.getMessage());
       }
    }
 
@@ -302,7 +300,7 @@ public class TestFileAndKeyEncryption {
 
          fail("Expected exception not thrown");
       } catch (Exception e) {
-         assertEquals("Exception: " + e.toString(), "Invalid format id 'q'", e.getMessage());
+         assertEquals("Exception: " + e.toString(), "Invalid format id", e.getMessage());
       }
    }
 
@@ -318,7 +316,7 @@ public class TestFileAndKeyEncryption {
 
          fail("Expected exception not thrown");
       } catch (Exception e) {
-         assertEquals("Exception: " + e.toString(), "Invalid format id 'JumVT3xH5OQofQ/Ne6eV3w=='", e.getMessage());
+         assertEquals("Exception: " + e.toString(), "Invalid format id", e.getMessage());
       }
    }
    /**

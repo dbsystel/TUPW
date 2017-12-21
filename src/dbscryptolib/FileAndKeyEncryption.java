@@ -21,6 +21,7 @@
  *
  * Changes: 
  *     2017-12-19: V1.0.0: Created. fhs
+ *     2017-12-21: V1.0.1: Corrected comments, added safe data deletion in decryption interface. fhs
  */
 package dbscryptolib;
 
@@ -48,16 +49,15 @@ import javax.crypto.spec.IvParameterSpec;
  * Implement encryption by key generated from file and key
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.0.0
+ * @version 1.0.1
  */
 public class FileAndKeyEncryption implements AutoCloseable {
 
    /*
     * Private constants
     */
-
- /*
-    * Format ids
+   /**
+    * Format id
     */
    private static final byte FORMAT_1_ID = (byte) 1;
 
@@ -128,9 +128,15 @@ public class FileAndKeyEncryption implements AutoCloseable {
 
       public void zap() {
          formatId = (byte) 0;
-         Arrays.fill(iv, (byte) 0);
-         Arrays.fill(encryptedData, (byte) 0);
-         Arrays.fill(checksum, (byte) 0);
+
+         if (iv != null)
+            Arrays.fill(iv, (byte) 0);
+
+         if (encryptedData != null)
+            Arrays.fill(encryptedData, (byte) 0);
+
+         if (checksum != null)
+            Arrays.fill(checksum, (byte) 0);
       }
    }
 
@@ -166,28 +172,32 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws java.lang.IllegalArgumentException
     */
    private void checkHMACKey(final byte[] aHMACKey) throws IllegalArgumentException {
-      if (aHMACKey.length != FORMAT_1_HMAC_KEY_LENGTH) {
+      if (aHMACKey.length != FORMAT_1_HMAC_KEY_LENGTH)
          throw new IllegalArgumentException("The HMAC key does not have a length of " + Integer.toString(FORMAT_1_HMAC_KEY_LENGTH) + " bytes");
-      }
    }
 
+   /**
+    * Check size of key file
+    *
+    * @param keyFile Path of key file
+    * @throws IllegalArgumentException
+    * @throws IOException
+    */
    private void checkKeyFileSize(final Path keyFile) throws IllegalArgumentException, IOException {
       final long keyFileSize = Files.size(keyFile);
 
-      if (keyFileSize <= 0) {
+      if (keyFileSize <= 0)
          throw new IllegalArgumentException("Key file is empty");
-      }
 
-      if (keyFileSize > MAX_KEYFILE_SIZE) {
+      if (keyFileSize > MAX_KEYFILE_SIZE)
          throw new IllegalArgumentException("Key file is larger than " + Integer.toString(MAX_KEYFILE_SIZE) + " bytes");
-      }
    }
 
    /**
     * Convert an encrypted text into it's parts
     *
     * @param encryptionText Text to be decrypted
-    * @return Encryption parameters as <c>EncryptionParts</c> object
+    * @return Encryption parameters as <code>EncryptionParts</code> object
     * @throws IllegalArgumentException
     */
    private EncryptionParts getPartsFromPrintableString(final String encryptionText) throws IllegalArgumentException {
@@ -201,9 +211,9 @@ public class FileAndKeyEncryption implements AutoCloseable {
       try {
          result.formatId = Byte.parseByte(parts[0]);
       } catch (NumberFormatException e) {
-         throw new IllegalArgumentException("Invalid format id '" + parts[0] + "'");
+         throw new IllegalArgumentException("Invalid format id");
       }
-
+      
       if (result.formatId == FORMAT_1_ID) {
          if (parts.length == 4) {
             Base64.Decoder b64Decoder = Base64.getDecoder();
@@ -211,9 +221,8 @@ public class FileAndKeyEncryption implements AutoCloseable {
             result.iv = b64Decoder.decode(parts[1]);
             result.encryptedData = b64Decoder.decode(parts[2]);
             result.checksum = b64Decoder.decode(parts[3]);
-         } else {
+         } else
             throw new IllegalArgumentException("Number of '$' separated parts in encrypted text is not 4");
-         }
       }
 
       return result;
@@ -222,8 +231,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
    /**
     * Decrypt data that have been created by the corresponding encryption
     *
-    * @param encryptionParameters IV and key to be used for decryption
-    * @param encryptedData Encrypted data
+    * @param encryptionParts The encryption parts of the data
     * @return Decrypted data as string
     * @throws javax.crypto.BadPaddingException
     * @throws javax.crypto.IllegalBlockSizeException
@@ -254,7 +262,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
 
    /**
     * Build a printable string from the encrypted parts
-    * 
+    *
     * @param encryptionParts Parts to be printed
     * @return Printable string of the encrypted parts
     */
@@ -274,12 +282,12 @@ public class FileAndKeyEncryption implements AutoCloseable {
    }
 
    /**
-    * Calculate the checksum of the encrypted parts (HMAC)
-    * 
+    * Calculate the HMAC of the encrypted parts
+    *
     * @param encryptionParts Encrypted parts to calculate the checksum for
     * @return Checksum of the encrypted parts
     * @throws InvalidKeyException
-    * @throws NoSuchAlgorithmException 
+    * @throws NoSuchAlgorithmException
     */
    private byte[] getChecksumForEncryptionParts(EncryptionParts encryptionParts) throws InvalidKeyException, NoSuchAlgorithmException {
       final Mac hmac = getHMACInstance();
@@ -293,22 +301,21 @@ public class FileAndKeyEncryption implements AutoCloseable {
 
    /**
     * Check the checksum of the encrypted parts that have been read
-    * 
+    *
     * @param encryptionParts Parts to be checked
     * @throws IllegalArgumentException
     * @throws InvalidKeyException
-    * @throws NoSuchAlgorithmException 
+    * @throws NoSuchAlgorithmException
     */
    private void checkChecksumForEncryptionParts(EncryptionParts encryptionParts) throws IllegalArgumentException, InvalidKeyException, NoSuchAlgorithmException {
       final byte[] calculatedChecksum = getChecksumForEncryptionParts(encryptionParts);
 
-      if (!Arrays.equals(calculatedChecksum, encryptionParts.checksum)) {
+      if (!Arrays.equals(calculatedChecksum, encryptionParts.checksum))
          throw new IllegalArgumentException("Checksums do not match");
-      }
    }
 
    /**
-    * Encrypt some string data
+    * Encrypt string data
     *
     * @param sourceString Some string that will be encrypted
     * @return Encrypted data and iv as EncryptionParts object
@@ -322,16 +329,19 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws java.io.UnsupportedEncodingException
     */
    private EncryptionParts rawDataEncryption(final String sourceString) throws BadPaddingException, IllegalArgumentException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
-      Cipher aesCipher = Cipher.getInstance(FORMAT_1_ENCRYPTION_SPECIFICATION);
-
       EncryptionParts result = new EncryptionParts();
 
+      // Set format id
       result.formatId = FORMAT_1_ID;
 
+      Cipher aesCipher = Cipher.getInstance(FORMAT_1_ENCRYPTION_SPECIFICATION);
+
+      // Get a random iv
       result.iv = new byte[aesCipher.getBlockSize()];
 
       SECURE_PRNG.nextBytes(result.iv);
 
+      // Encrypt the source string with the iv
       aesCipher.init(Cipher.ENCRYPT_MODE, this.m_EncryptionKey, new IvParameterSpec(result.iv));
 
       final byte[] unpaddedEncodedStringBytes = sourceString.getBytes(STRING_ENCODING_FOR_DATA);
@@ -370,22 +380,24 @@ public class FileAndKeyEncryption implements AutoCloseable {
 
    /**
     * Set the keys of this instance from a key file and a HMAC key
-    * 
+    *
     * @param hmacKey HMAC key to be used
     * @param keyFile Key file to be used
     * @throws InvalidKeyException
     * @throws IOException
-    * @throws NoSuchAlgorithmException 
+    * @throws NoSuchAlgorithmException
     */
    private void setKeysFromKeyAndFile(final byte[] hmacKey, final Path keyFile) throws InvalidKeyException, IOException, NoSuchAlgorithmException {
       final byte[] hmacOfKeyFile = getHmacValueForBytes(hmacKey, Files.readAllBytes(keyFile));
 
       byte[] keyPart;
 
+      // 1. half of file HMAC is used as the encryption key of this instance
       keyPart = Arrays.copyOfRange(hmacOfKeyFile, 0, 16);
       this.m_EncryptionKey = new SecureSecretKeySpec(keyPart, FORMAT_1_ENCRYPTION_ALGORITHM);
       Arrays.fill(keyPart, (byte) 0);
 
+      // 2. half of file HMAC is used as the HMAC key of this instance
       keyPart = Arrays.copyOfRange(hmacOfKeyFile, 16, 32);
       this.m_HMACKey = new SecureSecretKeySpec(keyPart, FORMAT_1_HMAC_ALGORITHM);
       Arrays.fill(keyPart, (byte) 0);
@@ -397,7 +409,6 @@ public class FileAndKeyEncryption implements AutoCloseable {
    /*
     * Public methods
     */
-
    /**
     * Constructor for this instance
     *
@@ -420,7 +431,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
 
    /**
     * Encrypt a string
-    * 
+    *
     * @param stringToEncrypt String to encrypt
     * @return Printable form of the encrypted string
     * @throws BadPaddingException
@@ -430,7 +441,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws InvalidKeyException
     * @throws NoSuchAlgorithmException
     * @throws NoSuchPaddingException
-    * @throws UnsupportedEncodingException 
+    * @throws UnsupportedEncodingException
     */
    public String encryptData(final String stringToEncrypt) throws BadPaddingException, IllegalArgumentException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
       EncryptionParts encryptionParts = rawDataEncryption(stringToEncrypt);
@@ -446,7 +457,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
 
    /**
     * Decrypt an encrypted string
-    * 
+    *
     * @param stringToDecrypt String to decrypt
     * @return Decrypted string
     * @throws BadPaddingException
@@ -456,17 +467,24 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws InvalidKeyException
     * @throws NoSuchAlgorithmException
     * @throws NoSuchPaddingException
-    * @throws UnsupportedEncodingException 
+    * @throws UnsupportedEncodingException
     */
-   public String decryptData(final String stringToDecrypt) throws BadPaddingException, IllegalArgumentException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException  {
+   public String decryptData(final String stringToDecrypt) throws BadPaddingException, IllegalArgumentException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
       EncryptionParts encryptionParts = getPartsFromPrintableString(stringToDecrypt);
 
       if (encryptionParts.formatId == FORMAT_1_ID) {
          checkChecksumForEncryptionParts(encryptionParts);
 
-         return rawDecryptData(encryptionParts);
-      } else
-         throw new IllegalArgumentException("Unknown format id '" + Byte.toString(encryptionParts.formatId) + "'");
+         String result = rawDecryptData(encryptionParts);
+
+         encryptionParts.zap();
+
+         return result;
+      } else {
+         encryptionParts.zap();
+
+         throw new IllegalArgumentException("Unknown format id");
+      }
    }
 
    /*
