@@ -71,10 +71,10 @@ The command line program uses a library that can be found in the `dbscryptolib` 
 	...
 	
 	try (FileAndKeyEncryption MyEncryptor = new FileAndKeyEncryption(HMAC_KEY, pathToKeyFile)) {
-       if (...shouldencrypt...) {
-          encryptedData = MyEncryptor.encryptData(dataToEncrypt);
+	   if (...shouldencrypt...) {
+          String encryptedData = MyEncryptor.encryptData(dataToEncrypt);
        } else {
-          decryptedData = MyEncryptor.decryptData(dataToDecrypt);
+          String decryptedData = MyEncryptor.decryptData(dataToDecrypt);
        }
     } catch (Exception e) {
        System.err.print(e.toString());
@@ -82,7 +82,7 @@ The command line program uses a library that can be found in the `dbscryptolib` 
 
 I.e. the class `FileAndKeyEncryption` is instantiated with an HMAC key that is encoded in the program's source code and a key file whose path can be supplied as a parameter, or be read from a configuration file.
 
-The class instance then generates a key from the HMAC of the key file and stores this key safely in the program's memory. When data have to be encrypted, or decrypted the calculated key is used for the requested cryptographic operation. Both operations expect a `String` as input data and return a `String` as output data. So you can not encrypt binary data with it. 
+The class instance then generates a key from the HMAC of the key file and stores this key safely in the program's memory. When data have to be encrypted, or decrypted the calculated key is used for the requested cryptographic operation. Both operations expect a `String` as input data and return a `String` as output data. So you can not encrypt binary data with it, which makes kind of sense as it is designed to store readable data.
 		 
 ## Contributing
 
