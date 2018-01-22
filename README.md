@@ -2,6 +2,8 @@
 
 Safely store credentials in config files
 
+## Command Line Program
+
 This program serves as an example of how to safely store credentials in config files. It works as a command line tool to encrypt and decrypt credentials. The decryption part can be incorporated into an application.
 
 The idea is to store credentials in a config file in an encrypted form like this:
@@ -51,6 +53,37 @@ Of course, this is not perfectly safe, as an attacker can get access to the mach
 
 This program just makes it harder to get at the credentials, as both the file and the program code are needed to reconstruct the encryption key.
 
+## Library
+
+The command line program uses a library that can be found in the `dbscryptolib` source path. This library is the interface to the encryption and decryption methods. It is used like this:
+
+    // This is the static HMAC key which is only known to the program
+    // TODO: Do not use this constant byte array. Roll your own!!!!
+    final byte[] HMAC_KEY = {(byte) 0xB4, (byte) 0xDC, (byte) 0x1C, (byte) 0x05,
+       (byte) 0xCD, (byte) 0x1C, (byte) 0x30, (byte) 0xB8,
+       (byte) 0x59, (byte) 0x80, (byte) 0x90, (byte) 0xC7,
+       (byte) 0xFA, (byte) 0x4D, (byte) 0x07, (byte) 0x12,
+       (byte) 0xD2, (byte) 0xA0, (byte) 0x67, (byte) 0xF5,
+       (byte) 0x4C, (byte) 0x17, (byte) 0x11, (byte) 0xD0,
+       (byte) 0x90, (byte) 0xF6, (byte) 0x53, (byte) 0x8A,
+       (byte) 0x0B, (byte) 0xDF, (byte) 0xA4, (byte) 0x17};
+    
+	...
+	
+	try (FileAndKeyEncryption MyEncryptor = new FileAndKeyEncryption(HMAC_KEY, pathToKeyFile)) {
+       if (...shouldencrypt...) {
+          encryptedData = MyEncryptor.encryptData(dataToEncrypt);
+       } else {
+          decryptedData = MyEncryptor.decryptData(dataToDecrypt);
+       }
+    } catch (Exception e) {
+       System.err.print(e.toString());
+    }
+
+I.e. the class `FileAndKeyEncryption` is instantiated with an HMAC key that is encoded in the program's source code and a key file whose path can be supplied as a parameter, or be read from a configuration file.
+
+The class instance then generates a key from the HMAC of the key file and stores this key safely in the program's memory. When data have to be encrypted, or decrypted the calculated key is used for the requested cryptographic operation. Both operations expect a `String` as input data and return a `String` as output data. So you can not encrypt binary data with it. 
+		 
 ## Contributing
 
 Feel free to submit a pull request with new features, improvements on tests or documentation and bug fixes.
