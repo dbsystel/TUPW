@@ -71,11 +71,10 @@ The command line program uses a library that can be found in the `dbscryptolib` 
 	...
 	
 	try (FileAndKeyEncryption MyEncryptor = new FileAndKeyEncryption(HMAC_KEY, pathToKeyFile)) {
-	   if (...shouldencrypt...) {
-          String encryptedData = MyEncryptor.encryptData(dataToEncrypt);
-       } else {
-          String decryptedData = MyEncryptor.decryptData(dataToDecrypt);
-       }
+	   ...
+       String decryptedData = MyEncryptor.decryptData(dataToDecrypt);
+	   ...
+	   // TODO: Do whatever you need to do with the decrypted string
     } catch (Exception e) {
        System.err.print(e.toString());
     }
