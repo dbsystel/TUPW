@@ -28,17 +28,26 @@
  *     2017-12-19: V2.0.0: Use CFB8 modus and arbitrary tail padding to thwart padding oracle attacks,
  *                         Refactored interface to encryption and decryption. fhs
  *     2017-12-20: V2.1.0: Encrypt/decrypt only one item. fhs
+ *     2018-01-30: V3.0.0: Only plain output, input also from stdin to make the program usable in a pipe. fhs
  */
 package TUPW;
 
 import dbscryptolib.FileAndKeyEncryption;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Example program to calculate the encryption of user and password for
  * technical users. To be called from the command line.
  *
+ * Returns with the following exit codes:
+ *    0: Data converted
+ *    1: Error during conversion
+ *    2: Not enough arguments
+ *
  * @author Frank Schwab, DB Systel GmbH
- * @version 2.1.0
+ * @version 3.0.0
  */
 public class TUPW {
 
@@ -57,31 +66,71 @@ public class TUPW {
       if (args.length >= 3) {
          try (FileAndKeyEncryption MyEncryptor = new FileAndKeyEncryption(HMAC_KEY, args[1])) {
             if (args[0].substring(0, 1).toLowerCase().equals("e")) {
-               printData("Encryption", MyEncryptor.encryptData(args[2]));
+               System.out.println(MyEncryptor.encryptData(getInputFromWhereEver(args[2])));
             } else {
-               printData("Decryption", MyEncryptor.decryptData(args[2]));
+               System.out.println(MyEncryptor.decryptData(getInputFromWhereEver(args[2])));
             }
+            
+            System.exit(0);
          } catch (Exception e) {
             System.err.print(e.toString());
+            e.printStackTrace();
+            System.exit(1);
          }
       } else {
-         System.err.println("Not enough arguments");
+         System.err.println("Not enough arguments.");
+         System.err.println();
          System.err.println("Usage:");
          System.err.println("   tupw.jar encrypt {keyfile} {clearItem}");
          System.err.println("   tupw.jar decrypt {keyfile} {encryptedItem}");
+         System.err.println();
+         System.err.println("If {clearItem}, or {encryptedItem} is '-' input is read from stdin.");
+         System.err.println("This makes it possible to use the program in a pipe.");
+         
+         System.exit(2);
       }
    }
 
    /**
-    * Print a key value pair of strings
+    * Get input either from the command line, or from stdin if third argument
+    * is "-"
     *
-    * @param dataName Name of the data
-    * @param data Value of the data
+    * @param anArgument The command line argument that is either the data,
+    * or "-"
+    * @return Data to process
+    * @throws IOException
     */
-   private static void printData(final String dataName, final String data) {
-      System.out.print(dataName);
-      System.out.print(" = '");
-      System.out.print(data);
-      System.out.println("'");
+   static String getInputFromWhereEver(String anArgument) throws IOException {
+      String result;
+
+      // Get input from System.in, if third argument is "-", or from the 
+      // third command line argument, if it is something else
+      if (anArgument.equals("-")) {
+         result = getInputStreamAsString(System.in).trim(); // Need trim here as pipes append an unnecessary newline
+      } else {
+         result = anArgument;
+      }
+
+      return result;
+   }
+
+   /**
+    * Convert an <code>InputStream</code> to a <code>String</code>
+    *
+    * @param inputStream InputStream to convert
+    * @return Content of InputStream as String
+    * @throws IOException
+    */
+   static String getInputStreamAsString(InputStream inputStream) throws IOException {
+      ByteArrayOutputStream result = new ByteArrayOutputStream();
+      byte[] buffer = new byte[4096];
+      int length;
+
+      while ((length = inputStream.read(buffer)) != -1) {
+         result.write(buffer, 0, length);
+      }
+
+      // Convert to String with Java file encoding
+      return result.toString(System.getProperty("file.encoding"));
    }
 }

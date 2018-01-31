@@ -33,7 +33,7 @@ The program is used like this ('d:\keyfile.bin' is the name of the key file):
 
 This generates (for example) the following output:
 
-    Encryption = '1$cYKgznOQzmzMwAe72hc53Q==$Zg/U7gN4Q9TAz5jxnPxMWg==$r3bXCuG5vb5B3f+B0IUV+6bizLWI58fz2GkKc5dYFSA='
+    1$cYKgznOQzmzMwAe72hc53Q==$Zg/U7gN4Q9TAz5jxnPxMWg==$r3bXCuG5vb5B3f+B0IUV+6bizLWI58fz2GkKc5dYFSA=
 
 Note that the "iv" part (the one after '1$') of the encryption will change with each invocation of the program as it is derived from a secure random number generator and hence the result of the encryption (which uses the random iv) and also the HMAC will be different, as well, even if the same key file is used in all of these invocations.
 
@@ -43,11 +43,17 @@ Of course, one would need the keyfile to decrypt this like so:
 
 which yields (with the correct key file):
 
-    Decryption = 'dbUser'
+    dbUser
     
 This way one can store the credentials and the key file in configuration management systems without storing them in the clear.
 
 The decryption part of the program would typically be copied and used in an application to decrypt the credentials in the configuration file.
+
+The program can also be used in a pipe to decode a file like this:
+
+    cat secret.file | java -jar tupw.jar decrypt d:\keyfile.bin -
+	
+The trialing "-" tells the program that the input comes from stdin and not from the command line. This makes it possible to decrypt a secret configuration file, use it to start a server and then remove it after the sever has been started.
 
 Of course, this is not perfectly safe, as an attacker can get access to the machine and extract the key file and the program classes and reverse engineer the way the key is calculated.
 
