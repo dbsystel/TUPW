@@ -51,9 +51,9 @@ The decryption part of the program would typically be copied and used in an appl
 
 The program can also be used in a pipe to decode a file like this:
 
-    cat secret.file | java -jar tupw.jar decrypt d:\keyfile.bin -
+    java -jar tupw.jar decrypt d:\keyfile.bin - < cat encrypted-secret.config > plain.config
 	
-The trialing "-" tells the program that the input comes from stdin and not from the command line. This makes it possible to decrypt a secret configuration file, use it to start a server and then remove it after the sever has been started.
+The trailing "-" tells the program that the input comes from stdin and not from the command line. This makes it possible to decrypt a secret configuration file, use it to start a server and then remove it after the sever has been started.
 
 Of course, this is not perfectly safe, as an attacker can get access to the machine and extract the key file and the program classes and reverse engineer the way the key is calculated.
 
