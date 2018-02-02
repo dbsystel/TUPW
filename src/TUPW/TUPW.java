@@ -29,6 +29,7 @@
  *                         Refactored interface to encryption and decryption. fhs
  *     2017-12-20: V2.1.0: Encrypt/decrypt only one item. fhs
  *     2018-01-30: V3.0.0: Only plain output, input also from stdin to make the program usable in a pipe. fhs
+ *     2018-02-01: V3.0.1: Input from stdin must not exceed 50 MB. fhs
  */
 package TUPW;
 
@@ -47,10 +48,12 @@ import java.io.InputStream;
  *    2: Not enough arguments
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 3.0.0
+ * @version 3.0.1
  */
 public class TUPW {
-
+   private static final int MAX_INPUT_BYTES = 50000000;
+   private static final int READ_BLOCK_SIZE = 4096;
+   
    public static void main(final String[] args) {
       // This is the static HMAC key which is only known to the program
       // TODO: Do not use this constant byte array. Roll your own!!!!
@@ -73,7 +76,6 @@ public class TUPW {
             
             System.exit(0);
          } catch (Exception e) {
-            System.err.print(e.toString());
             e.printStackTrace();
             System.exit(1);
          }
@@ -98,15 +100,16 @@ public class TUPW {
     * @param anArgument The command line argument that is either the data,
     * or "-"
     * @return Data to process
+    * @throws IllegalArgumentException
     * @throws IOException
     */
-   static String getInputFromWhereEver(String anArgument) throws IOException {
+   static String getInputFromWhereEver(String anArgument) throws IllegalArgumentException, IOException {
       String result;
 
       // Get input from System.in, if third argument is "-", or from the 
       // third command line argument, if it is something else
       if (anArgument.equals("-")) {
-         result = getInputStreamAsString(System.in).trim(); // Need trim here as pipes append an unnecessary newline
+         result = getInputStreamAsString(System.in);
       } else {
          result = anArgument;
       }
@@ -119,18 +122,22 @@ public class TUPW {
     *
     * @param inputStream InputStream to convert
     * @return Content of InputStream as String
+    * @throws IllegalArgumentException
     * @throws IOException
     */
-   static String getInputStreamAsString(InputStream inputStream) throws IOException {
+   static String getInputStreamAsString(InputStream inputStream) throws IllegalArgumentException, IOException {
       ByteArrayOutputStream result = new ByteArrayOutputStream();
-      byte[] buffer = new byte[4096];
+      byte[] buffer = new byte[READ_BLOCK_SIZE];
       int length;
 
       while ((length = inputStream.read(buffer)) != -1) {
          result.write(buffer, 0, length);
+
+         if (result.size() > MAX_INPUT_BYTES) 
+            throw new IllegalArgumentException("Input from input stream is larger than " + String.format("%,d",  MAX_INPUT_BYTES) + " bytes");
       }
 
       // Convert to String with Java file encoding
-      return result.toString(System.getProperty("file.encoding"));
+      return result.toString(System.getProperty("file.encoding")).trim(); // Need trim here as pipes append an unnecessary newline
    }
 }
