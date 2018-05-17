@@ -9,12 +9,14 @@ This program serves as an example of how to safely store credentials in config f
 The idea is to store credentials in a config file in an encrypted form like this:
 
     <credentials>
-      <user name="dbuser" user="1$cYKgznOQzmzMwAe72hc53Q==$Zg/U7gN4Q9TAz5jxnPxMWg==$r3bXCuG5vb5B3f+B0IUV+6bizLWI58fz2GkKc5dYFSA=" password="1$m6N9mBSNATy6AozEGPv+yw==$pVMq/bhCeTJ2MIMDQVo0nOTQ78HuiUOcUpweyX/KaK8=$tFSn2LNUgTPiThgf4TgJwtJn/MIt6ysVFtRO96G63JI="/>
+      <user name="dbuser" user="2$RigqmAZ27WkyzeM4b15N1g==$2Zofzxl47WC27qUO0CBiuw==$PhFw65T/tIAYp9Hem5ZvHd5dNfhgIaiXliHmP+U5JRg=" password="2$8yLidxWFry/YYi63PxiweQ==$RqMIUY2TKgViU7Pi9uZ//w==$pdRYin91BzlTdL6lXbtAGDgLLuZ9FsxrzL/rAXji7Nw="/>
     </credentials >
 
 The encrypted data consists of four parts separated by '$' characters:
 
-1. The format code: 1 =`{IV}{AES-128-CFB-ABytPadding}{HMAC}`
+1. The format code:
+..* 1 =`{IV}{AES-128-CFB-ABytPadding}{HMAC}`
+..* 2 =`{IV}{AES-128-CTR-ABytPadding}{HMAC}`
 2. The IV
 3. The AES-128-CFB-ABytPadding encrypted data
 3. The HMAC of the format code, the IV and the encrypted data
@@ -33,13 +35,13 @@ The program is used like this ('d:\keyfile.bin' is the name of the key file):
 
 This generates (for example) the following output:
 
-    1$cYKgznOQzmzMwAe72hc53Q==$Zg/U7gN4Q9TAz5jxnPxMWg==$r3bXCuG5vb5B3f+B0IUV+6bizLWI58fz2GkKc5dYFSA=
+    2$RigqmAZ27WkyzeM4b15N1g==$2Zofzxl47WC27qUO0CBiuw==$PhFw65T/tIAYp9Hem5ZvHd5dNfhgIaiXliHmP+U5JRg=
 
 Note that the "iv" part (the one after '1$') of the encryption will change with each invocation of the program as it is derived from a secure random number generator and hence the result of the encryption (which uses the random iv) and also the HMAC will be different, as well, even if the same key file is used in all of these invocations.
 
 Of course, one would need the keyfile to decrypt this like so:
 
-    java -jar tupw.jar decrypt d:\keyfile.bin "1$cYKgznOQzmzMwAe72hc53Q==$Zg/U7gN4Q9TAz5jxnPxMWg==$r3bXCuG5vb5B3f+B0IUV+6bizLWI58fz2GkKc5dYFSA="
+    java -jar tupw.jar decrypt d:\keyfile.bin "2$RigqmAZ27WkyzeM4b15N1g==$2Zofzxl47WC27qUO0CBiuw==$PhFw65T/tIAYp9Hem5ZvHd5dNfhgIaiXliHmP+U5JRg="
 
 which yields (with the correct key file):
 
