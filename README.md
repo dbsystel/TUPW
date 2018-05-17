@@ -15,8 +15,8 @@ The idea is to store credentials in a config file in an encrypted form like this
 The encrypted data consists of four parts separated by '$' characters:
 
 1. The format code:
-..* 1 =`{IV}{AES-128-CFB-ABytPadding}{HMAC}`
-..* 2 =`{IV}{AES-128-CTR-ABytPadding}{HMAC}`
+  * 1 =`{IV}{AES-128-CFB-ABytPadding}{HMAC}`
+  * 2 =`{IV}{AES-128-CTR-ABytPadding}{HMAC}`
 2. The IV
 3. The AES-128-CFB-ABytPadding encrypted data
 3. The HMAC of the format code, the IV and the encrypted data
