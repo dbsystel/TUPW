@@ -23,6 +23,7 @@
  *     2017-12-19: V1.0.0: Created. fhs
  *     2017-12-21: V1.0.1: Corrected comments, added safe data deletion in decryption interface. fhs
  *     2017-12-21: V1.1.0: Correct AByt padding to use cipher block size. fhs
+ *     2018-05-17: V1.2.0: Use CTR mode instead of CFB. fhs
  */
 package dbscryptolib;
 
@@ -50,7 +51,7 @@ import javax.crypto.spec.IvParameterSpec;
  * Implement encryption by key generated from file and key
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.0.1
+ * @version 1.2.0
  */
 public class FileAndKeyEncryption implements AutoCloseable {
 
@@ -61,6 +62,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * Format id
     */
    private static final byte FORMAT_1_ID = (byte) 1;
+   private static final byte FORMAT_2_ID = (byte) 2;
 
    /**
     * HMAC algorithm to be used
@@ -81,6 +83,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * Encrpytion specification with algorithm, mode and padding
     */
    private static final String FORMAT_1_ENCRYPTION_SPECIFICATION = FORMAT_1_ENCRYPTION_ALGORITHM + "/CFB/NoPadding";
+   private static final String FORMAT_2_ENCRYPTION_SPECIFICATION = FORMAT_1_ENCRYPTION_ALGORITHM + "/CTR/NoPadding";
 
    /**
     * String encoding to be used for encrypted data strings
@@ -124,14 +127,17 @@ public class FileAndKeyEncryption implements AutoCloseable {
       public void zap() {
          formatId = (byte) 0;
 
-         if (iv != null)
+         if (iv != null) {
             Arrays.fill(iv, (byte) 0);
+         }
 
-         if (encryptedData != null)
+         if (encryptedData != null) {
             Arrays.fill(encryptedData, (byte) 0);
+         }
 
-         if (checksum != null)
+         if (checksum != null) {
             Arrays.fill(checksum, (byte) 0);
+         }
       }
    }
 
@@ -151,8 +157,9 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws NoSuchAlgorithmException
     */
    private Mac getHMACInstance() throws NoSuchAlgorithmException {
-      if (HMAC_INSTANCE == null)
+      if (HMAC_INSTANCE == null) {
          HMAC_INSTANCE = Mac.getInstance(FORMAT_1_HMAC_ALGORITHM);
+      }
 
       return HMAC_INSTANCE;
    }
@@ -167,8 +174,9 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws java.lang.IllegalArgumentException
     */
    private void checkHMACKey(final byte[] aHMACKey) throws IllegalArgumentException {
-      if (aHMACKey.length != FORMAT_1_HMAC_KEY_LENGTH)
+      if (aHMACKey.length != FORMAT_1_HMAC_KEY_LENGTH) {
          throw new IllegalArgumentException("The HMAC key does not have a length of " + Integer.toString(FORMAT_1_HMAC_KEY_LENGTH) + " bytes");
+      }
    }
 
    /**
@@ -181,11 +189,13 @@ public class FileAndKeyEncryption implements AutoCloseable {
    private void checkKeyFileSize(final Path keyFile) throws IllegalArgumentException, IOException {
       final long keyFileSize = Files.size(keyFile);
 
-      if (keyFileSize <= 0)
+      if (keyFileSize <= 0) {
          throw new IllegalArgumentException("Key file is empty");
+      }
 
-      if (keyFileSize > MAX_KEYFILE_SIZE)
+      if (keyFileSize > MAX_KEYFILE_SIZE) {
          throw new IllegalArgumentException("Key file is larger than " + Integer.toString(MAX_KEYFILE_SIZE) + " bytes");
+      }
    }
 
    /**
@@ -208,16 +218,19 @@ public class FileAndKeyEncryption implements AutoCloseable {
       } catch (NumberFormatException e) {
          throw new IllegalArgumentException("Invalid format id");
       }
-      
-      if (result.formatId == FORMAT_1_ID) {
+
+      if ((result.formatId == FORMAT_2_ID) || (result.formatId == FORMAT_1_ID)) {
          if (parts.length == 4) {
             Base64.Decoder b64Decoder = Base64.getDecoder();
 
             result.iv = b64Decoder.decode(parts[1]);
             result.encryptedData = b64Decoder.decode(parts[2]);
             result.checksum = b64Decoder.decode(parts[3]);
-         } else
+         } else {
             throw new IllegalArgumentException("Number of '$' separated parts in encrypted text is not 4");
+         }
+      } else {
+         throw new IllegalArgumentException("Unknown format id");
       }
 
       return result;
@@ -237,7 +250,15 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws java.io.UnsupportedEncodingException
     */
    private String rawDecryptData(final EncryptionParts encryptionParts) throws BadPaddingException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
-      Cipher aesCipher = Cipher.getInstance(FORMAT_1_ENCRYPTION_SPECIFICATION);
+      String actEncrpytionSpecification;
+      
+      if (encryptionParts.formatId == FORMAT_2_ID)
+         actEncrpytionSpecification = FORMAT_2_ENCRYPTION_SPECIFICATION;
+      else
+         actEncrpytionSpecification = FORMAT_1_ENCRYPTION_SPECIFICATION;
+      
+      final Cipher aesCipher = Cipher.getInstance(actEncrpytionSpecification);
+      
       String result;
 
       aesCipher.init(Cipher.DECRYPT_MODE, this.m_EncryptionKey, new IvParameterSpec(encryptionParts.iv));
@@ -305,8 +326,9 @@ public class FileAndKeyEncryption implements AutoCloseable {
    private void checkChecksumForEncryptionParts(EncryptionParts encryptionParts) throws IllegalArgumentException, InvalidKeyException, NoSuchAlgorithmException {
       final byte[] calculatedChecksum = getChecksumForEncryptionParts(encryptionParts);
 
-      if (!Arrays.equals(calculatedChecksum, encryptionParts.checksum))
+      if (!Arrays.equals(calculatedChecksum, encryptionParts.checksum)) {
          throw new IllegalArgumentException("Checksums do not match");
+      }
    }
 
    /**
@@ -327,9 +349,9 @@ public class FileAndKeyEncryption implements AutoCloseable {
       EncryptionParts result = new EncryptionParts();
 
       // Set format id
-      result.formatId = FORMAT_1_ID;
+      result.formatId = FORMAT_2_ID;
 
-      Cipher aesCipher = Cipher.getInstance(FORMAT_1_ENCRYPTION_SPECIFICATION);
+      Cipher aesCipher = Cipher.getInstance(FORMAT_2_ENCRYPTION_SPECIFICATION);
 
       // Get a random iv
       result.iv = new byte[aesCipher.getBlockSize()];
@@ -467,7 +489,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
    public String decryptData(final String stringToDecrypt) throws BadPaddingException, IllegalArgumentException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
       EncryptionParts encryptionParts = getPartsFromPrintableString(stringToDecrypt);
 
-      if (encryptionParts.formatId == FORMAT_1_ID) {
+      if ((encryptionParts.formatId == FORMAT_2_ID) || (encryptionParts.formatId == FORMAT_1_ID)) {
          checkChecksumForEncryptionParts(encryptionParts);
 
          String result = rawDecryptData(encryptionParts);

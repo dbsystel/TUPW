@@ -30,6 +30,7 @@
  *     2017-12-20: V2.1.0: Encrypt/decrypt only one item. fhs
  *     2018-01-30: V3.0.0: Only plain output, input also from stdin to make the program usable in a pipe. fhs
  *     2018-02-01: V3.0.1: Input from stdin must not exceed 50 MB. fhs
+ *     2018-05-17: V3.1.0: Use CTR mode to squash ciphertext manipulation attacks. fhs
  */
 package TUPW;
 
@@ -48,7 +49,7 @@ import java.io.InputStream;
  *    2: Not enough arguments
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 3.0.1
+ * @version 3.1.0
  */
 public class TUPW {
    private static final int MAX_INPUT_BYTES = 50000000;
