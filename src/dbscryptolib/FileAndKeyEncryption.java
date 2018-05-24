@@ -24,6 +24,7 @@
  *     2017-12-21: V1.0.1: Corrected comments, added safe data deletion in decryption interface. fhs
  *     2017-12-21: V1.1.0: Correct AByt padding to use cipher block size. fhs
  *     2018-05-17: V1.2.0: Use CTR mode instead of CFB. fhs
+ *     2018-05-24: V1.2.1: Put encryption specifications in an array for easier handling. fhs
  */
 package dbscryptolib;
 
@@ -51,7 +52,7 @@ import javax.crypto.spec.IvParameterSpec;
  * Implement encryption by key generated from file and key
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.2.0
+ * @version 1.2.1
  */
 public class FileAndKeyEncryption implements AutoCloseable {
 
@@ -82,8 +83,9 @@ public class FileAndKeyEncryption implements AutoCloseable {
    /**
     * Encrpytion specification with algorithm, mode and padding
     */
-   private static final String FORMAT_1_ENCRYPTION_SPECIFICATION = FORMAT_1_ENCRYPTION_ALGORITHM + "/CFB/NoPadding";
-   private static final String FORMAT_2_ENCRYPTION_SPECIFICATION = FORMAT_1_ENCRYPTION_ALGORITHM + "/CTR/NoPadding";
+   private static final String[] ENCRYPTION_SPECIFICATION = {"Invalid",
+                                                             FORMAT_1_ENCRYPTION_ALGORITHM + "/CFB/NoPadding",
+                                                             FORMAT_1_ENCRYPTION_ALGORITHM + "/CTR/NoPadding"};
 
    /**
     * String encoding to be used for encrypted data strings
@@ -219,18 +221,22 @@ public class FileAndKeyEncryption implements AutoCloseable {
          throw new IllegalArgumentException("Invalid format id");
       }
 
-      if ((result.formatId == FORMAT_2_ID) || (result.formatId == FORMAT_1_ID)) {
-         if (parts.length == 4) {
-            Base64.Decoder b64Decoder = Base64.getDecoder();
+      switch (result.formatId) {
+         case FORMAT_2_ID:
+         case FORMAT_1_ID:
+            if (parts.length == 4) {
+               Base64.Decoder b64Decoder = Base64.getDecoder();
 
-            result.iv = b64Decoder.decode(parts[1]);
-            result.encryptedData = b64Decoder.decode(parts[2]);
-            result.checksum = b64Decoder.decode(parts[3]);
-         } else {
-            throw new IllegalArgumentException("Number of '$' separated parts in encrypted text is not 4");
-         }
-      } else {
-         throw new IllegalArgumentException("Unknown format id");
+               result.iv = b64Decoder.decode(parts[1]);
+               result.encryptedData = b64Decoder.decode(parts[2]);
+               result.checksum = b64Decoder.decode(parts[3]);
+            } else {
+               throw new IllegalArgumentException("Number of '$' separated parts in encrypted text is not 4");
+            }
+         break;
+         
+         default:
+            throw new IllegalArgumentException("Unknown format id");         
       }
 
       return result;
@@ -250,15 +256,8 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws java.io.UnsupportedEncodingException
     */
    private String rawDecryptData(final EncryptionParts encryptionParts) throws BadPaddingException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
-      String actEncrpytionSpecification;
-      
-      if (encryptionParts.formatId == FORMAT_2_ID)
-         actEncrpytionSpecification = FORMAT_2_ENCRYPTION_SPECIFICATION;
-      else
-         actEncrpytionSpecification = FORMAT_1_ENCRYPTION_SPECIFICATION;
-      
-      final Cipher aesCipher = Cipher.getInstance(actEncrpytionSpecification);
-      
+      final Cipher aesCipher = Cipher.getInstance(ENCRYPTION_SPECIFICATION[encryptionParts.formatId]);
+
       String result;
 
       aesCipher.init(Cipher.DECRYPT_MODE, this.m_EncryptionKey, new IvParameterSpec(encryptionParts.iv));
@@ -351,7 +350,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
       // Set format id
       result.formatId = FORMAT_2_ID;
 
-      Cipher aesCipher = Cipher.getInstance(FORMAT_2_ENCRYPTION_SPECIFICATION);
+      Cipher aesCipher = Cipher.getInstance(ENCRYPTION_SPECIFICATION[result.formatId]);
 
       // Get a random iv
       result.iv = new byte[aesCipher.getBlockSize()];
