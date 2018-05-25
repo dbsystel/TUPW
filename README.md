@@ -18,8 +18,8 @@ The encrypted data is stored as four parts separated by '$' characters:
     * 1 =`{IV}{AES-128-CFB-ABytPadding}{HMAC}`
     * 2 =`{IV}{AES-128-CTR-ABytPadding}{HMAC}`
 2. The IV
-3. The AES-128-CFB-ABytPadding encrypted data
-3. The HMAC of the format code, the IV and the encrypted data (for formats 1 and 2)
+3. The data encrypted with the method specified in the format code
+3. The HMAC of the format code, the IV and the encrypted data
 
 So these data specify the value of the initialization vector used for encryption, the type of encryption ([AES](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard "AES") 128 bit in [CFB](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#CFB "CFB") or [CTR](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#CTR "CTR") mode with [arbitrary tail byte ("ABytPadding") padding](https://eprint.iacr.org/2003/098.pdf "AByt-Pad"), and the [HMAC](https://en.wikipedia.org/wiki/Hash-based_message_authentication_code "HMAC") of all these values. But where does the encryption key come from?
 
