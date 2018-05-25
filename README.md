@@ -9,17 +9,17 @@ This program serves as an example of how to safely store credentials in config f
 The idea is to store credentials in a config file in an encrypted form like this:
 
     <credentials>
-      <user name="dbuser" user="2$RigqmAZ27WkyzeM4b15N1g==$2Zofzxl47WC27qUO0CBiuw==$PhFw65T/tIAYp9Hem5ZvHd5dNfhgIaiXliHmP+U5JRg=" password="2$8yLidxWFry/YYi63PxiweQ==$RqMIUY2TKgViU7Pi9uZ//w==$pdRYin91BzlTdL6lXbtAGDgLLuZ9FsxrzL/rAXji7Nw="/>
+      <user name="dbuser" user="2$x9FMYeOVg3EGdBucavW76Q==$tY7/OloL25NAz96VH/LaFQ==$n7+HdoY3rPRwPxY9KO8BttitcfsDeenkmSS5NCoD5Gs=" password="2$0zc5OTbfGMkfUM2TxXLa5w==$IMNfrPPYiwpWpWHSHgexfVwf5AhVyGRXteQvEeMALoI=$hh57SktgLjHuNkkfeOaU4SR+A6c5kB5wMesEmEtNUrQ="/>
     </credentials >
 
-The encrypted data consists of four parts separated by '$' characters:
+The encrypted data is stored as four parts separated by '$' characters:
 
 1. The format code:
     * 1 =`{IV}{AES-128-CFB-ABytPadding}{HMAC}`
     * 2 =`{IV}{AES-128-CTR-ABytPadding}{HMAC}`
 2. The IV
 3. The AES-128-CFB-ABytPadding encrypted data
-3. The HMAC of the format code, the IV and the encrypted data
+3. The HMAC of the format code, the IV and the encrypted data (for formats 1 and 2)
 
 So these data specify the value of the initialization vector used for encryption, the type of encryption ([AES](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard "AES") 128 bit in [CFB](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#CFB "CFB") or [CTR](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#CTR "CTR") mode with [arbitrary tail byte ("ABytPadding") padding](https://eprint.iacr.org/2003/098.pdf "AByt-Pad"), and the [HMAC](https://en.wikipedia.org/wiki/Hash-based_message_authentication_code "HMAC") of all these values. But where does the encryption key come from?
 
@@ -35,13 +35,13 @@ The program is used like this ('d:\keyfile.bin' is the name of the key file):
 
 This generates (for example) the following output:
 
-    2$RigqmAZ27WkyzeM4b15N1g==$2Zofzxl47WC27qUO0CBiuw==$PhFw65T/tIAYp9Hem5ZvHd5dNfhgIaiXliHmP+U5JRg=
+    2$x9FMYeOVg3EGdBucavW76Q==$tY7/OloL25NAz96VH/LaFQ==$n7+HdoY3rPRwPxY9KO8BttitcfsDeenkmSS5NCoD5Gs=
 
 Note that the "iv" part (the one after '1$') of the encryption will change with each invocation of the program as it is derived from a secure random number generator and hence the result of the encryption (which uses the random iv) and also the HMAC will be different, as well, even if the same key file is used in all of these invocations.
 
 Of course, one would need the keyfile to decrypt this like so:
 
-    java -jar tupw.jar decrypt d:\keyfile.bin "2$RigqmAZ27WkyzeM4b15N1g==$2Zofzxl47WC27qUO0CBiuw==$PhFw65T/tIAYp9Hem5ZvHd5dNfhgIaiXliHmP+U5JRg="
+    java -jar tupw.jar decrypt d:\keyfile.bin "2$x9FMYeOVg3EGdBucavW76Q==$tY7/OloL25NAz96VH/LaFQ==$n7+HdoY3rPRwPxY9KO8BttitcfsDeenkmSS5NCoD5Gs="
 
 which yields (with the correct key file):
 

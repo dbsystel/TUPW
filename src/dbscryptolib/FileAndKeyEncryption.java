@@ -25,11 +25,11 @@
  *     2017-12-21: V1.1.0: Correct AByt padding to use cipher block size. fhs
  *     2018-05-17: V1.2.0: Use CTR mode instead of CFB. fhs
  *     2018-05-24: V1.2.1: Put encryption specifications in an array for easier handling. fhs
+ *     2018-05-25: V1.2.2: A few changes to enhance readability
  */
 package dbscryptolib;
 
 import dbsstringlib.StringSplitter;
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
@@ -52,7 +52,7 @@ import javax.crypto.spec.IvParameterSpec;
  * Implement encryption by key generated from file and key
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.2.1
+ * @version 1.2.2
  */
 public class FileAndKeyEncryption implements AutoCloseable {
 
@@ -247,6 +247,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     *
     * @param encryptionParts The encryption parts of the data
     * @return Decrypted data as string
+    * @throws dbscryptolib.DataIntegrityException
     * @throws javax.crypto.BadPaddingException
     * @throws javax.crypto.IllegalBlockSizeException
     * @throws java.security.InvalidAlgorithmParameterException
@@ -255,7 +256,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws javax.crypto.NoSuchPaddingException
     * @throws java.io.UnsupportedEncodingException
     */
-   private String rawDecryptData(final EncryptionParts encryptionParts) throws BadPaddingException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
+   private String rawDecryptData(final EncryptionParts encryptionParts) throws DataIntegrityException, BadPaddingException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
       final Cipher aesCipher = Cipher.getInstance(ENCRYPTION_SPECIFICATION[encryptionParts.formatId]);
 
       String result;
@@ -318,15 +319,15 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * Check the checksum of the encrypted parts that have been read
     *
     * @param encryptionParts Parts to be checked
-    * @throws IllegalArgumentException
+    * @throws DataIntegrityException
     * @throws InvalidKeyException
     * @throws NoSuchAlgorithmException
     */
-   private void checkChecksumForEncryptionParts(EncryptionParts encryptionParts) throws IllegalArgumentException, InvalidKeyException, NoSuchAlgorithmException {
+   private void checkChecksumForEncryptionParts(EncryptionParts encryptionParts) throws DataIntegrityException, InvalidKeyException, NoSuchAlgorithmException {
       final byte[] calculatedChecksum = getChecksumForEncryptionParts(encryptionParts);
 
       if (!Arrays.equals(calculatedChecksum, encryptionParts.checksum)) {
-         throw new IllegalArgumentException("Checksums do not match");
+         throw new DataIntegrityException("Checksums do not match");
       }
    }
 
@@ -477,6 +478,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @param stringToDecrypt String to decrypt
     * @return Decrypted string
     * @throws BadPaddingException
+    * @throws DataIntegrityException
     * @throws IllegalArgumentException
     * @throws IllegalBlockSizeException
     * @throws InvalidAlgorithmParameterException
@@ -485,22 +487,28 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws NoSuchPaddingException
     * @throws UnsupportedEncodingException
     */
-   public String decryptData(final String stringToDecrypt) throws BadPaddingException, IllegalArgumentException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
+   public String decryptData(final String stringToDecrypt) throws BadPaddingException, DataIntegrityException, IllegalArgumentException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
       EncryptionParts encryptionParts = getPartsFromPrintableString(stringToDecrypt);
 
-      if ((encryptionParts.formatId == FORMAT_2_ID) || (encryptionParts.formatId == FORMAT_1_ID)) {
-         checkChecksumForEncryptionParts(encryptionParts);
+      String result = null;
 
-         String result = rawDecryptData(encryptionParts);
+      switch (encryptionParts.formatId) {
+         case FORMAT_2_ID:
+         case FORMAT_1_ID:
+            checkChecksumForEncryptionParts(encryptionParts);
 
-         encryptionParts.zap();
+            result = rawDecryptData(encryptionParts);
 
-         return result;
-      } else {
-         encryptionParts.zap();
+            encryptionParts.zap();
+         break;
 
-         throw new IllegalArgumentException("Unknown format id");
+         default:
+            encryptionParts.zap();
+
+            throw new IllegalArgumentException("Unknown format id");
       }
+
+      return result;
    }
 
    /*
