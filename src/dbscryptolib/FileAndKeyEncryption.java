@@ -488,7 +488,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws UnsupportedEncodingException
     */
    public String decryptData(final String stringToDecrypt) throws BadPaddingException, DataIntegrityException, IllegalArgumentException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
-      EncryptionParts encryptionParts = getPartsFromPrintableString(stringToDecrypt);
+      final EncryptionParts encryptionParts = getPartsFromPrintableString(stringToDecrypt);
 
       String result = null;
 
