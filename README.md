@@ -37,7 +37,7 @@ This generates (for example) the following output:
 
     2$x9FMYeOVg3EGdBucavW76Q==$tY7/OloL25NAz96VH/LaFQ==$n7+HdoY3rPRwPxY9KO8BttitcfsDeenkmSS5NCoD5Gs=
 
-Note that the "iv" part (the one after '1$') of the encryption will change with each invocation of the program as it is derived from a secure random number generator and hence the result of the encryption (which uses the random iv) and also the HMAC will be different, as well, even if the same key file is used in all of these invocations.
+Note that the "iv" part (the one after '2$') of the encryption will change with each invocation of the program as it is derived from a secure random number generator and hence the result of the encryption (which uses the random iv) and also the HMAC will be different, as well, even if the same key file is used in all of these invocations.
 
 Of course, one would need the keyfile to decrypt this like so:
 
