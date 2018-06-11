@@ -22,6 +22,7 @@
  * Changes: 
  *     2017-12-19: V1.0.0: Created. fhs
  *     2017-12-21: V2.0.0: Pad to block size. fhs
+ *     2018-06-11: V2.0.1: Block size must be greater than zero. fhs
  */
 package dbscryptolib;
 
@@ -32,7 +33,7 @@ import java.util.Arrays;
  * Implements arbitrary tail padding for block ciphers
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 2.0.0
+ * @version 2.0.1
  */
 public class ArbitraryTailPadding {
 
@@ -48,7 +49,7 @@ public class ArbitraryTailPadding {
    private static final SecureRandom SECURE_PRNG = new SecureRandom();
 
    /**
-    * Maximum block size (64 kiB)
+    * Maximum block size (64 KiB)
     */
    private static final int MAX_BLOCK_SIZE = 64 * 1024;
    
@@ -63,8 +64,8 @@ public class ArbitraryTailPadding {
     * @throws java.lang.IllegalArgumentException 
     */
    private static void checkBlockSize(final int blockSize) throws IllegalArgumentException {
-      if (blockSize < 0) {
-         throw new IllegalArgumentException("Block size must not be less than 0");
+      if (blockSize <= 0) {
+         throw new IllegalArgumentException("Block size must be greater than 0");
       }
 
       if (blockSize > MAX_BLOCK_SIZE) {
@@ -85,7 +86,7 @@ public class ArbitraryTailPadding {
 
       if (unpaddedSourceData.length > 0) {
          byte lastByte = unpaddedSourceData[unpaddedSourceData.length - 1];
-         
+
          do {
             SECURE_PRNG.nextBytes(padByte);
          } while (padByte[0] == lastByte);
