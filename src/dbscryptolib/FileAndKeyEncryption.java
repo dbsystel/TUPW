@@ -25,11 +25,12 @@
  *     2017-12-21: V1.1.0: Correct AByt padding to use cipher block size. fhs
  *     2018-05-17: V1.2.0: Use CTR mode instead of CFB. fhs
  *     2018-05-24: V1.2.1: Put encryption specifications in an array for easier handling. fhs
- *     2018-05-25: V1.2.2: A few changes to enhance readability
+ *     2018-05-25: V1.2.2: A few changes to enhance readability. fhs
  */
 package dbscryptolib;
 
 import dbsstringlib.StringSplitter;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
@@ -237,8 +238,8 @@ public class FileAndKeyEncryption implements AutoCloseable {
          
          default:
             throw new IllegalArgumentException("Unknown format id");         
-      }
-
+       }
+      
       return result;
    }
 
@@ -258,7 +259,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     */
    private String rawDecryptData(final EncryptionParts encryptionParts) throws DataIntegrityException, BadPaddingException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
       final Cipher aesCipher = Cipher.getInstance(ENCRYPTION_SPECIFICATION[encryptionParts.formatId]);
-
+      
       String result;
 
       aesCipher.init(Cipher.DECRYPT_MODE, this.m_EncryptionKey, new IvParameterSpec(encryptionParts.iv));
@@ -493,16 +494,16 @@ public class FileAndKeyEncryption implements AutoCloseable {
       String result = null;
 
       switch (encryptionParts.formatId) {
-         case FORMAT_2_ID:
-         case FORMAT_1_ID:
+          case FORMAT_2_ID:
+          case FORMAT_1_ID:
             checkChecksumForEncryptionParts(encryptionParts);
 
             result = rawDecryptData(encryptionParts);
 
             encryptionParts.zap();
-         break;
+          break;
 
-         default:
+          default:
             encryptionParts.zap();
 
             throw new IllegalArgumentException("Unknown format id");
