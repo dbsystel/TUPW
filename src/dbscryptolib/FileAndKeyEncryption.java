@@ -494,16 +494,16 @@ public class FileAndKeyEncryption implements AutoCloseable {
       String result = null;
 
       switch (encryptionParts.formatId) {
-          case FORMAT_2_ID:
-          case FORMAT_1_ID:
+         case FORMAT_2_ID:
+         case FORMAT_1_ID:
             checkChecksumForEncryptionParts(encryptionParts);
 
             result = rawDecryptData(encryptionParts);
 
             encryptionParts.zap();
-          break;
+         break;
 
-          default:
+         default:
             encryptionParts.zap();
 
             throw new IllegalArgumentException("Unknown format id");
