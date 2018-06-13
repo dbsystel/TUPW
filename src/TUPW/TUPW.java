@@ -31,6 +31,7 @@
  *     2018-01-30: V3.0.0: Only plain output, input also from stdin to make the program usable in a pipe. fhs
  *     2018-02-01: V3.0.1: Input from stdin must not exceed 50 MB. fhs
  *     2018-05-17: V3.1.0: Use CTR mode to squash ciphertext manipulation attacks. fhs
+ *     2018-06-13: V3.2.0: Use constant time HMAC compare to squash timing attacks. fhs
  */
 package TUPW;
 
@@ -49,7 +50,7 @@ import java.io.InputStream;
  *    2: Not enough arguments
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 3.1.0
+ * @version 3.2.0
  */
 public class TUPW {
    private static final int MAX_INPUT_BYTES = 50000000;
@@ -74,7 +75,7 @@ public class TUPW {
             } else {
                System.out.println(MyEncryptor.decryptData(getInputFromWhereEver(args[2])));
             }
-            
+
             System.exit(0);
          } catch (Exception e) {
             e.printStackTrace();
