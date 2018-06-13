@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, DB Systel GmbH
+ * Copyright (c) 2018, DB Systel GmbH
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -26,6 +26,8 @@
  *     2018-05-17: V1.2.0: Use CTR mode instead of CFB. fhs
  *     2018-05-24: V1.2.1: Put encryption specifications in an array for easier handling. fhs
  *     2018-05-25: V1.2.2: A few changes to enhance readability. fhs
+ *     2018-06-13: V1.3.0: Use constant time array comparison on HMAC check to thwart
+*                          timing attacks. fhs
  */
 package dbscryptolib;
 
@@ -53,7 +55,7 @@ import javax.crypto.spec.IvParameterSpec;
  * Implement encryption by key generated from file and key
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.2.2
+ * @version 1.3.0
  */
 public class FileAndKeyEncryption implements AutoCloseable {
 
@@ -327,7 +329,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
    private void checkChecksumForEncryptionParts(EncryptionParts encryptionParts) throws DataIntegrityException, InvalidKeyException, NoSuchAlgorithmException {
       final byte[] calculatedChecksum = getChecksumForEncryptionParts(encryptionParts);
 
-      if (!Arrays.equals(calculatedChecksum, encryptionParts.checksum)) {
+      if (!SafeArrays.constantTimeEquals(calculatedChecksum, encryptionParts.checksum)) {
          throw new DataIntegrityException("Checksums do not match");
       }
    }
