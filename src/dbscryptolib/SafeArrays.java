@@ -19,8 +19,9 @@
  *
  * Author: Frank Schwab, DB Systel GmbH
  *
- * Changes: 
+ * Changes:
  *     2018-06-13: V1.0.0: Created. fhs
+ *     2018-06-18: V1.0.1: A few more comments and a small optimization. fhs
  */
 package dbscryptolib;
 
@@ -28,7 +29,7 @@ package dbscryptolib;
  * Implement cryptographically safe array operations
  * 
  * @author FrankSchwab, DB Systel GmbH
- * @version 1.0.0
+ * @version 1.0.1
  */
 public final class SafeArrays {
    
@@ -46,11 +47,16 @@ public final class SafeArrays {
     */
    public static boolean constantTimeEquals(byte[] a, byte[] b)
    {
+      // diff starts with a possible difference in the lengths
       int diff = a.length ^ b.length;
       
-      for(int i = 0; i < a.length && i < b.length; i++)
+      final int minArrayLength = Math.min(a.length, b.length);
+      
+      // Now compare each and every byte with no shortcut and collect differences in diff
+      for(int i = 0; i < minArrayLength; i++)
          diff |= a[i] ^ b[i];
       
+      // Diff will only be 0 if bytes and lenghts were equal
       return diff == 0;
    }
 }
