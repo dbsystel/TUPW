@@ -27,8 +27,9 @@
  *     2018-05-24: V1.2.1: Put encryption specifications in an array for easier handling. fhs
  *     2018-05-25: V1.2.2: A few changes to enhance readability. fhs
  *     2018-06-13: V1.3.0: Use constant time array comparison on HMAC check to thwart
-*                          timing attacks. fhs
+ *                          timing attacks. fhs
  *     2018-06-22: V1.3.1: Use a StringBuilder with sufficient intial capacity. fhs
+ *     2018-06-22: V1.3.2: Use dynamic StringBuilder capacity calculation. fhs
  */
 package dbscryptolib;
 
@@ -56,7 +57,7 @@ import javax.crypto.spec.IvParameterSpec;
  * Implement encryption by key generated from file and key
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.3.1
+ * @version 1.3.2
  */
 public class FileAndKeyEncryption implements AutoCloseable {
 
@@ -288,7 +289,10 @@ public class FileAndKeyEncryption implements AutoCloseable {
     */
    private String makePrintableStringFromEncryptionParts(final EncryptionParts encryptionParts) {
       Base64.Encoder b64Encoder = Base64.getEncoder();
-      StringBuilder myStringBuilder = new StringBuilder(256);
+      // The size of the final string is 4 + ceil(SumOfArrayLengths * 4 / 3)
+      // This is a complicated expression which is overestimated by the easier expression 4 + SumOfArrayLengths * 3 / 2
+      final int arrayLengths = encryptionParts.iv.length + encryptionParts.encryptedData.length + encryptionParts.checksum.length;
+      StringBuilder myStringBuilder = new StringBuilder(4 + arrayLengths + (arrayLengths >> 1));
 
       myStringBuilder.append(Byte.toString(encryptionParts.formatId));
       myStringBuilder.append("$");
