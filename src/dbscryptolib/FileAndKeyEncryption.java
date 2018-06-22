@@ -30,6 +30,7 @@
  *                          timing attacks. fhs
  *     2018-06-22: V1.3.1: Use a StringBuilder with sufficient intial capacity. fhs
  *     2018-06-22: V1.3.2: Use dynamic StringBuilder capacity calculation. fhs
+ *     2018-06-22: V1.3.3: Rethrow exception if hashing went wrong. fhs
  */
 package dbscryptolib;
 
@@ -57,7 +58,7 @@ import javax.crypto.spec.IvParameterSpec;
  * Implement encryption by key generated from file and key
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.3.2
+ * @version 1.3.3
  */
 public class FileAndKeyEncryption implements AutoCloseable {
 
@@ -405,11 +406,14 @@ public class FileAndKeyEncryption implements AutoCloseable {
     */
    private byte[] getHmacValueForBytes(final byte[] key, final byte[] data) throws InvalidKeyException, NoSuchAlgorithmException {
       final Mac hmac = getHMACInstance();
-      byte[] result;
+      byte[] result = null;
 
       try (SecureSecretKeySpec hmacKey = new SecureSecretKeySpec(key, FORMAT_1_HMAC_ALGORITHM)) {
          hmac.init(hmacKey);
          result = hmac.doFinal(data);
+      }
+      catch (final Exception e) {
+         throw e; // Retrow any exception. hmacKey will have been closed by try-with-resources.
       }
 
       return result;
