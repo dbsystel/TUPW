@@ -282,6 +282,21 @@ public class FileAndKeyEncryption implements AutoCloseable {
    }
 
    /**
+    * Calculate capacity of StringBuilder for encryption parts
+    * 
+    * The size of the final string is 4 + SumOf(ceil(ArrayLength * 4 / 3))
+    * This is a complicated expression which is overestimated by the easier expression 4 + SumOfArrayLengths * 3 / 2
+    * 
+    * @param encryptionParts Encryption parts to calculate the size for
+    * @return Slightly overestimated capacity of the StringBuilder for the supplied encryption parts
+    */
+   private int calculateStringBuilderCapacityForEncrpytionParts(final EncryptionParts encryptionParts) {
+      final int arrayLengths = encryptionParts.iv.length + encryptionParts.encryptedData.length + encryptionParts.checksum.length;
+
+      return 4 + arrayLengths + (arrayLengths >> 1);
+   }
+   
+   /**
     * Build a printable string from the encrypted parts
     *
     * @param encryptionParts Parts to be printed
@@ -289,10 +304,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     */
    private String makePrintableStringFromEncryptionParts(final EncryptionParts encryptionParts) {
       Base64.Encoder b64Encoder = Base64.getEncoder();
-      // The size of the final string is 4 + ceil(SumOfArrayLengths * 4 / 3)
-      // This is a complicated expression which is overestimated by the easier expression 4 + SumOfArrayLengths * 3 / 2
-      final int arrayLengths = encryptionParts.iv.length + encryptionParts.encryptedData.length + encryptionParts.checksum.length;
-      StringBuilder myStringBuilder = new StringBuilder(4 + arrayLengths + (arrayLengths >> 1));
+      StringBuilder myStringBuilder = new StringBuilder(calculateStringBuilderCapacityForEncrpytionParts(encryptionParts));
 
       myStringBuilder.append(Byte.toString(encryptionParts.formatId));
       myStringBuilder.append("$");
