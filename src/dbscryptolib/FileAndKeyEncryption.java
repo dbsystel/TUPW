@@ -28,6 +28,7 @@
  *     2018-05-25: V1.2.2: A few changes to enhance readability. fhs
  *     2018-06-13: V1.3.0: Use constant time array comparison on HMAC check to thwart
 *                          timing attacks. fhs
+ *     2018-06-22: V1.3.1: Use a StringBuilder with sufficient intial capacity. fhs
  */
 package dbscryptolib;
 
@@ -55,7 +56,7 @@ import javax.crypto.spec.IvParameterSpec;
  * Implement encryption by key generated from file and key
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.3.0
+ * @version 1.3.1
  */
 public class FileAndKeyEncryption implements AutoCloseable {
 
@@ -287,7 +288,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     */
    private String makePrintableStringFromEncryptionParts(final EncryptionParts encryptionParts) {
       Base64.Encoder b64Encoder = Base64.getEncoder();
-      StringBuilder myStringBuilder = new StringBuilder();
+      StringBuilder myStringBuilder = new StringBuilder(256);
 
       myStringBuilder.append(Byte.toString(encryptionParts.formatId));
       myStringBuilder.append("$");
