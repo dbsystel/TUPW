@@ -31,6 +31,7 @@
  *     2018-06-22: V1.3.1: Use a StringBuilder with sufficient intial capacity. fhs
  *     2018-06-22: V1.3.2: Use dynamic StringBuilder capacity calculation. fhs
  *     2018-06-22: V1.3.3: Rethrow exception if hashing went wrong. fhs
+ *     2018-08-07: V1.3.4: Some small improvements. fhs
  */
 package dbscryptolib;
 
@@ -58,7 +59,7 @@ import javax.crypto.spec.IvParameterSpec;
  * Implement encryption by key generated from file and key
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.3.3
+ * @version 1.3.4
  */
 public class FileAndKeyEncryption implements AutoCloseable {
 
@@ -223,7 +224,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
 
       try {
          result.formatId = Byte.parseByte(parts[0]);
-      } catch (NumberFormatException e) {
+      } catch (final NumberFormatException e) {
          throw new IllegalArgumentException("Invalid format id");
       }
 
@@ -263,9 +264,8 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws java.io.UnsupportedEncodingException
     */
    private String rawDecryptData(final EncryptionParts encryptionParts) throws DataIntegrityException, BadPaddingException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
+      // "encryptionParts.formatId" has been checked in "decryptData" and does not need to be checked here
       final Cipher aesCipher = Cipher.getInstance(ENCRYPTION_SPECIFICATION[encryptionParts.formatId]);
-      
-      String result;
 
       aesCipher.init(Cipher.DECRYPT_MODE, this.m_EncryptionKey, new IvParameterSpec(encryptionParts.iv));
 
@@ -275,7 +275,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
 
       Arrays.fill(paddedDecodedStringBytes, (byte) 0);
 
-      result = new String(unpaddedDecodedStringBytes, STRING_ENCODING_FOR_DATA);
+      final String result = new String(unpaddedDecodedStringBytes, STRING_ENCODING_FOR_DATA);
 
       Arrays.fill(unpaddedDecodedStringBytes, (byte) 0);
 
