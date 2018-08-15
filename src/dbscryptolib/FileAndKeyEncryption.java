@@ -278,8 +278,9 @@ public class FileAndKeyEncryption implements AutoCloseable {
    /**
     * Calculate capacity of StringBuilder for encryption parts
     *
-    * The size of the final string is 4 + SumOf(ceil(ArrayLength * 4 / 3)) This
-    * is a complicated expression which is overestimated by the easier
+    * The size of the final string is 4 + SumOf(ceil(ArrayLength * 4 / 3)).
+    *
+    * This is a complicated expression which is overestimated by the easier
     * expression 4 + SumOfArrayLengths * 3 / 2
     *
     * @param encryptionParts Encryption parts to calculate the capacity for
