@@ -26,26 +26,25 @@ package dbscryptolib;
 
 /**
  * Exception to indicate a data checksum mismatch
- * 
+ *
  * @author FrankSchwab
  * @version 1.0.0
  */
-
 public class DataIntegrityException extends Exception {
 
-    public DataIntegrityException() {
-    }
+   public DataIntegrityException() {
+   }
 
-    public DataIntegrityException(String message) {
-        super(message);
-    }
+   public DataIntegrityException(String message) {
+      super(message);
+   }
 
-    public DataIntegrityException(Throwable cause) {
-        super(cause);
-    }
+   public DataIntegrityException(Throwable cause) {
+      super(cause);
+   }
 
-    public DataIntegrityException(String message, Throwable cause) {
-        super(message, cause);
-    }
+   public DataIntegrityException(String message, Throwable cause) {
+      super(message, cause);
+   }
 
 }

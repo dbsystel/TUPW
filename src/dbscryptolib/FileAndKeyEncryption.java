@@ -32,6 +32,7 @@
  *     2018-06-22: V1.3.2: Use dynamic StringBuilder capacity calculation. fhs
  *     2018-06-22: V1.3.3: Rethrow exception if hashing went wrong. fhs
  *     2018-08-07: V1.3.4: Some small improvements. fhs
+ *     2018-08-07: V1.3.5: Added some "finals". fhs
  */
 package dbscryptolib;
 
@@ -59,7 +60,7 @@ import javax.crypto.spec.IvParameterSpec;
  * Implement encryption by key generated from file and key
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.3.4
+ * @version 1.3.5
  */
 public class FileAndKeyEncryption implements AutoCloseable {
 
@@ -91,8 +92,8 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * Encrpytion specification with algorithm, mode and padding
     */
    private static final String[] ENCRYPTION_SPECIFICATION = {"Invalid",
-                                                             FORMAT_1_ENCRYPTION_ALGORITHM + "/CFB/NoPadding",
-                                                             FORMAT_1_ENCRYPTION_ALGORITHM + "/CTR/NoPadding"};
+      FORMAT_1_ENCRYPTION_ALGORITHM + "/CFB/NoPadding",
+      FORMAT_1_ENCRYPTION_ALGORITHM + "/CTR/NoPadding"};
 
    /**
     * String encoding to be used for encrypted data strings
@@ -136,17 +137,14 @@ public class FileAndKeyEncryption implements AutoCloseable {
       public void zap() {
          formatId = (byte) 0;
 
-         if (iv != null) {
+         if (iv != null)
             Arrays.fill(iv, (byte) 0);
-         }
 
-         if (encryptedData != null) {
+         if (encryptedData != null)
             Arrays.fill(encryptedData, (byte) 0);
-         }
 
-         if (checksum != null) {
+         if (checksum != null)
             Arrays.fill(checksum, (byte) 0);
-         }
       }
    }
 
@@ -166,9 +164,8 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws NoSuchAlgorithmException
     */
    private Mac getHMACInstance() throws NoSuchAlgorithmException {
-      if (HMAC_INSTANCE == null) {
+      if (HMAC_INSTANCE == null)
          HMAC_INSTANCE = Mac.getInstance(FORMAT_1_HMAC_ALGORITHM);
-      }
 
       return HMAC_INSTANCE;
    }
@@ -183,9 +180,8 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws java.lang.IllegalArgumentException
     */
    private void checkHMACKey(final byte[] aHMACKey) throws IllegalArgumentException {
-      if (aHMACKey.length != FORMAT_1_HMAC_KEY_LENGTH) {
+      if (aHMACKey.length != FORMAT_1_HMAC_KEY_LENGTH)
          throw new IllegalArgumentException("The HMAC key does not have a length of " + Integer.toString(FORMAT_1_HMAC_KEY_LENGTH) + " bytes");
-      }
    }
 
    /**
@@ -198,13 +194,11 @@ public class FileAndKeyEncryption implements AutoCloseable {
    private void checkKeyFileSize(final Path keyFile) throws IllegalArgumentException, IOException {
       final long keyFileSize = Files.size(keyFile);
 
-      if (keyFileSize <= 0) {
+      if (keyFileSize <= 0)
          throw new IllegalArgumentException("Key file is empty");
-      }
 
-      if (keyFileSize > MAX_KEYFILE_SIZE) {
+      if (keyFileSize > MAX_KEYFILE_SIZE)
          throw new IllegalArgumentException("Key file is larger than " + Integer.toString(MAX_KEYFILE_SIZE) + " bytes");
-      }
    }
 
    /**
@@ -220,7 +214,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
       parts = StringSplitter.split(encryptionText, "$");  // Use my own string splitter to avoid Java's RegEx inefficiency
 //        parts = encryptionText.split("\\Q$\\E");   // This should have been just "$". But Java stays true to it's motto: Why make it simple when there's a complicated way to do it?
 
-      EncryptionParts result = new EncryptionParts();
+      final EncryptionParts result = new EncryptionParts();
 
       try {
          result.formatId = Byte.parseByte(parts[0]);
@@ -237,15 +231,14 @@ public class FileAndKeyEncryption implements AutoCloseable {
                result.iv = b64Decoder.decode(parts[1]);
                result.encryptedData = b64Decoder.decode(parts[2]);
                result.checksum = b64Decoder.decode(parts[3]);
-            } else {
+            } else
                throw new IllegalArgumentException("Number of '$' separated parts in encrypted text is not 4");
-            }
-         break;
-         
+            break;
+
          default:
-            throw new IllegalArgumentException("Unknown format id");         
-       }
-      
+            throw new IllegalArgumentException("Unknown format id");
+      }
+
       return result;
    }
 
@@ -284,19 +277,21 @@ public class FileAndKeyEncryption implements AutoCloseable {
 
    /**
     * Calculate capacity of StringBuilder for encryption parts
-    * 
-    * The size of the final string is 4 + SumOf(ceil(ArrayLength * 4 / 3))
-    * This is a complicated expression which is overestimated by the easier expression 4 + SumOfArrayLengths * 3 / 2
-    * 
+    *
+    * The size of the final string is 4 + SumOf(ceil(ArrayLength * 4 / 3)) This
+    * is a complicated expression which is overestimated by the easier
+    * expression 4 + SumOfArrayLengths * 3 / 2
+    *
     * @param encryptionParts Encryption parts to calculate the capacity for
-    * @return Slightly overestimated capacity of the StringBuilder for the supplied encryption parts
+    * @return Slightly overestimated capacity of the StringBuilder for the
+    * supplied encryption parts
     */
    private int calculateStringBuilderCapacityForEncrpytionParts(final EncryptionParts encryptionParts) {
       final int arrayLengths = encryptionParts.iv.length + encryptionParts.encryptedData.length + encryptionParts.checksum.length;
 
       return 4 + arrayLengths + (arrayLengths >> 1);
    }
-   
+
    /**
     * Build a printable string from the encrypted parts
     *
@@ -326,7 +321,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws InvalidKeyException
     * @throws NoSuchAlgorithmException
     */
-   private byte[] getChecksumForEncryptionParts(EncryptionParts encryptionParts) throws InvalidKeyException, NoSuchAlgorithmException {
+   private byte[] getChecksumForEncryptionParts(final EncryptionParts encryptionParts) throws InvalidKeyException, NoSuchAlgorithmException {
       final Mac hmac = getHMACInstance();
 
       hmac.init(this.m_HMACKey);
@@ -347,9 +342,8 @@ public class FileAndKeyEncryption implements AutoCloseable {
    private void checkChecksumForEncryptionParts(EncryptionParts encryptionParts) throws DataIntegrityException, InvalidKeyException, NoSuchAlgorithmException {
       final byte[] calculatedChecksum = getChecksumForEncryptionParts(encryptionParts);
 
-      if (!SafeArrays.constantTimeEquals(calculatedChecksum, encryptionParts.checksum)) {
+      if (!SafeArrays.constantTimeEquals(calculatedChecksum, encryptionParts.checksum))
          throw new DataIntegrityException("Checksums do not match");
-      }
    }
 
    /**
@@ -411,8 +405,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
       try (SecureSecretKeySpec hmacKey = new SecureSecretKeySpec(key, FORMAT_1_HMAC_ALGORITHM)) {
          hmac.init(hmacKey);
          result = hmac.doFinal(data);
-      }
-      catch (final Exception e) {
+      } catch (final Exception e) {
          throw e; // Retrow any exception. hmacKey will have been closed by try-with-resources.
       }
 
@@ -524,7 +517,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
             result = rawDecryptData(encryptionParts);
 
             encryptionParts.zap();
-         break;
+            break;
 
          default:
             encryptionParts.zap();

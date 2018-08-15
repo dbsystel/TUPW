@@ -22,40 +22,41 @@
  * Changes:
  *     2018-06-13: V1.0.0: Created. fhs
  *     2018-06-18: V1.0.1: A few more comments and a small optimization. fhs
+ *     2018-08-15: V1.0.2: Added a few "finals". fhs
  */
 package dbscryptolib;
 
 /**
  * Implement cryptographically safe array operations
- * 
+ *
  * @author FrankSchwab, DB Systel GmbH
- * @version 1.0.1
+ * @version 1.0.2
  */
 public final class SafeArrays {
-   
+
    /**
     * Constant time byte array compare.
-    * 
+    *
     * This method takes a constant time to compare two byte arrays, i.e. it will
-    * take the same time to run if the arrays are equal and if they are not equal.
-    * This makes it impossible to attack a cryptographic operation by measuring the
-    * time it takes to complete a compare operation.
-    * 
+    * take the same time to run if the arrays are equal and if they are not
+    * equal. This makes it impossible to attack a cryptographic operation by
+    * measuring the time it takes to complete a compare operation.
+    *
     * @param a First byte array to compare
     * @param b Second byte array to compare
-    * @return <code>true</code>, if both byte arrays are equal, <code>false</code>, if not
+    * @return <code>true</code>, if both byte arrays are equal,
+    * <code>false</code>, if not
     */
-   public static boolean constantTimeEquals(byte[] a, byte[] b)
-   {
+   public static boolean constantTimeEquals(final byte[] a, final byte[] b) {
       // diff starts with a possible difference in the lengths
       int diff = a.length ^ b.length;
-      
+
       final int minArrayLength = Math.min(a.length, b.length);
-      
+
       // Now compare each and every byte with no shortcut and collect differences in diff
-      for(int i = 0; i < minArrayLength; i++)
+      for (int i = 0; i < minArrayLength; i++)
          diff |= a[i] ^ b[i];
-      
+
       // Diff will only be 0 if bytes and lenghts were equal
       return diff == 0;
    }

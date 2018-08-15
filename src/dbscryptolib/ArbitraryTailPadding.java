@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, DB Systel GmbH
+ * Copyright (c) 2018, DB Systel GmbH
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -23,6 +23,7 @@
  *     2017-12-19: V1.0.0: Created. fhs
  *     2017-12-21: V2.0.0: Pad to block size. fhs
  *     2018-06-11: V2.0.1: Block size must be greater than zero. fhs
+ *     2018-08-15: V2.0.2: Added some "finals". fhs
  */
 package dbscryptolib;
 
@@ -33,7 +34,7 @@ import java.util.Arrays;
  * Implements arbitrary tail padding for block ciphers
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 2.0.1
+ * @version 2.0.2
  */
 public class ArbitraryTailPadding {
 
@@ -52,46 +53,42 @@ public class ArbitraryTailPadding {
     * Maximum block size (64 KiB)
     */
    private static final int MAX_BLOCK_SIZE = 64 * 1024;
-   
+
    /*
     * Private methods
     */
-   
    /**
     * Check block size
-    * 
+    *
     * @param blockSize Block size
-    * @throws java.lang.IllegalArgumentException 
+    * @throws java.lang.IllegalArgumentException
     */
    private static void checkBlockSize(final int blockSize) throws IllegalArgumentException {
-      if (blockSize <= 0) {
+      if (blockSize <= 0)
          throw new IllegalArgumentException("Block size must be greater than 0");
-      }
 
-      if (blockSize > MAX_BLOCK_SIZE) {
+      if (blockSize > MAX_BLOCK_SIZE)
          throw new IllegalArgumentException("Block size must not be greater than " + Integer.toString(MAX_BLOCK_SIZE));
-      }
    }
 
    /**
     * Get a random value as the padding byte
-    * 
+    *
     * The padding byte must not have the same value as the last data byte
-    * 
+    *
     * @param unpaddedSourceData Unpadded source data (may be empty)
     * @return Random byte to be used as the padding byte
     */
    private static byte getPaddingByteValue(final byte[] unpaddedSourceData) {
-      byte[] padByte = new byte[1];
+      final byte[] padByte = new byte[1];
 
       if (unpaddedSourceData.length > 0) {
          byte lastByte = unpaddedSourceData[unpaddedSourceData.length - 1];
 
-         do {
+         do
             SECURE_PRNG.nextBytes(padByte);
-         } while (padByte[0] == lastByte);
-      }
-      else
+         while (padByte[0] == lastByte);
+      } else
          SECURE_PRNG.nextBytes(padByte);
 
       return padByte[0];
@@ -99,13 +96,14 @@ public class ArbitraryTailPadding {
 
    /**
     * Calculate the padding length
-    * 
+    *
     * If the unpadded data already have a length that is a multiple of blockSize
     * an additional block with only padding bytes is added.
-    * 
+    *
     * @param unpaddedLength Length of the unpadded data
     * @param blockSize Block size of which the padding size has to be a multiple
-    * @return Padding length that brings the total length to a multiple of {@code blockSize}
+    * @return Padding length that brings the total length to a multiple of
+    * {@code blockSize}
     */
    private static int getPaddingLength(final int unpaddedLength, final int blockSize) {
       return (blockSize - (unpaddedLength % blockSize));
@@ -113,7 +111,7 @@ public class ArbitraryTailPadding {
 
    /**
     * Get length of unpadded data
-    * 
+    *
     * @param paddedSourceData Padded source data
     * @return Length of unpadded data
     */
@@ -127,11 +125,11 @@ public class ArbitraryTailPadding {
 
          while (result > 0) {
             result--;
-         
+
             if (paddedSourceData[result] != padByte) {
                result++;
                break;
-            } 
+            }
          }
       }
 
@@ -141,7 +139,6 @@ public class ArbitraryTailPadding {
    /*
     * Public methods
     */
-
    /**
     * Add padding bytes to source data
     *
@@ -175,7 +172,7 @@ public class ArbitraryTailPadding {
     * @param paddedSourceData Data with padding bytes
     * @return Data without padding bytes
     */
-   public static byte[] removePadding(byte[] paddedSourceData) {
+   public static byte[] removePadding(final byte[] paddedSourceData) {
       // Return unpadded data
       return Arrays.copyOf(paddedSourceData, getUnpaddedDataLength(paddedSourceData));
    }
