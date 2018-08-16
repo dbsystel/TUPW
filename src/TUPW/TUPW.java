@@ -33,6 +33,7 @@
  *     2018-05-17: V3.1.0: Use CTR mode to squash ciphertext manipulation attacks. fhs
  *     2018-06-13: V3.2.0: Use constant time HMAC compare to squash timing attacks. fhs
  *     2018-08-07: V3.2.1: Some small improvements. fhs
+ *     2018-08-16: V3.2.2: Addewd some "finals". fhs
  */
 package TUPW;
 
@@ -106,7 +107,7 @@ public class TUPW {
     * @throws IllegalArgumentException
     * @throws IOException
     */
-   static String getInputFromWhereEver(String anArgument) throws IllegalArgumentException, IOException {
+   static String getInputFromWhereEver(final String anArgument) throws IllegalArgumentException, IOException {
       String result;
 
       // Get input from System.in, if third argument is "-", or from the 
@@ -128,9 +129,9 @@ public class TUPW {
     * @throws IllegalArgumentException
     * @throws IOException
     */
-   static String getInputStreamAsString(InputStream inputStream) throws IllegalArgumentException, IOException {
-      ByteArrayOutputStream result = new ByteArrayOutputStream();
-      byte[] buffer = new byte[READ_BLOCK_SIZE];
+   static String getInputStreamAsString(final InputStream inputStream) throws IllegalArgumentException, IOException {
+      final ByteArrayOutputStream result = new ByteArrayOutputStream();
+      final byte[] buffer = new byte[READ_BLOCK_SIZE];
       int length;
 
       while ((length = inputStream.read(buffer)) != -1) {
