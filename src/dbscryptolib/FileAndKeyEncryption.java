@@ -33,7 +33,7 @@
  *     2018-06-22: V1.3.3: Rethrow exception if hashing went wrong. fhs
  *     2018-08-07: V1.3.4: Some small improvements. fhs
  *     2018-08-15: V1.3.5: Added some "finals". fhs
- *     2018-08-16: V1.3.6: Mode secure PRNG generation to the one method that needs it. fhs
+ *     2018-08-16: V1.3.6: Moved secure PRNG generation to the one method that needs it. fhs
  */
 package dbscryptolib;
 
