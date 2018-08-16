@@ -33,7 +33,7 @@
  *     2018-05-17: V3.1.0: Use CTR mode to squash ciphertext manipulation attacks. fhs
  *     2018-06-13: V3.2.0: Use constant time HMAC compare to squash timing attacks. fhs
  *     2018-08-07: V3.2.1: Some small improvements. fhs
- *     2018-08-16: V3.2.2: Addewd some "finals". fhs
+ *     2018-08-16: V3.2.2: Added some "finals". fhs
  */
 package TUPW;
 
