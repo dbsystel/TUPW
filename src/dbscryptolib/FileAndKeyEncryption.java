@@ -61,7 +61,7 @@ import javax.crypto.spec.IvParameterSpec;
  * Implement encryption by key generated from file and key
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.3.1
+ * @version 1.3.6
  */
 public class FileAndKeyEncryption implements AutoCloseable {
 
