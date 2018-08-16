@@ -32,7 +32,8 @@
  *     2018-06-22: V1.3.2: Use dynamic StringBuilder capacity calculation. fhs
  *     2018-06-22: V1.3.3: Rethrow exception if hashing went wrong. fhs
  *     2018-08-07: V1.3.4: Some small improvements. fhs
- *     2018-08-07: V1.3.5: Added some "finals". fhs
+ *     2018-08-15: V1.3.5: Added some "finals". fhs
+ *     2018-08-16: V1.3.6: Mode secure PRNG generation to the one method that needs it. fhs
  */
 package dbscryptolib;
 
@@ -60,7 +61,7 @@ import javax.crypto.spec.IvParameterSpec;
  * Implement encryption by key generated from file and key
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.3.5
+ * @version 1.3.1
  */
 public class FileAndKeyEncryption implements AutoCloseable {
 
@@ -104,14 +105,6 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * Maximum key file size
     */
    private static final int MAX_KEYFILE_SIZE = 10000000;
-
-   /**
-    * Instance of secure random number generator
-    *
-    * This is placed here so the expensive instantiation of the SecureRandom
-    * class is done only once.
-    */
-   private final SecureRandom SECURE_PRNG = new SecureRandom();
 
    /**
     * Instance of HMAC calculator
@@ -372,7 +365,9 @@ public class FileAndKeyEncryption implements AutoCloseable {
       // Get a random iv
       result.iv = new byte[aesCipher.getBlockSize()];
 
-      SECURE_PRNG.nextBytes(result.iv);
+      final SecureRandom sprng = new SecureRandom();
+
+      sprng.nextBytes(result.iv);
 
       // Encrypt the source string with the iv
       aesCipher.init(Cipher.ENCRYPT_MODE, this.m_EncryptionKey, new IvParameterSpec(result.iv));

@@ -22,6 +22,7 @@
  * Changes: 
  *     2015-09-26: V1.0.0: Created. fhs
  *     2018-08-15: V1.0.1: Added a few more "finals". fhs
+ *     2018-08-16: V1.0.2: Made name of SPRNG variable conform to class visible variable name. fhs
  */
 package dbscryptolib;
 
@@ -32,10 +33,13 @@ import java.util.Arrays;
  * Stores a byte array in a shuffled form.
  *
  * @author Frank Schwab
- * @version 1.0.1
+ * @version 1.0.2
  */
 public final class ShuffledByteArray implements AutoCloseable {
 
+   /*
+    * Instance variables
+    */
    private byte[] byteArray;
 
    private int[] indexArray;
@@ -49,7 +53,11 @@ public final class ShuffledByteArray implements AutoCloseable {
 
    private boolean isValid;
 
-   private final SecureRandom sprng = new SecureRandom();
+   /*
+    * Random numbers are needed in several places so the PRNG is instantiated
+    * one time at the class level.
+    */
+   private final SecureRandom SECURE_PRNG = new SecureRandom();
 
    /**
     * Constructor for the shuffled byte array with a source array
@@ -136,7 +144,7 @@ public final class ShuffledByteArray implements AutoCloseable {
    private int getStoreLength(final int forSize) {
       final int calcSize = forSize + forSize + 7;
 
-      return this.sprng.nextInt(calcSize) + calcSize;
+      return this.SECURE_PRNG.nextInt(calcSize) + calcSize;
    }
 
    /**
@@ -146,7 +154,7 @@ public final class ShuffledByteArray implements AutoCloseable {
     * @return Offset for indices
     */
    private int getIndexOffset(final int arrayLength) {
-      return this.sprng.nextInt(100000) + arrayLength + arrayLength + 1;
+      return this.SECURE_PRNG.nextInt(100000) + arrayLength + arrayLength + 1;
    }
 
    /**
@@ -182,8 +190,8 @@ public final class ShuffledByteArray implements AutoCloseable {
       final int arrayLength = this.indexArray.length;
 
       do {
-         i1 = this.sprng.nextInt(arrayLength);
-         i2 = this.sprng.nextInt(arrayLength);
+         i1 = this.SECURE_PRNG.nextInt(arrayLength);
+         i2 = this.SECURE_PRNG.nextInt(arrayLength);
 
          // Swapping is inlined for performance
          if (i1 != i2) {
@@ -205,7 +213,7 @@ public final class ShuffledByteArray implements AutoCloseable {
    private int getStartPosition(final int arrayLength) {
       // "+1" because the max. start position is at the half size of
       // the array.
-      return this.sprng.nextInt((arrayLength >> 1) + 1);
+      return this.SECURE_PRNG.nextInt((arrayLength >> 1) + 1);
    }
 
    /**
@@ -238,7 +246,7 @@ public final class ShuffledByteArray implements AutoCloseable {
       final int storeLength = getStoreLength(this.realLength);
 
       this.byteArray = new byte[storeLength];
-      this.sprng.nextBytes(this.byteArray);   // Initialize the data with random values
+      this.SECURE_PRNG.nextBytes(this.byteArray);   // Initialize the data with random values
 
       this.indexArray = new int[storeLength];
 

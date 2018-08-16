@@ -41,6 +41,16 @@ public class ArbitraryTailPadding {
    /*
     * Private constants
     */
+   
+   /**
+    * Maximum block size (64 KiB)
+    */
+   private static final int MAX_BLOCK_SIZE = 64 * 1024;
+
+   /*
+    * Private variables
+    */
+ 
    /**
     * Instance of secure random number generator
     *
@@ -48,11 +58,6 @@ public class ArbitraryTailPadding {
     * class is done only once.
     */
    private static final SecureRandom SECURE_PRNG = new SecureRandom();
-
-   /**
-    * Maximum block size (64 KiB)
-    */
-   private static final int MAX_BLOCK_SIZE = 64 * 1024;
 
    /*
     * Private methods
