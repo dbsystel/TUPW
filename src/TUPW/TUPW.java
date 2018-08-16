@@ -52,7 +52,7 @@ import java.io.InputStream;
  *    2: Not enough arguments
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 3.2.1
+ * @version 3.2.2
  */
 public class TUPW {
    private static final int MAX_INPUT_BYTES = 50000000;
