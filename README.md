@@ -110,23 +110,23 @@ The class instance then generates a key from the HMAC of the key file and stores
 
 Blinded data has the following data structure:
 
-|Field                   | Length (in bytes)|
-|------------------------|:----------------:|
-|Length of prepended data| 1 |
-|Length of appended data| 1 |
-|Compressed length of source text| 1-4 |
+| Field | Length (in bytes) |
+| --- | :---: |
+|Length of prepended data | 1 |
+|Length of appended data | 1 |
+|Compressed length of source text | 1-4 |
 |Prepended data | Variable |
 |Source text | Variable |
 |Appended data | Variable |
 
 The compressed length encodes an integer in a variable length format. The first two bits of the first byte determine the length of the compressed integer:
 
-|First bits  | Length (in bytes) | Valuation|
-|:----------:|:-----------------:|--------------------:|
-|00          | 1                 | 0 - 63|
-|01          | 2                 | 64 - 16383|
-|10          | 3                 | 16384 - 4194303|
-|11          | 4                 | 4194304 - 1073741823|
+| First bits  | Length (in bytes) | Valuation |
+| :---: | :---: | ---: |
+|00 | 1 | 0 - 63|
+|01 | 2 | 64 - 16383|
+|10 | 3 | 16384 - 4194303|
+|11 | 4 | 4194304 - 1073741823|
 
 ## Contributing
 
