@@ -119,15 +119,15 @@ public class PackedUnsignedInteger {
                break;
 
             case 2:
-               result = (int) (((packedNumber[0] & 0x3f) << 8) | (packedNumber[1] & 0xff)) + 0x40;
+               result = (int) (((packedNumber[0] & 0x3f) << 8) | (packedNumber[1] & 0xff)) + START_TWO_BYTE_VALUE;
                break;
 
             case 3:
-               result = (int) (((packedNumber[0] & 0x3f) << 16) | ((packedNumber[1] & 0xff) << 8) | (packedNumber[2] & 0xff)) + 0x4000;
+               result = (int) (((packedNumber[0] & 0x3f) << 16) | ((packedNumber[1] & 0xff) << 8) | (packedNumber[2] & 0xff)) + START_THREE_BYTE_VALUE;
                break;
 
             case 4:
-               result = (int) (((packedNumber[0] & 0x3f) << 24) | ((packedNumber[1] & 0xff) << 16) | ((packedNumber[2] & 0xff) << 8) | (packedNumber[3] & 0xff)) + 0x400000;
+               result = (int) (((packedNumber[0] & 0x3f) << 24) | ((packedNumber[1] & 0xff) << 16) | ((packedNumber[2] & 0xff) << 8) | (packedNumber[3] & 0xff)) + START_FOUR_BYTE_VALUE;
                break;
 
             default:
