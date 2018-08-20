@@ -56,8 +56,8 @@ public class TestFileAndKeyEncryption {
    /**
     * HMAC key to be used for encryption
     *
-    * This is the static HMAC key which is only known to the program TODO: Do
-    * not use this constant byte array. Roll your own!!!!
+    * This is the static HMAC key which is only known to the program
+    * TODO: Do not use this constant byte array. Roll your own!!!!
     */
    private static final byte[] HMAC_KEY = {(byte) 0xC1, (byte) 0xC2, (byte) 0xC8, (byte) 0x0F,
       (byte) 0xDE, (byte) 0x75, (byte) 0xD7, (byte) 0xA9,

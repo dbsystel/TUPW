@@ -24,7 +24,6 @@
  */
 package dbscryptolib;
 
-import java.util.Arrays;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;

@@ -34,6 +34,7 @@
  *     2018-06-13: V3.2.0: Use constant time HMAC compare to squash timing attacks. fhs
  *     2018-08-07: V3.2.1: Some small improvements. fhs
  *     2018-08-16: V3.2.2: Added some "finals". fhs
+ *     2018-08-17: V3.3.0: Use blinding and random padding. fhs
  */
 package TUPW;
 
@@ -52,7 +53,7 @@ import java.io.InputStream;
  *    2: Not enough arguments
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 3.2.2
+ * @version 3.3.0
  */
 public class TUPW {
    private static final int MAX_INPUT_BYTES = 50000000;

@@ -34,6 +34,7 @@
  *     2018-08-07: V1.3.4: Some small improvements. fhs
  *     2018-08-15: V1.3.5: Added some "finals". fhs
  *     2018-08-16: V1.3.6: Moved secure PRNG generation to the one method that needs it. fhs
+ *     2018-08-17: V1.4.0: Use blinding and random padding. fhs
  */
 package dbscryptolib;
 
@@ -61,7 +62,7 @@ import javax.crypto.spec.IvParameterSpec;
  * Implement encryption by key generated from file and key
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.3.6
+ * @version 1.4.0
  */
 public class FileAndKeyEncryption implements AutoCloseable {
 
@@ -73,6 +74,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     */
    private static final byte FORMAT_1_ID = (byte) 1;
    private static final byte FORMAT_2_ID = (byte) 2;
+   private static final byte FORMAT_3_ID = (byte) 3;
 
    /**
     * HMAC algorithm to be used
@@ -94,6 +96,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     */
    private static final String[] ENCRYPTION_SPECIFICATION = {"Invalid",
       FORMAT_1_ENCRYPTION_ALGORITHM + "/CFB/NoPadding",
+      FORMAT_1_ENCRYPTION_ALGORITHM + "/CTR/NoPadding",
       FORMAT_1_ENCRYPTION_ALGORITHM + "/CTR/NoPadding"};
 
    /**
@@ -216,6 +219,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
       }
 
       switch (result.formatId) {
+         case FORMAT_3_ID:
          case FORMAT_2_ID:
          case FORMAT_1_ID:
             if (parts.length == 4) {
@@ -236,34 +240,50 @@ public class FileAndKeyEncryption implements AutoCloseable {
    }
 
    /**
+    * Return unpadded string bytes depending on format id
+    * 
+    * @param formatId Format id of data
+    * @param paddedDecodedStringBytes Byte array of padded decrypted bytes
+    * @return Unpadded decrypted bytes
+    * @throws IOException 
+    */
+   private byte[] getUnpaddedStringBytes(final byte formatId, final byte[] paddedDecryptedStringBytes) throws IOException {
+      if (formatId == FORMAT_3_ID)
+         return ByteArrayBlinding.unBlindByteArray(paddedDecryptedStringBytes);
+      else
+         return ArbitraryTailPadding.removePadding(paddedDecryptedStringBytes);
+   }
+
+   /**
     * Decrypt data that have been created by the corresponding encryption
     *
     * @param encryptionParts The encryption parts of the data
     * @return Decrypted data as string
     * @throws dbscryptolib.DataIntegrityException
-    * @throws javax.crypto.BadPaddingException
-    * @throws javax.crypto.IllegalBlockSizeException
+    * @throws java.io.IOException
+    * @throws java.io.UnsupportedEncodingException
     * @throws java.security.InvalidAlgorithmParameterException
     * @throws java.security.InvalidKeyException
     * @throws java.security.NoSuchAlgorithmException
+    * @throws javax.crypto.BadPaddingException
+    * @throws javax.crypto.IllegalBlockSizeException
     * @throws javax.crypto.NoSuchPaddingException
-    * @throws java.io.UnsupportedEncodingException
     */
-   private String rawDecryptData(final EncryptionParts encryptionParts) throws DataIntegrityException, BadPaddingException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
+   private String rawDataDecryption(final EncryptionParts encryptionParts) throws DataIntegrityException, BadPaddingException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
       // "encryptionParts.formatId" has been checked in "decryptData" and does not need to be checked here
       final Cipher aesCipher = Cipher.getInstance(ENCRYPTION_SPECIFICATION[encryptionParts.formatId]);
 
       aesCipher.init(Cipher.DECRYPT_MODE, this.m_EncryptionKey, new IvParameterSpec(encryptionParts.iv));
 
-      final byte[] paddedDecodedStringBytes = aesCipher.doFinal(encryptionParts.encryptedData);
+      final byte[] paddedDecryptedStringBytes = aesCipher.doFinal(encryptionParts.encryptedData);
 
-      final byte[] unpaddedDecodedStringBytes = ArbitraryTailPadding.removePadding(paddedDecodedStringBytes);
+      final byte [] unpaddedDecryptedStringBytes = getUnpaddedStringBytes(encryptionParts.formatId, paddedDecryptedStringBytes);
 
-      Arrays.fill(paddedDecodedStringBytes, (byte) 0);
+      Arrays.fill(paddedDecryptedStringBytes, (byte) 0);
 
-      final String result = new String(unpaddedDecodedStringBytes, STRING_ENCODING_FOR_DATA);
+      final String result = new String(unpaddedDecryptedStringBytes, STRING_ENCODING_FOR_DATA);
 
-      Arrays.fill(unpaddedDecodedStringBytes, (byte) 0);
+      Arrays.fill(unpaddedDecryptedStringBytes, (byte) 0);
 
       return result;
    }
@@ -340,25 +360,27 @@ public class FileAndKeyEncryption implements AutoCloseable {
          throw new DataIntegrityException("Checksums do not match");
    }
 
+  
    /**
     * Encrypt string data
     *
     * @param sourceString Some string that will be encrypted
     * @return Encrypted data and iv as EncryptionParts object
-    * @throws javax.crypto.BadPaddingException
+    * @throws java.io.IOException
+    * @throws java.io.UnsupportedEncodingException
     * @throws java.lang.IllegalArgumentException
-    * @throws javax.crypto.IllegalBlockSizeException
     * @throws java.security.InvalidAlgorithmParameterException
     * @throws java.security.InvalidKeyException
     * @throws java.security.NoSuchAlgorithmException
+    * @throws javax.crypto.BadPaddingException
+    * @throws javax.crypto.IllegalBlockSizeException
     * @throws javax.crypto.NoSuchPaddingException
-    * @throws java.io.UnsupportedEncodingException
     */
-   private EncryptionParts rawDataEncryption(final String sourceString) throws BadPaddingException, IllegalArgumentException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
+   private EncryptionParts rawDataEncryption(final String sourceString) throws BadPaddingException, IllegalArgumentException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
       EncryptionParts result = new EncryptionParts();
 
       // Set format id
-      result.formatId = FORMAT_2_ID;
+      result.formatId = FORMAT_3_ID;
 
       Cipher aesCipher = Cipher.getInstance(ENCRYPTION_SPECIFICATION[result.formatId]);
 
@@ -372,9 +394,15 @@ public class FileAndKeyEncryption implements AutoCloseable {
       // Encrypt the source string with the iv
       aesCipher.init(Cipher.ENCRYPT_MODE, this.m_EncryptionKey, new IvParameterSpec(result.iv));
 
-      final byte[] unpaddedEncodedStringBytes = sourceString.getBytes(STRING_ENCODING_FOR_DATA);
+      final byte [] sourceBytes = sourceString.getBytes(STRING_ENCODING_FOR_DATA);
+//      final byte[] unpaddedEncodedStringBytes = sourceString.getBytes(STRING_ENCODING_FOR_DATA);
+      // Ensure that blinded array needs at least 2 AES blocks, so the length of the encrypted data
+      // can not be inferred to be no longer than block size - 3 bytes (= 13 bytes for AES).
+      final byte[] unpaddedEncodedStringBytes = ByteArrayBlinding.buildBlindedByteArray(sourceBytes, aesCipher.getBlockSize() + 1);
 
-      final byte[] paddedEncodedStringBytes = ArbitraryTailPadding.addPadding(unpaddedEncodedStringBytes, aesCipher.getBlockSize());
+      Arrays.fill(sourceBytes, (byte) 0);
+
+      final byte[] paddedEncodedStringBytes = RandomPadding.addPadding(unpaddedEncodedStringBytes, aesCipher.getBlockSize());
 
       Arrays.fill(unpaddedEncodedStringBytes, (byte) 0);
 
@@ -473,7 +501,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws NoSuchPaddingException
     * @throws UnsupportedEncodingException
     */
-   public String encryptData(final String stringToEncrypt) throws BadPaddingException, IllegalArgumentException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
+   public String encryptData(final String stringToEncrypt) throws BadPaddingException, IllegalArgumentException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
       EncryptionParts encryptionParts = rawDataEncryption(stringToEncrypt);
 
       encryptionParts.checksum = getChecksumForEncryptionParts(encryptionParts);
@@ -496,21 +524,23 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws IllegalBlockSizeException
     * @throws InvalidAlgorithmParameterException
     * @throws InvalidKeyException
+    * @throws IOException
     * @throws NoSuchAlgorithmException
     * @throws NoSuchPaddingException
     * @throws UnsupportedEncodingException
     */
-   public String decryptData(final String stringToDecrypt) throws BadPaddingException, DataIntegrityException, IllegalArgumentException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
+   public String decryptData(final String stringToDecrypt) throws BadPaddingException, DataIntegrityException, IllegalArgumentException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
       final EncryptionParts encryptionParts = getPartsFromPrintableString(stringToDecrypt);
 
       String result = null;
 
       switch (encryptionParts.formatId) {
+         case FORMAT_3_ID:
          case FORMAT_2_ID:
          case FORMAT_1_ID:
             checkChecksumForEncryptionParts(encryptionParts);
 
-            result = rawDecryptData(encryptionParts);
+            result = rawDataDecryption(encryptionParts);
 
             encryptionParts.zap();
             break;
