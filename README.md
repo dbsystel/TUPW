@@ -119,7 +119,7 @@ Blinded data has the following data structure:
 |Source text | Variable |
 |Appended data | Variable |
 
-The compressed length encodes an integer in a variable length format. The first two bits of the first byte determine the length of the compressed integer:
+A "compressed integer" encodes an unsigned integer in a variable length format. The first two bits of the first byte determine the length of the compressed integer:
 
 | First bits  | Length (in bytes) | Valuation |
 | :---: | :---: | ---: |
