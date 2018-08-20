@@ -114,7 +114,7 @@ Blinded data has the following data structure:
 | --- | :---: |
 |Length of prepended data | 1 |
 |Length of appended data | 1 |
-|Compressed length of source text | 1-4 |
+|Length of source text as compressed integer | 1-4 |
 |Prepended data | Variable |
 |Source text | Variable |
 |Appended data | Variable |
