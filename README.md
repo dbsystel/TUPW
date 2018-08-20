@@ -123,10 +123,10 @@ A "compressed integer" encodes an unsigned integer in a variable length format. 
 
 | First bits  | Length (in bytes) | Valuation |
 | :---: | :---: | ---: |
-|00 | 1 | 0 - 63|
-|01 | 2 | 64 - 16383|
-|10 | 3 | 16384 - 4194303|
-|11 | 4 | 4194304 - 1073741823|
+|00 | 1 | 0 - 63 |
+|01 | 2 | 64 - 16447 |
+|10 | 3 | 16448 - 4210687 |
+|11 | 4 | 4210688 - 1077936127 |
 
 ## Contributing
 
