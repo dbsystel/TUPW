@@ -23,6 +23,7 @@ The encrypted data is stored as four parts separated by '$' characters:
 3. The HMAC of the format code, the IV and the encrypted data
 
 This format uses the following fields:
+
     * The initialization vector used for encryption
 	* The type of encryption ([AES](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard "AES") 128 bit
 	* The encryption mode
@@ -32,17 +33,21 @@ This format uses the following fields:
 	    * Padding with [arbitrary tail byte ("ABytPadding") padding](https://eprint.iacr.org/2003/098.pdf "AByt-Pad")
 		* Blinding of data and padding to the cipher block length with random bytes (RandomPadding)
 	* Integrity protection by [HMAC](https://en.wikipedia.org/wiki/Hash-based_message_authentication_code "HMAC")
-All parts except the format code are [BASE64](https://en.wikipedia.org/wiki/Base64 "BASE64") encoded.
+
+	All parts except the format code are [BASE64](https://en.wikipedia.org/wiki/Base64 "BASE64") encoded.
 
 "Blinding" means that the data to be encrypted is prepended and appended with random bytes of varying lengths. These blinders are chosen so that the resulting "blinded" data has a least a length of the AES block size plus 1 byte which results in two AES blocks padded with random bytes. This effectively "blinds" the true length of the source data, if it is shorter than 29 bytes.
 
 Blinded data has the following data structure:
-`Length of prepended data: 1 byte
+
+```
+Length of prepended data: 1 byte
 Length of appended data: 1 byte
 Compressed length of source text: 1-4 bytes
 Prepended data
 Source text
-Appended data`
+Appended data
+```
 
 The compressed length encodes an integer in a variable length format. The first two bits of the first byte determine the length of the compressed integer:
 
