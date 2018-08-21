@@ -22,6 +22,7 @@
  * Changes: 
  *     2015-12-20: V1.0.0: Created. fhs
  *     2015-12-21: V1.1.0: Change to correct padding format. fhs
+ *     2018-08-21: V1.2.0: Test format 3 and use predictable file. fhs
  */
 package TUPW;
 
@@ -29,7 +30,6 @@ import dbscryptolib.FileAndKeyEncryption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Random;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.*;
@@ -41,7 +41,7 @@ import org.junit.Test;
  * Test cases for file and key encryption.
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.1.0
+ * @version 1.2.0
  */
 public class TestFileAndKeyEncryption {
 
@@ -76,42 +76,47 @@ public class TestFileAndKeyEncryption {
    /**
     * Known encrypted text to decrypt
     */
-   private static final String ENCRYPTED_TEXT = "1$FrdPoJe0sXQj+5Y57GAIzw==$5GYyc5eXDGeyTDUvMHwxEJ/JGORgV7Ut/FHZH+ibscs=$J+5vEccKKg57KNKFnJYrTGiwJ4Y6N5fJ/87m5oCm36c=";
+   private static final String ENCRYPTED_TEXT = "3$J/LJT9XGjwfmsKsvHzFefQ==$iJIhCFfmzwPVqDwJai30ei5WTpU3/7qhiBS7WbPQCCHJKppD06B2LsRP7tgqh+1g$C9mHKfJi5mdMdIOZWep2GhZl7fNk98c3fBD6j404RXY=";
 
    /**
     * Known encrypted text to decrypt with invalid HMAC
     */
-   private static final String ENCRYPTED_TEXT_WITH_INVALID_HMAC = "1$JumVT3xH5OQofQ/Ne6eV3w==$iXucAXVZpyDgP/MuNUoBy0B54jVnzOBrNqE/maFfz3rzQ2JVlLUjflxV3vqjJlJPaw==$ER6iskk97jIPcOmcT0m0TVicCcgW26i3Q2xcdfDm7Y4=";
+   private static final String ENCRYPTED_TEXT_WITH_INVALID_HMAC = "3$J/LJT9XGjwfmsKsvHzFefQ==$iJIhCFfmzwPVqDwJai30ei5WTpU3/7qhiBS7WbPQCCHJKppD06B2LsRP7tgqh+1g$C9mHKfJi5mdMdIOZWep2GhZl7fNk98c3fBD6j404RXQ=";
 
    /**
     * Known encrypted text to decrypt with invalid encryption
     */
-   private static final String ENCRYPTED_TEXT_WITH_INVALID_ENCRYPTION = "1$JumVT3xH5OQofQ/Ne6eV3w==$iXucAXVZpyDhP/MuNUoBy0B54jVnzOBrNqE/maFfz3rzQ2JVlLUjflxV3vqjJlJPaw==$ER6iskk97jIPcOmcT0m0TVicCcgW26m3Q2xcdfDm7Y4=";
+   private static final String ENCRYPTED_TEXT_WITH_INVALID_ENCRYPTION = "3$J/LJT9XGjwfmsKsvHzFefQ==$iJIhCFfmzwPVqDwJai30ei5WTpU3/7qhiBS7WbPQCCHJKppD06B2LsRP7tgqh+1Q$C9mHKfJi5mdMdIOZWep2GhZl7fNk98c3fBD6j404RXY=";
 
    /**
     * Known encrypted text to decrypt with invalid IV
     */
-   private static final String ENCRYPTED_TEXT_WITH_INVALID_IV = "1$JuqVT3xH5OQofQ/Ne6eV3w==$iXucAXVZpyDgP/MuNUoBy0B54jVnzOBrNqE/maFfz3rzQ2JVlLUjflxV3vqjJlJPaw==$ER6iskk97jIPcOmcT0m0TVicCcgW26m3Q2xcdfDm7Y4=";
+   private static final String ENCRYPTED_TEXT_WITH_INVALID_IV = "3$J/LJT9XGjwfmsKsvHzFefz==$iJIhCFfmzwPVqDwJai30ei5WTpU3/7qhiBS7WbPQCCHJKppD06B2LsRP7tgqh+1g$C9mHKfJi5mdMdIOZWep2GhZl7fNk98c3fBD6j404RXY=";
 
    /**
     * Known encrypted text to decrypt with unknown format id
     */
-   private static final String ENCRYPTED_TEXT_WITH_UNKNOWN_FORMAT_ID = "99$JumVT3xH5OQofQ/Ne6eV3w==$iXucAXVZpyDgP/MuNUoBy0B54jVnzOBrNqE/maFfz3rzQ2JVlLUjflxV3vqjJlJPaw==$ER6iskk97jIPcOmcT0m0TVicCcgW26m3Q2xcdfDm7Y4=";
+   private static final String ENCRYPTED_TEXT_WITH_UNKNOWN_FORMAT_ID = "99$J/LJT9XGjwfmsKsvHzFefQ==$iJIhCFfmzwPVqDwJai30ei5WTpU3/7qhiBS7WbPQCCHJKppD06B2LsRP7tgqh+1g$C9mHKfJi5mdMdIOZWep2GhZl7fNk98c3fBD6j404RXY=";
 
    /**
     * Known encrypted text to decrypt with invalid format id
     */
-   private static final String ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID = "q$JumVT3xH5OQofQ/Ne6eV3w==$iXucAXVZpyDgP/MuNUoBy0B54jVnzOBrNqE/maFfz3rzQ2JVlLUjflxV3vqjJlJPaw==$ER6iskk97jIPcOmcT0m0TVicCcgW26m3Q2xcdfDm7Y4=";
+   private static final String ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID = "Q$J/LJT9XGjwfmsKsvHzFefQ==$iJIhCFfmzwPVqDwJai30ei5WTpU3/7qhiBS7WbPQCCHJKppD06B2LsRP7tgqh+1g$C9mHKfJi5mdMdIOZWep2GhZl7fNk98c3fBD6j404RXY=";
 
    /**
     * Known encrypted text to decrypt with missing format id
     */
-   private static final String ENCRYPTED_TEXT_WITH_MISSING_FORMAT_ID = "JumVT3xH5OQofQ/Ne6eV3w==$iXucAXVZpyDgP/MuNUoBy0B54jVnzOBrNqE/maFfz3rzQ2JVlLUjflxV3vqjJlJPaw==$ER6iskk97jIPcOmcT0m0TVicCcgW26m3Q2xcdfDm7Y4=";
+   private static final String ENCRYPTED_TEXT_WITH_MISSING_FORMAT_ID = "J/LJT9XGjwfmsKsvHzFefQ==$iJIhCFfmzwPVqDwJai30ei5WTpU3/7qhiBS7WbPQCCHJKppD06B2LsRP7tgqh+1g$C9mHKfJi5mdMdIOZWep2GhZl7fNk98c3fBD6j404RXY=";
+
+   /**
+    * Known encrypted text to decrypt with empty IV
+    */
+   private static final String ENCRYPTED_TEXT_WITH_EMPTY_IV = "3$$iJIhCFfmzwPVqDwJai30ei5WTpU3/7qhiBS7WbPQCCHJKppD06B2LsRP7tgqh+1g$C9mHKfJi5mdMdIOZWep2GhZl7fNk98c3fBD6j404RXY=";
 
    /**
     * Known encrypted text to decrypt with missing IV
     */
-   private static final String ENCRYPTED_TEXT_WITH_MISSING_IV = "1$iXucAXVZpyDgP/MuNUoBy0B54jVnzOBrNqE/maFfz3rzQ2JVlLUjflxV3vqjJlJPaw==$ER6iskk97jIPcOmcT0m0TVicCcgW26m3Q2xcdfDm7Y4=";
+   private static final String ENCRYPTED_TEXT_WITH_MISSING_IV = "3$iJIhCFfmzwPVqDwJai30ei5WTpU3/7qhiBS7WbPQCCHJKppD06B2LsRP7tgqh+1g$C9mHKfJi5mdMdIOZWep2GhZl7fNk98c3fBD6j404RXY=";
 
    /*
     * Public methods
@@ -133,16 +138,12 @@ public class TestFileAndKeyEncryption {
    @Before
    public void setUp() {
       //
-      // This is *not* a secure random generator.
-      // In fact it is used here so that the random data
-      // are reproducible and predictable.
-      // Do *not* use Random as the source of your random file!
+      // Generate a file with a predictable content, so the tests are reproducible.
       //
-      Random rnd = new Random(0);
-
       byte[] notRandomBytes = new byte[100000];
 
-      rnd.nextBytes(notRandomBytes);
+      for(int i=0; i < notRandomBytes.length; i++)
+         notRandomBytes[i] = (byte) (0xff - (i & 0xff));
 
       Path path = Paths.get(NOT_RANDOM_FILE_NAME);
 
@@ -320,6 +321,23 @@ public class TestFileAndKeyEncryption {
          assertEquals("Exception: " + e.toString(), "Invalid format id", e.getMessage());
       }
    }
+
+   /**
+    * Test if a given encrypted text with an empty format id throws an exception.
+    */
+   @Test
+   public void TestKnownDecryptionWithEmptyIV() {
+      try {
+         FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(HMAC_KEY, NOT_RANDOM_FILE_NAME);
+
+         String decryptedText = myEncryptor.decryptData(ENCRYPTED_TEXT_WITH_EMPTY_IV);
+
+         fail("Expected exception not thrown");
+      } catch (Exception e) {
+         assertEquals("Exception: " + e.toString(), "Number of '$' separated parts in encrypted text is not 4", e.getMessage());
+      }
+   }
+
    /**
     * Test if a given encrypted text with a missing format id throws an exception.
     */

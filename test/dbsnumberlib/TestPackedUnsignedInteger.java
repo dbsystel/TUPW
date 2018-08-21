@@ -27,9 +27,6 @@ package dbsnumberlib;
 import static org.junit.Assert.*;
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -71,11 +68,11 @@ public class TestPackedUnsignedInteger {
       byte [] p0 = PackedUnsignedInteger.fromInteger(0);
       byte [] p63 = PackedUnsignedInteger.fromInteger(63);
       byte [] p64 = PackedUnsignedInteger.fromInteger(64);
-      byte [] p16383 = PackedUnsignedInteger.fromInteger(16383);
-      byte [] p16384 = PackedUnsignedInteger.fromInteger(16384);
-      byte [] p4194303 = PackedUnsignedInteger.fromInteger(4194303);
-      byte [] p4194304 = PackedUnsignedInteger.fromInteger(4194304);
-      byte [] p1073741823 = PackedUnsignedInteger.fromInteger(1073741823);
+      byte [] p16383 = PackedUnsignedInteger.fromInteger(16447);
+      byte [] p16384 = PackedUnsignedInteger.fromInteger(16448);
+      byte [] p4194303 = PackedUnsignedInteger.fromInteger(4210687);
+      byte [] p4194304 = PackedUnsignedInteger.fromInteger(4210688);
+      byte [] p1073741823 = PackedUnsignedInteger.fromInteger(1077936127);
       
       assertEquals("Wrong length of p0", 1, p0.length);
       assertEquals("Wrong length of p63", 1, p63.length);
@@ -87,25 +84,25 @@ public class TestPackedUnsignedInteger {
       assertEquals("Wrong length of p1073741823", 4, p1073741823.length);
 
       int test = PackedUnsignedInteger.toInteger(p0);
-      assertEquals("P0 can not be converted to 0", 0, test);
+      assertEquals("P0 can not be converted to integer", 0, test);
 
       test = PackedUnsignedInteger.toInteger(p64);
-      assertEquals("P64 can not be converted to 64", 64, test);
+      assertEquals("P64 can not be converted to integer", 64, test);
 
       test = PackedUnsignedInteger.toInteger(p16383);
-      assertEquals("P16383 can not be converted to 16383", 16383, test);
+      assertEquals("P16383 can not be converted to integer", 16447, test);
 
       test = PackedUnsignedInteger.toInteger(p16384);
-      assertEquals("P16384 can not be converted to 16384", 16384, test);
+      assertEquals("P16384 can not be converted to integer", 16448, test);
 
       test = PackedUnsignedInteger.toInteger(p4194303);
-      assertEquals("P4194303 can not be converted to 4194303", 4194303, test);
+      assertEquals("P4194303 can not be converted to integer", 4210687, test);
 
       test = PackedUnsignedInteger.toInteger(p4194304);
-      assertEquals("P4194304 can not be converted to 4194304", 4194304, test);
+      assertEquals("P4194304 can not be converted to integer", 4210688, test);
 
       test = PackedUnsignedInteger.toInteger(p1073741823);
-      assertEquals("P1073741823 can not be converted to 1073741823", 1073741823, test);
+      assertEquals("P1073741823 can not be converted to integer", 1077936127, test);
 
       try {
          byte [] junk = PackedUnsignedInteger.fromInteger(-1);

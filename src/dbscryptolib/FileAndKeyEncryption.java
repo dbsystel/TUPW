@@ -452,11 +452,13 @@ public class FileAndKeyEncryption implements AutoCloseable {
 
       // 1. half of file HMAC is used as the encryption key of this instance
       keyPart = Arrays.copyOfRange(hmacOfKeyFile, 0, 16);
+
       this.m_EncryptionKey = new SecureSecretKeySpec(keyPart, FORMAT_1_ENCRYPTION_ALGORITHM);
       Arrays.fill(keyPart, (byte) 0);
 
       // 2. half of file HMAC is used as the HMAC key of this instance
       keyPart = Arrays.copyOfRange(hmacOfKeyFile, 16, 32);
+
       this.m_HMACKey = new SecureSecretKeySpec(keyPart, FORMAT_1_HMAC_ALGORITHM);
       Arrays.fill(keyPart, (byte) 0);
 
