@@ -104,6 +104,10 @@ I.e. the class `FileAndKeyEncryption` is instantiated with an HMAC key that is e
 
 The class instance then generates a key from the HMAC of the key file and stores this key safely in the program's memory. When data have to be encrypted, or decrypted the calculated key is used for the requested cryptographic operation. Both operations expect a `String` as input data and return a `String` as output data. So you can not encrypt binary data with it, which makes kind of sense as it is designed to store readable data.
 
+The class is meant to be instantiated once and then used throughout the lifetime of the program as needed. It should not be instantiated every time it is used as reading the key file and calculating the HMAC of it is quite expensive. The class stores the calculated key in a secure manner in an instance of the SecureSecretKeySpec class which can be found in the `dbscryptolib` source path.
+
+The size of the key file should be at least 100.000 bytes to have enough entropy.
+
 ## Blinding
 
 "Blinding" means that the data to be encrypted is prepended and appended with random bytes of varying lengths. These blinders are chosen so that the resulting "blinded" data has a least a length of the AES block size plus 1 byte which results in two AES blocks padded with random bytes. This effectively "blinds" the true length of the source data, if it is shorter than 29 bytes.
