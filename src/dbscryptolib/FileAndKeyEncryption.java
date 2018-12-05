@@ -424,7 +424,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
          hmac.init(hmacKey);
          result = hmac.doFinal(data);
       } catch (final Exception e) {
-         throw e; // Retrow any exception. hmacKey will have been closed by try-with-resources.
+         throw e; // Rethrow any exception. hmacKey will have been closed by try-with-resources.
       }
 
       return result;
