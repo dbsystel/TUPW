@@ -40,6 +40,8 @@ package dbscryptolib;
 
 import dbsstringlib.StringSplitter;
 
+import javax.crypto.*;
+import javax.crypto.spec.IvParameterSpec;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
@@ -51,18 +53,12 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Base64;
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.Mac;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.spec.IvParameterSpec;
 
 /**
  * Implement encryption by key generated from file and key
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.4.0
+ * @version 1.4.1
  */
 public class FileAndKeyEncryption implements AutoCloseable {
 
@@ -243,11 +239,10 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * Return unpadded string bytes depending on format id
     * 
     * @param formatId Format id of data
-    * @param paddedDecodedStringBytes Byte array of padded decrypted bytes
+    * @param paddedDecryptedStringBytes Byte array of padded decrypted bytes
     * @return Unpadded decrypted bytes
-    * @throws IOException 
     */
-   private byte[] getUnpaddedStringBytes(final byte formatId, final byte[] paddedDecryptedStringBytes) throws IOException {
+   private byte[] getUnpaddedStringBytes(final byte formatId, final byte[] paddedDecryptedStringBytes) {
       if (formatId == FORMAT_3_ID)
          return ByteArrayBlinding.unBlindByteArray(paddedDecryptedStringBytes);
       else
@@ -259,7 +254,6 @@ public class FileAndKeyEncryption implements AutoCloseable {
     *
     * @param encryptionParts The encryption parts of the data
     * @return Decrypted data as string
-    * @throws dbscryptolib.DataIntegrityException
     * @throws java.io.IOException
     * @throws java.io.UnsupportedEncodingException
     * @throws java.security.InvalidAlgorithmParameterException
@@ -269,7 +263,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws javax.crypto.IllegalBlockSizeException
     * @throws javax.crypto.NoSuchPaddingException
     */
-   private String rawDataDecryption(final EncryptionParts encryptionParts) throws DataIntegrityException, BadPaddingException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
+   private String rawDataDecryption(final EncryptionParts encryptionParts) throws BadPaddingException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
       // "encryptionParts.formatId" has been checked in "decryptData" and does not need to be checked here
       final Cipher aesCipher = Cipher.getInstance(ENCRYPTION_SPECIFICATION[encryptionParts.formatId]);
 
@@ -395,7 +389,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
       aesCipher.init(Cipher.ENCRYPT_MODE, this.m_EncryptionKey, new IvParameterSpec(result.iv));
 
       final byte [] sourceBytes = sourceString.getBytes(STRING_ENCODING_FOR_DATA);
-//      final byte[] unpaddedEncodedStringBytes = sourceString.getBytes(STRING_ENCODING_FOR_DATA);
+
       // Ensure that blinded array needs at least 2 AES blocks, so the length of the encrypted data
       // can not be inferred to be no longer than block size - 3 bytes (= 13 bytes for AES).
       final byte[] unpaddedEncodedStringBytes = ByteArrayBlinding.buildBlindedByteArray(sourceBytes, aesCipher.getBlockSize() + 1);

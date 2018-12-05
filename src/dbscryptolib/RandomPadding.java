@@ -31,7 +31,7 @@ import java.util.Arrays;
  * Implements arbitrary tail padding for block ciphers
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.0.0
+ * @version 1.0.1
  */
 public class RandomPadding {
 
@@ -135,7 +135,7 @@ public class RandomPadding {
     * 
     * @param paddedSourceData Data with padding bytes
     * @return Never
-    * @throws UnsupportedOperationException
+    * @throws UnsupportedOperationException Random padding can not be removed
     */
    public static byte[] removePadding(final byte[] paddedSourceData) throws UnsupportedOperationException {
       throw new UnsupportedOperationException();

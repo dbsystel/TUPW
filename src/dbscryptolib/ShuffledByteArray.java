@@ -131,7 +131,7 @@ public final class ShuffledByteArray implements AutoCloseable {
    }
 
    /*
-    * Methods for data structure initialization and maitenance
+    * Methods for data structure initialization and maintenance
     */
    /**
     * Calculates the array size required for storing the data. The stored array
