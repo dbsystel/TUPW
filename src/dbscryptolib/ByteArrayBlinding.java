@@ -34,7 +34,7 @@ import java.util.Arrays;
  * Implements blinding for byte arrays
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.0.0
+ * @version 1.0.1
  */
 public class ByteArrayBlinding {
 
@@ -53,7 +53,7 @@ public class ByteArrayBlinding {
    private final static int MAX_MINIMUM_LENGTH = 256;
 
    /**
-    * Check the validity of the requsted minimum length
+    * Check the validity of the requested minimum length
     * 
     * @param minimumLength Requested minimum length
     * @throws IllegalArgumentException 
@@ -171,9 +171,8 @@ public class ByteArrayBlinding {
     * @param sourceBytes Blinded byte array
     * @return Byte array without blinders
     * @throws IllegalArgumentException
-    * @throws IOException
     */
-   public static byte[] unBlindByteArray(final byte[] sourceBytes) throws IllegalArgumentException, IOException {
+   public static byte[] unBlindByteArray(final byte[] sourceBytes) throws IllegalArgumentException {
       if (sourceBytes.length > INDEX_SOURCE_LENGTH) {
          final int packedNumberLength = PackedUnsignedInteger.getExpectedLength(sourceBytes[INDEX_SOURCE_LENGTH]);
 
