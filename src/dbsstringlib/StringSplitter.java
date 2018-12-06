@@ -38,7 +38,7 @@ import java.util.ArrayList;
  * character like Java's String.split method does.
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 2.0.0
+ * @version 2.1.0
  */
 public class StringSplitter {
 
@@ -59,55 +59,60 @@ public class StringSplitter {
       if (searchString == null)
          return null;
 
-      final int searchStringLength = searchString.length();
-
-      final String[] emptyStringArray = new String[0];
-
-      if (searchStringLength == 0)
-         return emptyStringArray;
-
-      final int separatorLength = separator.length();
-
       final ArrayList<String> substrings = new ArrayList<>();
 
-      if (separatorLength == 0)
-         // Just return the search string if the separator is empty
+      if (separator == null) {
+         // Just return the search string if the separator is null
          substrings.add(searchString);
-      else {
-         // Now do the real work
-         int startSearchIndex = 0;
-         int separatorIndex = 0;
+      } else {
+         final int searchStringLength = searchString.length();
 
-         while (separatorIndex < searchStringLength) {
-            separatorIndex = searchString.indexOf(separator, startSearchIndex);
+         if (searchStringLength == 0) {
+            // Just return the search string if it is empty
+            substrings.add(searchString);
+         } else {
+            final int separatorLength = separator.length();
 
-            if (separatorIndex > -1) {
-               if (separatorIndex > startSearchIndex) {
-                  // The following is OK, because String.substring( startSearchIndex, separatorIndex ) strangely
-                  // and counterintuitively does *not* include the character at position 'separatorIndex'.
-                  substrings.add(searchString.substring(startSearchIndex, separatorIndex));
-
-                  // Set the starting point for the next search.
-                  // The separatorIndex is the beginning of the separator, so shifting the position
-                  // by it's size yields the index of the start of the part after the separator.
-                  startSearchIndex = separatorIndex + separatorLength;
-               } else {
-                  // If the searchString starts with the separator add an empty string.
-                  if (separatorIndex == 0)
-                     substrings.add("");
-
-                  // We found a consecutive occurrence of the separator, so skip it.
-                  startSearchIndex = separatorIndex + separatorLength;
-               }
+            if (separatorLength == 0) {
+               // Just return the search string if the separator is empty
+               substrings.add(searchString);
             } else {
-               // String.substring( startSearchIndex ) goes from 'startSearchIndex' to the end of the String.
-               substrings.add(searchString.substring(startSearchIndex));
-               separatorIndex = searchStringLength;
+               // Now do the real work
+               int startSearchIndex = 0;
+               int separatorIndex = 0;
+
+               while (separatorIndex < searchStringLength) {
+                  separatorIndex = searchString.indexOf(separator, startSearchIndex);
+
+                  if (separatorIndex > -1) {
+                     if (separatorIndex > startSearchIndex) {
+                        // The following is OK, because String.substring( startSearchIndex, separatorIndex ) strangely
+                        // and counterintuitively does *not* include the character at position 'separatorIndex'.
+                        substrings.add(searchString.substring(startSearchIndex, separatorIndex));
+
+                        // Set the starting point for the next search.
+                        // The separatorIndex is the beginning of the separator, so shifting the position
+                        // by it's size yields the index of the start of the part after the separator.
+                        startSearchIndex = separatorIndex + separatorLength;
+                     } else {
+                        // If the searchString starts with the separator add an empty string.
+                        if (separatorIndex == 0)
+                           substrings.add("");
+
+                        // We found a consecutive occurrence of the separator, so skip it.
+                        startSearchIndex = separatorIndex + separatorLength;
+                     }
+                  } else {
+                     // String.substring( startSearchIndex ) goes from 'startSearchIndex' to the end of the String.
+                     substrings.add(searchString.substring(startSearchIndex));
+                     separatorIndex = searchStringLength;
+                  }
+               }
             }
          }
       }
 
       // toArray needs a type model which should be empty as it is never used for anything else than casting
-      return substrings.toArray(emptyStringArray);
+      return substrings.toArray(new String[0]);
    }
 }
