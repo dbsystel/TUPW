@@ -61,25 +61,34 @@ public class PackedUnsignedInteger {
          } else if (aNumber < (START_THREE_BYTE_VALUE + START_TWO_BYTE_VALUE)) {
             result = new byte[2];
             intermediateNumber = aNumber - START_TWO_BYTE_VALUE;
+
             result[1] = (byte) (intermediateNumber & 0xff);
+
             intermediateNumber >>>= 8;
             result[0] = (byte) (0x40 | (intermediateNumber & 0xff));
          } else if (aNumber < (START_FOUR_BYTE_VALUE + START_THREE_BYTE_VALUE)) {
             result = new byte[3];
             intermediateNumber = aNumber - START_THREE_BYTE_VALUE;
+
             result[2] = (byte) (intermediateNumber & 0xff);
+
             intermediateNumber >>>= 8;
             result[1] = (byte) (intermediateNumber & 0xff);
+
             intermediateNumber >>>= 8;
             result[0] = (byte) (0x80 | (intermediateNumber & 0xff));
          } else if (aNumber < (START_TOO_LARGE_VALUE + START_FOUR_BYTE_VALUE)) {
             result = new byte[4];
             intermediateNumber = aNumber - START_FOUR_BYTE_VALUE;
+
             result[3] = (byte) (intermediateNumber & 0xff);
+
             intermediateNumber >>>= 8;
             result[2] = (byte) (intermediateNumber & 0xff);
+
             intermediateNumber >>>= 8;
             result[1] = (byte) (intermediateNumber & 0xff);
+
             intermediateNumber >>>= 8;
             result[0] = (byte) (0xc0 | (intermediateNumber & 0xff));
          } else
@@ -101,7 +110,7 @@ public class PackedUnsignedInteger {
    }
 
    /**
-    * Convert a packed decimal byte array itno an integer
+    * Convert a packed decimal byte array into an integer
     * 
     * @param packedNumber Packed decimal byte array
     * @return Converted integer
@@ -119,15 +128,24 @@ public class PackedUnsignedInteger {
                break;
 
             case 2:
-               result = (int) (((packedNumber[0] & 0x3f) << 8) | (packedNumber[1] & 0xff)) + START_TWO_BYTE_VALUE;
+               result = (int) (((packedNumber[0] & 0x3f) << 8) |
+                                (packedNumber[1] & 0xff)) +
+                              START_TWO_BYTE_VALUE;
                break;
 
             case 3:
-               result = (int) (((packedNumber[0] & 0x3f) << 16) | ((packedNumber[1] & 0xff) << 8) | (packedNumber[2] & 0xff)) + START_THREE_BYTE_VALUE;
+               result = (int) (((packedNumber[0] & 0x3f) << 16) |
+                               ((packedNumber[1] & 0xff) << 8) |
+                                (packedNumber[2] & 0xff)) +
+                              START_THREE_BYTE_VALUE;
                break;
 
             case 4:
-               result = (int) (((packedNumber[0] & 0x3f) << 24) | ((packedNumber[1] & 0xff) << 16) | ((packedNumber[2] & 0xff) << 8) | (packedNumber[3] & 0xff)) + START_FOUR_BYTE_VALUE;
+               result = (int) (((packedNumber[0] & 0x3f) << 24) |
+                               ((packedNumber[1] & 0xff) << 16) |
+                               ((packedNumber[2] & 0xff) << 8) |
+                                (packedNumber[3] & 0xff)) +
+                              START_FOUR_BYTE_VALUE;
                break;
 
             default:
