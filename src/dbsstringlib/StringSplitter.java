@@ -36,10 +36,12 @@ import java.util.ArrayList;
  * <p>
  * This class is a modified version of Apache Commons
  * StringUtil.splitByWholeSeparatorWorker.
+ * </p>
  * <p>
  * I wrote it because I absolutely do not like inefficiency in programming and I
  * do not want to load a full RegEx machinery just to split a string at a simple
  * character like Java's String.split method does.
+ * </p>
  *
  * @author Frank Schwab, DB Systel GmbH
  * @version 2.1.0
@@ -54,7 +56,7 @@ public class StringSplitter {
     *
     * @param searchString       String to search for the {@code separator}
     * @param separator          String that specifies the separator where the {@code searchString} should be split
-    * @param substrings         Elements of the splitted {@code searchString}
+    * @param substrings         Elements of the split {@code searchString}
     * @param searchStringLength Length of the {@code searchString}
     * @param separatorLength    length of the {@code separator}
     */
