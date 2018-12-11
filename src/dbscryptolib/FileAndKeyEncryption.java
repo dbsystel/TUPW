@@ -111,7 +111,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * This is placed here so the expensive instantiation of the Mac class is
     * done only once.
     *
-    * Unfortunately it can not be made final as the instantiator of this class
+    * Unfortunately it can not be made final as the constructor of this class
     * may throw an exception.
     */
    private Mac HMAC_INSTANCE;
@@ -153,7 +153,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * Get instance of HMAC
     *
     * @return HMAC instance
-    * @throws NoSuchAlgorithmException
+    * @throws NoSuchAlgorithmException if the specified HMAC algorithm is not implemented
     */
    private Mac getHMACInstance() throws NoSuchAlgorithmException {
       if (HMAC_INSTANCE == null)
@@ -169,7 +169,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * Check HMAC key size
     *
     * @param aHMACKey
-    * @throws java.lang.IllegalArgumentException
+    * @throws java.lang.IllegalArgumentException if the HMAC key does not have the correct length
     */
    private void checkHMACKey(final byte[] aHMACKey) throws IllegalArgumentException {
       if (aHMACKey.length != FORMAT_1_HMAC_KEY_LENGTH)
@@ -180,8 +180,8 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * Check size of key file
     *
     * @param keyFile Path of key file
-    * @throws IllegalArgumentException
-    * @throws IOException
+    * @throws IllegalArgumentException if key file is empty or too large
+    * @throws IOException if there was an IO error while reading the file size
     */
    private void checkKeyFileSize(final Path keyFile) throws IllegalArgumentException, IOException {
       final long keyFileSize = Files.size(keyFile);
@@ -198,7 +198,8 @@ public class FileAndKeyEncryption implements AutoCloseable {
     *
     * @param encryptionText Text to be decrypted
     * @return Encryption parameters as <code>EncryptionParts</code> object
-    * @throws IllegalArgumentException
+    * @throws IllegalArgumentException if the encrypted text has an invalid or unknown format id or not the correct
+    *                                  number of '$' separated parts
     */
    private EncryptionParts getPartsFromPrintableString(final String encryptionText) throws IllegalArgumentException {
       String[] parts;
@@ -254,16 +255,15 @@ public class FileAndKeyEncryption implements AutoCloseable {
     *
     * @param encryptionParts The encryption parts of the data
     * @return Decrypted data as string
-    * @throws java.io.IOException
-    * @throws java.io.UnsupportedEncodingException
-    * @throws java.security.InvalidAlgorithmParameterException
-    * @throws java.security.InvalidKeyException
-    * @throws java.security.NoSuchAlgorithmException
-    * @throws javax.crypto.BadPaddingException
-    * @throws javax.crypto.IllegalBlockSizeException
-    * @throws javax.crypto.NoSuchPaddingException
+    * @throws java.io.UnsupportedEncodingException if there is no UTF-8 encoding (must never happen)
+    * @throws java.security.InvalidAlgorithmParameterException if there was an invalid parameter for the encrpytion algorithm
+    * @throws java.security.InvalidKeyException if the key is not valid for the encryption algorithm (must never happen)
+    * @throws java.security.NoSuchAlgorithmException if there is no AES encryption (must never happen)
+    * @throws javax.crypto.BadPaddingException if unpadding does not work (must never happen)
+    * @throws javax.crypto.IllegalBlockSizeException if the block size is not valid for the encraption algorithm (must never happen)
+    * @throws javax.crypto.NoSuchPaddingException if there is no NoPadding padding 8must never happen)
     */
-   private String rawDataDecryption(final EncryptionParts encryptionParts) throws BadPaddingException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
+   private String rawDataDecryption(final EncryptionParts encryptionParts) throws BadPaddingException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
       // "encryptionParts.formatId" has been checked in "decryptData" and does not need to be checked here
       final Cipher aesCipher = Cipher.getInstance(ENCRYPTION_SPECIFICATION[encryptionParts.formatId]);
 
@@ -326,8 +326,8 @@ public class FileAndKeyEncryption implements AutoCloseable {
     *
     * @param encryptionParts Encrypted parts to calculate the checksum for
     * @return Checksum of the encrypted parts
-    * @throws InvalidKeyException
-    * @throws NoSuchAlgorithmException
+    * @throws InvalidKeyException if the key is not valid for the HMAC algorithm (must never happen)
+    * @throws NoSuchAlgorithmException if there is no HMAC-256 algorithm (must never happen)
     */
    private byte[] getChecksumForEncryptionParts(final EncryptionParts encryptionParts) throws InvalidKeyException, NoSuchAlgorithmException {
       final Mac hmac = getHMACInstance();
@@ -343,9 +343,9 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * Check the checksum of the encrypted parts that have been read
     *
     * @param encryptionParts Parts to be checked
-    * @throws DataIntegrityException
-    * @throws InvalidKeyException
-    * @throws NoSuchAlgorithmException
+    * @throws DataIntegrityException if the HMAC of the parts is not correct
+    * @throws InvalidKeyException if the key is not valid for the HMAC algorithm (must never happen)
+    * @throws NoSuchAlgorithmException if there is no HMAC-256 algorithm (must never happen)
     */
    private void checkChecksumForEncryptionParts(EncryptionParts encryptionParts) throws DataIntegrityException, InvalidKeyException, NoSuchAlgorithmException {
       final byte[] calculatedChecksum = getChecksumForEncryptionParts(encryptionParts);
@@ -354,7 +354,6 @@ public class FileAndKeyEncryption implements AutoCloseable {
          throw new DataIntegrityException("Checksums do not match");
    }
 
-  
    /**
     * Encrypt string data
     *
@@ -453,10 +452,10 @@ public class FileAndKeyEncryption implements AutoCloseable {
       // 2. half of file HMAC is used as the HMAC key of this instance
       keyPart = Arrays.copyOfRange(hmacOfKeyFile, 16, 32);
 
+      Arrays.fill(hmacOfKeyFile, (byte) 0);
+
       this.m_HMACKey = new SecureSecretKeySpec(keyPart, FORMAT_1_HMAC_ALGORITHM);
       Arrays.fill(keyPart, (byte) 0);
-
-      Arrays.fill(hmacOfKeyFile, (byte) 0);
    }
 
 

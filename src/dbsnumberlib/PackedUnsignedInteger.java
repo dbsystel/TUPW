@@ -22,6 +22,7 @@
  * Changes: 
  *     2018-08-16: V1.0.0: Created. fhs
  *     2018-08-20: V1.1.0: Expand valuation of 2 to 4 byte compressed numbers. fhs
+ *     2018-12-11: V1.1.1: Clarify exceptions and comments. fhs
  */
 package dbsnumberlib;
 
@@ -31,7 +32,7 @@ import java.util.Arrays;
  * Converts integers from and to an unsigned packed byte array
  * 
  * @author FrankSchwab
- * @version 1.1.0
+ * @version 1.1.1
  */
 public class PackedUnsignedInteger {
 
@@ -43,12 +44,12 @@ public class PackedUnsignedInteger {
    /**
     * Convert an integer into a packed decimal byte array
     * 
-    * Valid integers range from 0 to 1077936127.
-    * All other numbers throw an IllegalArgumentException
+    * Valid integers range from 0 to 1,077,936,127.
+    * All other numbers throw an {@code IllegalArgumentException}
     * 
     * @param aNumber Integer to convert
     * @return Packed decimal byte array with integer as value 
-    * @throws IllegalArgumentException
+    * @throws IllegalArgumentException if {@code aNumber} has not a value between 0 and 1,077,936,127 (inclusive)
     */
    public static byte[] fromInteger(final int aNumber) throws IllegalArgumentException {
       byte[] result;
@@ -92,9 +93,9 @@ public class PackedUnsignedInteger {
             intermediateNumber >>>= 8;
             result[0] = (byte) (0xc0 | (intermediateNumber & 0xff));
          } else
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Integer too large for packed integer");
       else
-         throw new IllegalArgumentException();
+         throw new IllegalArgumentException("Integer must not be negative");
 
       return result;
    }
@@ -113,8 +114,8 @@ public class PackedUnsignedInteger {
     * Convert a packed decimal byte array into an integer
     * 
     * @param packedNumber Packed decimal byte array
-    * @return Converted integer
-    * @throws IllegalArgumentException
+    * @return Converted integer (value between 0 and 1,077,936,127)
+    * @throws IllegalArgumentException if the actual length of the packed number does not match the expected length
     */
    public static int toInteger(final byte[] packedNumber) throws IllegalArgumentException {
       int result = 0;
@@ -124,35 +125,34 @@ public class PackedUnsignedInteger {
       if (expectedLength == packedNumber.length)
          switch (expectedLength) {
             case 1:
-               result = (int) (packedNumber[0] & 0x3f);
+               result = (packedNumber[0] & 0x3f);
                break;
 
             case 2:
-               result = (int) (((packedNumber[0] & 0x3f) << 8) |
-                                (packedNumber[1] & 0xff)) +
-                              START_TWO_BYTE_VALUE;
+               result = (((packedNumber[0] & 0x3f) << 8) |
+                          (packedNumber[1] & 0xff)) +
+                        START_TWO_BYTE_VALUE;
                break;
 
             case 3:
-               result = (int) (((packedNumber[0] & 0x3f) << 16) |
-                               ((packedNumber[1] & 0xff) << 8) |
-                                (packedNumber[2] & 0xff)) +
-                              START_THREE_BYTE_VALUE;
+               result = (((packedNumber[0] & 0x3f) << 16) |
+                         ((packedNumber[1] & 0xff) << 8) |
+                          (packedNumber[2] & 0xff)) +
+                        START_THREE_BYTE_VALUE;
                break;
 
             case 4:
-               result = (int) (((packedNumber[0] & 0x3f) << 24) |
-                               ((packedNumber[1] & 0xff) << 16) |
-                               ((packedNumber[2] & 0xff) << 8) |
-                                (packedNumber[3] & 0xff)) +
-                              START_FOUR_BYTE_VALUE;
+               result = (((packedNumber[0] & 0x3f) << 24) |
+                         ((packedNumber[1] & 0xff) << 16) |
+                         ((packedNumber[2] & 0xff) << 8) |
+                          (packedNumber[3] & 0xff)) +
+                        START_FOUR_BYTE_VALUE;
                break;
 
-            default:
-               throw new IllegalArgumentException();
+            // There is no "else" case as all possible values of "expectedLength" are covered
          }
       else
-         throw new IllegalArgumentException();
+         throw new IllegalArgumentException("Actual length of packed integer array does not match expected length");
 
       return result;
    }
@@ -163,7 +163,7 @@ public class PackedUnsignedInteger {
     * @param arrayWithPackedNumber Array where the packed decimal byte array resides
     * @param startIndex Start index of decimal byte array
     * @return Converted integer
-    * @throws IllegalArgumentException 
+    * @throws IllegalArgumentException if the array is not long enough
     */
    public static int toIntegerFromArray(final byte[] arrayWithPackedNumber, final int startIndex) throws IllegalArgumentException {
       final int expectedLength = getExpectedLength(arrayWithPackedNumber[startIndex]);
@@ -171,7 +171,7 @@ public class PackedUnsignedInteger {
       if ((startIndex + expectedLength) <= arrayWithPackedNumber.length)
          return toInteger(Arrays.copyOfRange(arrayWithPackedNumber, startIndex, startIndex + expectedLength));
       else
-         throw new IllegalArgumentException();
+         throw new IllegalArgumentException("Array too short for packed integer");
    }
 
 }
