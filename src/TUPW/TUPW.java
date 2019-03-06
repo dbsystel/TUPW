@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, DB Systel GmbH
+ * Copyright (c) 2019, DB Systel GmbH
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -35,6 +35,7 @@
  *     2018-08-07: V3.2.1: Some small improvements. fhs
  *     2018-08-16: V3.2.2: Added some "finals". fhs
  *     2018-08-17: V3.3.0: Use blinding and random padding. fhs
+ *     2019-03-06: V3.3.1: Minor changes in SecureSecretKeySpec. fhs
  */
 package TUPW;
 
@@ -53,7 +54,7 @@ import java.io.InputStream;
  *    2: Not enough arguments
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 3.3.0
+ * @version 3.3.1
  */
 public class TUPW {
    private static final int MAX_INPUT_BYTES = 50000000;
