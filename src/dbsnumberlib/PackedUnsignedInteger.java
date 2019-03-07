@@ -23,6 +23,7 @@
  *     2018-08-16: V1.0.0: Created. fhs
  *     2018-08-20: V1.1.0: Expand valuation of 2 to 4 byte compressed numbers. fhs
  *     2018-12-11: V1.1.1: Clarify exceptions and comments. fhs
+ *     2019-03-07: V1.2.0: Added "toString" method. fhs
  */
 package dbsnumberlib;
 
@@ -32,7 +33,7 @@ import java.util.Arrays;
  * Converts integers from and to an unsigned packed byte array
  * 
  * @author FrankSchwab
- * @version 1.1.1
+ * @version 1.2.0
  */
 public class PackedUnsignedInteger {
 
@@ -174,4 +175,14 @@ public class PackedUnsignedInteger {
          throw new IllegalArgumentException("Array too short for packed integer");
    }
 
+   /**
+    * Convert a decimal byte array that is supposed to be a packed unsigned integer
+    * into a string
+    *
+    * @param aPackedUnsignedInteger Byte array of packed unsigned integer
+    * @return String representation of the given packed unsigned integer
+    */
+   public static String toString(final byte[] aPackedUnsignedInteger) {
+      return Integer.toString(PackedUnsignedInteger.toInteger(aPackedUnsignedInteger));
+   }
 }

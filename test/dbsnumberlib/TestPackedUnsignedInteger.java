@@ -22,6 +22,7 @@
  * Changes:
  *     2018-08-16: V1.0.0: Created. fhs
  *     2019-03-06: V1.1.0: Added missing tests and renamed constants and variables for better readability. fhs
+ *     2019-03-06: V1.2.0: Added tests for "toString" method. fhs
  */
 package dbsnumberlib;
 
@@ -63,7 +64,6 @@ public class TestPackedUnsignedInteger {
 
    @Test
    public void TestPackedNumber() {
-
       final int iMin1Byte = 0;
       final int iMax1Byte = 63;
       final int iMin2Bytes = iMax1Byte + 1;
@@ -93,28 +93,28 @@ public class TestPackedUnsignedInteger {
       assertEquals("Wrong length of piMax4Bytes", 4, piMax4Bytes.length);
 
       int test = PackedUnsignedInteger.toInteger(piMin1Byte);
-      assertEquals("piMin1Byte can not be converted to integer", iMin1Byte, test);
+      assertEquals("piMin1Byte is not correctly converted to an integer", iMin1Byte, test);
 
       test = PackedUnsignedInteger.toInteger(piMax1Byte);
-      assertEquals("piMax1Byte can not be converted to integer", iMax1Byte, test);
+      assertEquals("piMax1Byte is not correctly converted to an integer", iMax1Byte, test);
 
       test = PackedUnsignedInteger.toInteger(piMin2Bytes);
-      assertEquals("piMin2Bytes can not be converted to integer", iMin2Bytes, test);
+      assertEquals("piMin2Bytes is not correctly converted to an integer", iMin2Bytes, test);
 
       test = PackedUnsignedInteger.toInteger(piMax2Bytes);
-      assertEquals("piMax2Bytes can not be converted to integer", iMax2Bytes, test);
+      assertEquals("piMax2Bytes is not correctly converted to an integer", iMax2Bytes, test);
 
       test = PackedUnsignedInteger.toInteger(piMin3Bytes);
-      assertEquals("piMin3Bytes can not be converted to integer", iMin3Bytes, test);
+      assertEquals("piMin3Bytes is not correctly converted to an integer", iMin3Bytes, test);
 
       test = PackedUnsignedInteger.toInteger(piMax3Bytes);
-      assertEquals("piMax3Bytes can not be converted to integer", iMax3Bytes, test);
+      assertEquals("piMax3Bytes is not correctly converted to an integer", iMax3Bytes, test);
 
       test = PackedUnsignedInteger.toInteger(piMin4Bytes);
-      assertEquals("piMin4Bytes can not be converted to integer", iMin4Bytes, test);
+      assertEquals("piMin4Bytes is not correctly converted to an integer", iMin4Bytes, test);
 
       test = PackedUnsignedInteger.toInteger(piMax4Bytes);
-      assertEquals("piMax4Bytes can not be converted to integer", iMax4Bytes, test);
+      assertEquals("piMax4Bytes is not correctly converted to an integer", iMax4Bytes, test);
 
       try {
          byte [] junk = PackedUnsignedInteger.fromInteger(-1);
@@ -134,6 +134,12 @@ public class TestPackedUnsignedInteger {
          assertEquals("Exception: " + e.toString(), "java.lang.IllegalArgumentException: Integer too large for packed integer", e.toString());
       }
 
-   }
+      assertEquals("String representation of piMin1Byte is not correct",
+              PackedUnsignedInteger.toString(piMin1Byte),
+              Integer.toString(iMin1Byte));
 
+      assertEquals("String representation of piMax4Bytes is not correct",
+              PackedUnsignedInteger.toString(piMax4Bytes),
+              Integer.toString(iMax4Bytes));
+   }
 }
