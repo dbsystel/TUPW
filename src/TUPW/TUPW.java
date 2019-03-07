@@ -36,6 +36,7 @@
  *     2018-08-16: V3.2.2: Added some "finals". fhs
  *     2018-08-17: V3.3.0: Use blinding and random padding. fhs
  *     2019-03-06: V3.3.1: Minor changes in SecureSecretKeySpec. fhs
+ *     2019-03-07: V4.0.0: Add a "subject" to the command line that will change the encryption key. fhs
  */
 package TUPW;
 
@@ -54,7 +55,7 @@ import java.io.InputStream;
  *    2: Not enough arguments
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 3.3.1
+ * @version 4.0.0
  */
 public class TUPW {
    private static final int MAX_INPUT_BYTES = 50000000;
@@ -74,10 +75,18 @@ public class TUPW {
 
       if (args.length >= 3) {
          try (FileAndKeyEncryption MyEncryptor = new FileAndKeyEncryption(HMAC_KEY, args[1])) {
+            String subject = "";
+            int itemIndex = 2;
+
+            if (args.length >= 4) {
+               subject = args[2];
+               itemIndex++;
+            }
+
             if (args[0].substring(0, 1).toLowerCase().equals("e")) {
-               System.out.println(MyEncryptor.encryptData(getInputFromWhereEver(args[2])));
+               System.out.println(MyEncryptor.encryptData(getInputFromWhereEver(args[itemIndex]), subject));
             } else {
-               System.out.println(MyEncryptor.decryptData(getInputFromWhereEver(args[2])));
+               System.out.println(MyEncryptor.decryptData(getInputFromWhereEver(args[itemIndex]), subject));
             }
 
             System.exit(0);
@@ -89,8 +98,8 @@ public class TUPW {
          System.err.println("Not enough arguments.");
          System.err.println();
          System.err.println("Usage:");
-         System.err.println("   tupw.jar encrypt {keyfile} {clearItem}");
-         System.err.println("   tupw.jar decrypt {keyfile} {encryptedItem}");
+         System.err.println("   tupw.jar encrypt {keyfile} [subject] {clearItem}");
+         System.err.println("   tupw.jar decrypt {keyfile} [subject] {encryptedItem}");
          System.err.println();
          System.err.println("If {clearItem}, or {encryptedItem} is '-' input is read from stdin.");
          System.err.println("This makes it possible to use the program in a pipe.");

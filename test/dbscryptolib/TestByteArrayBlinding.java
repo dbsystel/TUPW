@@ -24,17 +24,12 @@
  */
 package dbscryptolib;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
 import java.io.IOException;
 import java.util.Random;
+
+import static org.junit.Assert.*;
 
 /**
  * Test cases for ByteArrayBlinding
@@ -78,7 +73,7 @@ public class TestByteArrayBlinding {
 
       assertTrue("Blinded data not longer than source data", blindedData.length > data.length);
       assertEquals("Lengths are not the same after blinding and unblinding", data.length, unblindedData.length);
-      assertArrayEquals("Data ist not the same after blinding and unblinding", data, unblindedData);
+      assertArrayEquals("Data is not the same after blinding and unblinding", data, unblindedData);
 
       byte[] data2 = new byte[16];
       rng.nextBytes(data2);
@@ -88,7 +83,7 @@ public class TestByteArrayBlinding {
 
       assertTrue("Blinded data not longer than source data", blindedData.length > data.length);
       assertEquals("Lengths are not the same after blinding and unblinding", data2.length, unblindedData.length);
-      assertArrayEquals("Data ist not the same after blinding and unblinding", data2, unblindedData);
+      assertArrayEquals("Data is not the same after blinding and unblinding", data2, unblindedData);
 
       byte[] data3 = new byte[20];
       rng.nextBytes(data3);
@@ -98,7 +93,7 @@ public class TestByteArrayBlinding {
 
       assertTrue("Blinded data not longer than source data", blindedData.length > data.length);
       assertEquals("Lengths are not the same after blinding and unblinding", data3.length, unblindedData.length);
-      assertArrayEquals("Data ist not the same after blinding and unblinding", data3, unblindedData);
+      assertArrayEquals("Data is not the same after blinding and unblinding", data3, unblindedData);
 
       byte[] data4 = new byte[18000];
       rng.nextBytes(data4);
@@ -108,7 +103,7 @@ public class TestByteArrayBlinding {
 
       assertTrue("Blinded data not longer than source data", blindedData.length > data.length);
       assertEquals("Lengths are not the same after blinding and unblinding", data4.length, unblindedData.length);
-      assertArrayEquals("Data ist not the same after blinding and unblinding", data4, unblindedData);
+      assertArrayEquals("Data is not the same after blinding and unblinding", data4, unblindedData);
    }
 
 }

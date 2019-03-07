@@ -1,25 +1,25 @@
 /*
- * Copyright (c) 2018, DB Systel GmbH
+ * Copyright (c) 2019, DB Systel GmbH
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
- * 
+ *
  * 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
- * 
+ *
  * 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,
  * BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
  * SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
  * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * Author: Frank Schwab, DB Systel GmbH
  *
- * Changes: 
+ * Changes:
  *     2017-12-19: V1.0.0: Created. fhs
  *     2017-12-21: V1.0.1: Corrected comments, added safe data deletion in decryption interface. fhs
  *     2017-12-21: V1.1.0: Correct AByt padding to use cipher block size. fhs
@@ -35,6 +35,7 @@
  *     2018-08-15: V1.3.5: Added some "finals". fhs
  *     2018-08-16: V1.3.6: Moved secure PRNG generation to the one method that needs it. fhs
  *     2018-08-17: V1.4.0: Use blinding and random padding. fhs
+ *     2019-03-07: V2.0.0: Add a "subject" that changes the encryption key. fhs
  */
 package dbscryptolib;
 
@@ -58,7 +59,7 @@ import java.util.Base64;
  * Implement encryption by key generated from file and key
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.4.1
+ * @version 2.0.0
  */
 public class FileAndKeyEncryption implements AutoCloseable {
 
@@ -88,12 +89,12 @@ public class FileAndKeyEncryption implements AutoCloseable {
    private static final String FORMAT_1_ENCRYPTION_ALGORITHM = "AES";
 
    /**
-    * Encrpytion specification with algorithm, mode and padding
+    * Encryption specification with algorithm, mode and padding
     */
    private static final String[] ENCRYPTION_SPECIFICATION = {"Invalid",
-      FORMAT_1_ENCRYPTION_ALGORITHM + "/CFB/NoPadding",
-      FORMAT_1_ENCRYPTION_ALGORITHM + "/CTR/NoPadding",
-      FORMAT_1_ENCRYPTION_ALGORITHM + "/CTR/NoPadding"};
+           FORMAT_1_ENCRYPTION_ALGORITHM + "/CFB/NoPadding",
+           FORMAT_1_ENCRYPTION_ALGORITHM + "/CTR/NoPadding",
+           FORMAT_1_ENCRYPTION_ALGORITHM + "/CTR/NoPadding"};
 
    /**
     * String encoding to be used for encrypted data strings
@@ -101,20 +102,45 @@ public class FileAndKeyEncryption implements AutoCloseable {
    private static final String STRING_ENCODING_FOR_DATA = "UTF-8";
 
    /**
+    * Separator character in key representation
+    */
+   private static final String PARTS_SEPARATOR = "$";
+   
+   /**
     * Maximum key file size
     */
    private static final int MAX_KEYFILE_SIZE = 10000000;
 
    /**
+    * Prefix salt for key modification with a "subject"
+    */
+   private static final byte[] PREFIX_SALT = {(byte) 84, (byte) 117}; // i.e "Tu"
+
+   /**
+    * Postfix salt for key modification with a "subject"
+    */
+   private static final byte[] POSTFIX_SALT = {(byte) 112, (byte) 87}; // i.e. "pW"
+
+
+   /**
     * Instance of HMAC calculator
-    *
+    * <p>
     * This is placed here so the expensive instantiation of the Mac class is
     * done only once.
-    *
+    * <p>
     * Unfortunately it can not be made final as the constructor of this class
     * may throw an exception.
     */
    private Mac HMAC_INSTANCE;
+
+   /**
+    * Instance of SecureRandom pseudo random number generator (PRNG)
+    * <p>
+    * This is placed here so the expensive instantiation of the SecureRandom class is
+    * done only once.
+    * <p>
+    */
+   private SecureRandom SECURE_RANDOM_INSTANCE;
 
    /**
     * Helper class to store encryption parameters
@@ -143,12 +169,13 @@ public class FileAndKeyEncryption implements AutoCloseable {
    /*
     * Instance variables
     */
-   private SecureSecretKeySpec m_EncryptionKey;
+   private ProtectedByteArray  m_EncryptionKey;
    private SecureSecretKeySpec m_HMACKey;
 
    /*
     * Private methods
     */
+
    /**
     * Get instance of HMAC
     *
@@ -162,13 +189,26 @@ public class FileAndKeyEncryption implements AutoCloseable {
       return HMAC_INSTANCE;
    }
 
+   /**
+    * Get instance of SecureRandom
+    *
+    * @return SecureRandom instance
+    */
+   private SecureRandom getSecureRandomInstance() {
+      if (SECURE_RANDOM_INSTANCE == null)
+         SECURE_RANDOM_INSTANCE = new SecureRandom();
+
+      return SECURE_RANDOM_INSTANCE;
+   }
+
    /*
     * Check methods
     */
+
    /**
     * Check HMAC key size
     *
-    * @param aHMACKey
+    * @param aHMACKey Key for HMAC calculation
     * @throws java.lang.IllegalArgumentException if the HMAC key does not have the correct length
     */
    private void checkHMACKey(final byte[] aHMACKey) throws IllegalArgumentException {
@@ -181,7 +221,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     *
     * @param keyFile Path of key file
     * @throws IllegalArgumentException if key file is empty or too large
-    * @throws IOException if there was an IO error while reading the file size
+    * @throws IOException              if there was an IO error while reading the file size
     */
    private void checkKeyFileSize(final Path keyFile) throws IllegalArgumentException, IOException {
       final long keyFileSize = Files.size(keyFile);
@@ -204,7 +244,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
    private EncryptionParts getPartsFromPrintableString(final String encryptionText) throws IllegalArgumentException {
       String[] parts;
 
-      parts = StringSplitter.split(encryptionText, "$");  // Use my own string splitter to avoid Java's RegEx inefficiency
+      parts = StringSplitter.split(encryptionText, PARTS_SEPARATOR);  // Use my own string splitter to avoid Java's RegEx inefficiency
 //        parts = encryptionText.split("\\Q$\\E");   // This should have been just "$". But Java stays true to it's motto: Why make it simple when there's a complicated way to do it?
 
       final EncryptionParts result = new EncryptionParts();
@@ -238,8 +278,8 @@ public class FileAndKeyEncryption implements AutoCloseable {
 
    /**
     * Return unpadded string bytes depending on format id
-    * 
-    * @param formatId Format id of data
+    *
+    * @param formatId                   Format id of data
     * @param paddedDecryptedStringBytes Byte array of padded decrypted bytes
     * @return Unpadded decrypted bytes
     */
@@ -251,27 +291,81 @@ public class FileAndKeyEncryption implements AutoCloseable {
    }
 
    /**
+    * Get encryption key with respect to a subject
+    *
+    * @param subjectBytes The subject as a byte array (may have length 0)
+    * @throws InvalidKeyException      if the key is not valid for the HMAC algorithm (must never happen)
+    * @throws NoSuchAlgorithmException if there is no HMAC-256 algorithm (must never happen)
+    */
+   private SecureSecretKeySpec getSecretKeySpecForSubject(final byte[] subjectBytes) throws InvalidKeyException, NoSuchAlgorithmException {
+      final Mac hmac = getHMACInstance();
+
+      hmac.init(this.m_HMACKey);
+      final byte[] keyBytes = this.m_EncryptionKey.getData();
+      hmac.update(keyBytes);
+      Arrays.fill(keyBytes, (byte) 0);
+      hmac.update(PREFIX_SALT);
+      hmac.update(subjectBytes);
+
+      return new SecureSecretKeySpec(hmac.doFinal(POSTFIX_SALT), FORMAT_1_ENCRYPTION_ALGORITHM);
+   }
+
+   /**
+    * Get default SecureSecretKeySpec
+    *
+    * @return Default SecureSecretKeySpec
+    */
+   private SecureSecretKeySpec getDefaultSecretKeySpec() {
+      final byte[] keyBytes = m_EncryptionKey.getData();
+      final SecureSecretKeySpec result = new SecureSecretKeySpec(keyBytes, FORMAT_1_ENCRYPTION_ALGORITHM);
+      Arrays.fill(keyBytes, (byte) 0);
+
+      return result;
+   }
+
+   /**
+    * Get encryption key depending on whether a subject is present or not
+    *
+    * @param subjectBytes The subject as a byte array (may have length 0)
+    * @throws InvalidKeyException      if the key is not valid for the HMAC algorithm (must never happen)
+    * @throws NoSuchAlgorithmException if there is no HMAC-256 algorithm (must never happen)
+    */
+   private SecureSecretKeySpec getSecretKeySpecDependingOnSubject(final byte[] subjectBytes) throws InvalidKeyException, NoSuchAlgorithmException {
+      if (subjectBytes.length > 0)
+         return getSecretKeySpecForSubject(subjectBytes);
+      else
+         return getDefaultSecretKeySpec();
+   }
+
+   /**
     * Decrypt data that have been created by the corresponding encryption
     *
     * @param encryptionParts The encryption parts of the data
+    * @param subjectBytes    The subject for this decryption
     * @return Decrypted data as string
-    * @throws java.io.UnsupportedEncodingException if there is no UTF-8 encoding (must never happen)
+    * @throws java.io.UnsupportedEncodingException             if there is no UTF-8 encoding (must never happen)
     * @throws java.security.InvalidAlgorithmParameterException if there was an invalid parameter for the encrpytion algorithm
-    * @throws java.security.InvalidKeyException if the key is not valid for the encryption algorithm (must never happen)
-    * @throws java.security.NoSuchAlgorithmException if there is no AES encryption (must never happen)
-    * @throws javax.crypto.BadPaddingException if unpadding does not work (must never happen)
-    * @throws javax.crypto.IllegalBlockSizeException if the block size is not valid for the encraption algorithm (must never happen)
-    * @throws javax.crypto.NoSuchPaddingException if there is no NoPadding padding 8must never happen)
+    * @throws java.security.InvalidKeyException                if the key is not valid for the encryption algorithm (must never happen)
+    * @throws java.security.NoSuchAlgorithmException           if there is no AES encryption (must never happen)
+    * @throws javax.crypto.BadPaddingException                 if unpadding does not work (must never happen)
+    * @throws javax.crypto.IllegalBlockSizeException           if the block size is not valid for the encraption algorithm (must never happen)
+    * @throws javax.crypto.NoSuchPaddingException              if there is no NoPadding padding 8must never happen)
     */
-   private String rawDataDecryption(final EncryptionParts encryptionParts) throws BadPaddingException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
+   private String rawDataDecryption(final EncryptionParts encryptionParts, final byte[] subjectBytes) throws BadPaddingException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
       // "encryptionParts.formatId" has been checked in "decryptData" and does not need to be checked here
-      final Cipher aesCipher = Cipher.getInstance(ENCRYPTION_SPECIFICATION[encryptionParts.formatId]);
+      final String encryptionSpecification = ENCRYPTION_SPECIFICATION[encryptionParts.formatId];
 
-      aesCipher.init(Cipher.DECRYPT_MODE, this.m_EncryptionKey, new IvParameterSpec(encryptionParts.iv));
+      final Cipher aesCipher = Cipher.getInstance(encryptionSpecification);
+
+      final SecureSecretKeySpec decryptionKey = getSecretKeySpecDependingOnSubject(subjectBytes);
+
+      aesCipher.init(Cipher.DECRYPT_MODE, decryptionKey, new IvParameterSpec(encryptionParts.iv));
 
       final byte[] paddedDecryptedStringBytes = aesCipher.doFinal(encryptionParts.encryptedData);
 
-      final byte [] unpaddedDecryptedStringBytes = getUnpaddedStringBytes(encryptionParts.formatId, paddedDecryptedStringBytes);
+      decryptionKey.close();
+
+      final byte[] unpaddedDecryptedStringBytes = getUnpaddedStringBytes(encryptionParts.formatId, paddedDecryptedStringBytes);
 
       Arrays.fill(paddedDecryptedStringBytes, (byte) 0);
 
@@ -284,9 +378,9 @@ public class FileAndKeyEncryption implements AutoCloseable {
 
    /**
     * Calculate capacity of StringBuilder for encryption parts
-    *
+    * <p>
     * The size of the final string is 4 + SumOf(ceil(ArrayLength * 4 / 3)).
-    *
+    * <p>
     * This is a complicated expression which is overestimated by the easier
     * expression 4 + SumOfArrayLengths * 3 / 2
     *
@@ -294,7 +388,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @return Slightly overestimated capacity of the StringBuilder for the
     * supplied encryption parts
     */
-   private int calculateStringBuilderCapacityForEncrpytionParts(final EncryptionParts encryptionParts) {
+   private int calculateStringBuilderCapacityForEncryptionParts(final EncryptionParts encryptionParts) {
       final int arrayLengths = encryptionParts.iv.length + encryptionParts.encryptedData.length + encryptionParts.checksum.length;
 
       return 4 + arrayLengths + (arrayLengths >> 1);
@@ -308,14 +402,14 @@ public class FileAndKeyEncryption implements AutoCloseable {
     */
    private String makePrintableStringFromEncryptionParts(final EncryptionParts encryptionParts) {
       Base64.Encoder b64Encoder = Base64.getEncoder();
-      StringBuilder myStringBuilder = new StringBuilder(calculateStringBuilderCapacityForEncrpytionParts(encryptionParts));
+      StringBuilder myStringBuilder = new StringBuilder(calculateStringBuilderCapacityForEncryptionParts(encryptionParts));
 
       myStringBuilder.append(Byte.toString(encryptionParts.formatId));
-      myStringBuilder.append("$");
+      myStringBuilder.append(PARTS_SEPARATOR);
       myStringBuilder.append(b64Encoder.encodeToString(encryptionParts.iv));
-      myStringBuilder.append("$");
+      myStringBuilder.append(PARTS_SEPARATOR);
       myStringBuilder.append(b64Encoder.encodeToString(encryptionParts.encryptedData));
-      myStringBuilder.append("$");
+      myStringBuilder.append(PARTS_SEPARATOR);
       myStringBuilder.append(b64Encoder.encodeToString(encryptionParts.checksum));
 
       return myStringBuilder.toString();
@@ -326,7 +420,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     *
     * @param encryptionParts Encrypted parts to calculate the checksum for
     * @return Checksum of the encrypted parts
-    * @throws InvalidKeyException if the key is not valid for the HMAC algorithm (must never happen)
+    * @throws InvalidKeyException      if the key is not valid for the HMAC algorithm (must never happen)
     * @throws NoSuchAlgorithmException if there is no HMAC-256 algorithm (must never happen)
     */
    private byte[] getChecksumForEncryptionParts(final EncryptionParts encryptionParts) throws InvalidKeyException, NoSuchAlgorithmException {
@@ -343,8 +437,8 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * Check the checksum of the encrypted parts that have been read
     *
     * @param encryptionParts Parts to be checked
-    * @throws DataIntegrityException if the HMAC of the parts is not correct
-    * @throws InvalidKeyException if the key is not valid for the HMAC algorithm (must never happen)
+    * @throws DataIntegrityException   if the HMAC of the parts is not correct
+    * @throws InvalidKeyException      if the key is not valid for the HMAC algorithm (must never happen)
     * @throws NoSuchAlgorithmException if there is no HMAC-256 algorithm (must never happen)
     */
    private void checkChecksumForEncryptionParts(EncryptionParts encryptionParts) throws DataIntegrityException, InvalidKeyException, NoSuchAlgorithmException {
@@ -358,36 +452,29 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * Encrypt string data
     *
     * @param sourceString Some string that will be encrypted
+    * @param subjectBytes The subject of this encryption as a byte array
     * @return Encrypted data and iv as EncryptionParts object
     * @throws java.io.IOException
-    * @throws java.io.UnsupportedEncodingException
+    * @throws java.io.UnsupportedEncodingException if there is nu "UTF-8" character encoding (must never happen)
     * @throws java.lang.IllegalArgumentException
-    * @throws java.security.InvalidAlgorithmParameterException
-    * @throws java.security.InvalidKeyException
-    * @throws java.security.NoSuchAlgorithmException
-    * @throws javax.crypto.BadPaddingException
-    * @throws javax.crypto.IllegalBlockSizeException
-    * @throws javax.crypto.NoSuchPaddingException
+    * @throws java.security.InvalidAlgorithmParameterException if an invalid encryption parameter was specified (must never happen)
+    * @throws java.security.InvalidKeyException if an invalid encryption key was specified (must never happen)
+    * @throws java.security.NoSuchAlgorithmException if an invalid encryption algorithm was specified (must never happen)
+    * @throws javax.crypto.BadPaddingException if invalid padding data was specified (must never happen)
+    * @throws javax.crypto.IllegalBlockSizeException if an invalid block size was specified (must never happen)
+    * @throws javax.crypto.NoSuchPaddingException if an invalid padding was specified (must never happen)
     */
-   private EncryptionParts rawDataEncryption(final String sourceString) throws BadPaddingException, IllegalArgumentException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
+   private EncryptionParts rawDataEncryption(final String sourceString, final byte[] subjectBytes) throws BadPaddingException, IllegalArgumentException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
       EncryptionParts result = new EncryptionParts();
 
       // Set format id
       result.formatId = FORMAT_3_ID;
 
-      Cipher aesCipher = Cipher.getInstance(ENCRYPTION_SPECIFICATION[result.formatId]);
+      final byte[] sourceBytes = sourceString.getBytes(STRING_ENCODING_FOR_DATA);
 
-      // Get a random iv
-      result.iv = new byte[aesCipher.getBlockSize()];
+      final String encryptionSpecification = ENCRYPTION_SPECIFICATION[result.formatId];
 
-      final SecureRandom sprng = new SecureRandom();
-
-      sprng.nextBytes(result.iv);
-
-      // Encrypt the source string with the iv
-      aesCipher.init(Cipher.ENCRYPT_MODE, this.m_EncryptionKey, new IvParameterSpec(result.iv));
-
-      final byte [] sourceBytes = sourceString.getBytes(STRING_ENCODING_FOR_DATA);
+      final Cipher aesCipher = Cipher.getInstance(encryptionSpecification);
 
       // Ensure that blinded array needs at least 2 AES blocks, so the length of the encrypted data
       // can not be inferred to be no longer than block size - 3 bytes (= 13 bytes for AES).
@@ -399,9 +486,21 @@ public class FileAndKeyEncryption implements AutoCloseable {
 
       Arrays.fill(unpaddedEncodedStringBytes, (byte) 0);
 
+      // Get a random iv
+      result.iv = new byte[aesCipher.getBlockSize()];
+
+      getSecureRandomInstance().nextBytes(result.iv);
+
+      final SecureSecretKeySpec encryptionKey = getSecretKeySpecDependingOnSubject(subjectBytes);
+
+      // Encrypt the source string with the iv
+      aesCipher.init(Cipher.ENCRYPT_MODE, encryptionKey, new IvParameterSpec(result.iv));
+
       result.encryptedData = aesCipher.doFinal(paddedEncodedStringBytes);
 
       Arrays.fill(paddedEncodedStringBytes, (byte) 0);
+
+      encryptionKey.close();
 
       return result;
    }
@@ -409,11 +508,11 @@ public class FileAndKeyEncryption implements AutoCloseable {
    /**
     * Get HMAC value of a byte array
     *
-    * @param key The key for the HMAC
+    * @param key  The key for the HMAC
     * @param data The data to be hashed
     * @return HMAC value of the specified data with specified key
-    * @throws java.security.InvalidKeyException
-    * @throws java.security.NoSuchAlgorithmException
+    * @throws InvalidKeyException      if the key is not valid for the HMAC algorithm (must never happen)
+    * @throws NoSuchAlgorithmException if there is no HMAC-256 algorithm (must never happen)
     */
    private byte[] getHmacValueForBytes(final byte[] key, final byte[] data) throws InvalidKeyException, NoSuchAlgorithmException {
       final Mac hmac = getHMACInstance();
@@ -434,9 +533,9 @@ public class FileAndKeyEncryption implements AutoCloseable {
     *
     * @param hmacKey HMAC key to be used
     * @param keyFile Key file to be used
-    * @throws InvalidKeyException
-    * @throws IOException
-    * @throws NoSuchAlgorithmException
+    * @throws InvalidKeyException      if the key is not valid for the HMAC algorithm (must never happen)
+    * @throws IOException              if there is an error reading the key file
+    * @throws NoSuchAlgorithmException if there is no HMAC-256 algorithm (must never happen)
     */
    private void setKeysFromKeyAndFile(final byte[] hmacKey, final Path keyFile) throws InvalidKeyException, IOException, NoSuchAlgorithmException {
       final byte[] hmacOfKeyFile = getHmacValueForBytes(hmacKey, Files.readAllBytes(keyFile));
@@ -446,7 +545,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
       // 1. half of file HMAC is used as the encryption key of this instance
       keyPart = Arrays.copyOfRange(hmacOfKeyFile, 0, 16);
 
-      this.m_EncryptionKey = new SecureSecretKeySpec(keyPart, FORMAT_1_ENCRYPTION_ALGORITHM);
+      this.m_EncryptionKey = new ProtectedByteArray(keyPart);
       Arrays.fill(keyPart, (byte) 0);
 
       // 2. half of file HMAC is used as the HMAC key of this instance
@@ -462,15 +561,16 @@ public class FileAndKeyEncryption implements AutoCloseable {
    /*
     * Public methods
     */
+
    /**
     * Constructor for this instance
     *
-    * @param hmacKey Key for the HMAC of the file
+    * @param hmacKey     Key for the HMAC of the file
     * @param keyFilePath Key file path
     * @throws IllegalArgumentException
-    * @throws InvalidKeyException
-    * @throws IOException
-    * @throws NoSuchAlgorithmException
+    * @throws InvalidKeyException      if the key is invalid (must never happen)
+    * @throws IOException              if there was an error while reading the key file
+    * @throws NoSuchAlgorithmException if the encryption algorithm is invalid (must never happen)
     */
    public FileAndKeyEncryption(final byte[] hmacKey, final String keyFilePath) throws IllegalArgumentException, InvalidKeyException, IOException, NoSuchAlgorithmException {
       checkHMACKey(hmacKey);
@@ -483,21 +583,22 @@ public class FileAndKeyEncryption implements AutoCloseable {
    }
 
    /**
-    * Encrypt a string
+    * Encrypt a string under a subject
     *
     * @param stringToEncrypt String to encrypt
+    * @param subject         The subject of this encryption
     * @return Printable form of the encrypted string
-    * @throws BadPaddingException
+    * @throws BadPaddingException    if there was a bad padding (must never happen)
     * @throws IllegalArgumentException
-    * @throws IllegalBlockSizeException
-    * @throws InvalidAlgorithmParameterException
-    * @throws InvalidKeyException
-    * @throws NoSuchAlgorithmException
-    * @throws NoSuchPaddingException
-    * @throws UnsupportedEncodingException
+    * @throws IllegalBlockSizeException if the block size is invalid (must never happen)
+    * @throws InvalidAlgorithmParameterException if an encryption parameter is invalid (must never happen)
+    * @throws InvalidKeyException if the key is invalid (must never happen)
+    * @throws NoSuchAlgorithmException if the encryption algorithm is invalid (must never happen)
+    * @throws NoSuchPaddingException if the padding algorithm is invalid (must never happen)
+    * @throws UnsupportedEncodingException if there is no UTF-8 encoding (must never happen)
     */
-   public String encryptData(final String stringToEncrypt) throws BadPaddingException, IllegalArgumentException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
-      EncryptionParts encryptionParts = rawDataEncryption(stringToEncrypt);
+   public String encryptData(final String stringToEncrypt, final String subject) throws BadPaddingException, IllegalArgumentException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
+      EncryptionParts encryptionParts = rawDataEncryption(stringToEncrypt, subject.getBytes(STRING_ENCODING_FOR_DATA));
 
       encryptionParts.checksum = getChecksumForEncryptionParts(encryptionParts);
 
@@ -509,22 +610,42 @@ public class FileAndKeyEncryption implements AutoCloseable {
    }
 
    /**
+    * Encrypt a string
+    *
+    * @param stringToEncrypt String to encrypt
+    * @return Printable form of the encrypted string
+    * @throws BadPaddingException    if there was a bad padding (must never happen)
+    * @throws IllegalArgumentException
+    * @throws IllegalBlockSizeException if the block size is invalid (must never happen)
+    * @throws InvalidAlgorithmParameterException if an encryption parameter is invalid (must never happen)
+    * @throws InvalidKeyException if the key is invalid (must never happen)
+    * @throws NoSuchAlgorithmException if the encryption algorithm is invalid (must never happen)
+    * @throws NoSuchPaddingException if the padding algorithm is invalid (must never happen)
+    * @throws UnsupportedEncodingException if there is no UTF-8 encoding (must never happen)
+    */
+   public String encryptData(final String stringToEncrypt) throws BadPaddingException, IllegalArgumentException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
+
+      return encryptData(stringToEncrypt, "");
+   }
+
+   /**
     * Decrypt an encrypted string
     *
     * @param stringToDecrypt String to decrypt
+    * @param subject         The subject of this decryption
     * @return Decrypted string
-    * @throws BadPaddingException
-    * @throws DataIntegrityException
-    * @throws IllegalArgumentException
-    * @throws IllegalBlockSizeException
-    * @throws InvalidAlgorithmParameterException
-    * @throws InvalidKeyException
+    * @throws BadPaddingException    if there was a bad padding (must never happen)
+    * @throws DataIntegrityException if the checksum does not match the data
+    * @throws IllegalArgumentException if the given string does not adhere to the format specification
+    * @throws IllegalBlockSizeException if the block size is invalid (must never happen)
+    * @throws InvalidAlgorithmParameterException if an encryption parameter is invalid (must never happen)
+    * @throws InvalidKeyException if the key is invalid (must never happen)
     * @throws IOException
-    * @throws NoSuchAlgorithmException
-    * @throws NoSuchPaddingException
-    * @throws UnsupportedEncodingException
+    * @throws NoSuchAlgorithmException if the encryption algorithm is invalid (must never happen)
+    * @throws NoSuchPaddingException if the padding algorithm is invalid (must never happen)
+    * @throws UnsupportedEncodingException if there is no UTF-8 encoding (must never happen)
     */
-   public String decryptData(final String stringToDecrypt) throws BadPaddingException, DataIntegrityException, IllegalArgumentException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
+   public String decryptData(final String stringToDecrypt, final String subject) throws BadPaddingException, DataIntegrityException, IllegalArgumentException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
       final EncryptionParts encryptionParts = getPartsFromPrintableString(stringToDecrypt);
 
       String result = null;
@@ -535,7 +656,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
          case FORMAT_1_ID:
             checkChecksumForEncryptionParts(encryptionParts);
 
-            result = rawDataDecryption(encryptionParts);
+            result = rawDataDecryption(encryptionParts, subject.getBytes(STRING_ENCODING_FOR_DATA));
 
             encryptionParts.zap();
             break;
@@ -549,12 +670,33 @@ public class FileAndKeyEncryption implements AutoCloseable {
       return result;
    }
 
+   /**
+    * Decrypt an encrypted string
+    *
+    * @param stringToDecrypt String to decrypt
+    * @return Decrypted string
+    * @throws BadPaddingException    if there was a bad padding (must never happen)
+    * @throws DataIntegrityException if the checksum does not match the data
+    * @throws IllegalArgumentException if the given string does not adhere to the format specification
+    * @throws IllegalBlockSizeException if the block size is invalid (must never happen)
+    * @throws InvalidAlgorithmParameterException if an encryption parameter is invalid (must never happen)
+    * @throws InvalidKeyException if the key is invalid (must never happen)
+    * @throws IOException
+    * @throws NoSuchAlgorithmException if the encryption algorithm is invalid (must never happen)
+    * @throws NoSuchPaddingException if the padding algorithm is invalid (must never happen)
+    * @throws UnsupportedEncodingException if there is no UTF-8 encoding (must never happen)
+    */
+   public String decryptData(final String stringToDecrypt) throws BadPaddingException, DataIntegrityException, IllegalArgumentException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
+      return decryptData(stringToDecrypt, "");
+   }
+
    /*
     * Method for AutoCloseable interface
     */
+
    /**
     * Secure deletion of keys
-    *
+    * <p>
     * This method is idempotent and never throws an exception.
     */
    @Override
