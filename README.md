@@ -10,7 +10,11 @@ The idea is to store credentials in a config file in an encrypted form like this
 
     <credentials>
       <user name="dbuser" user="3$OX6llWMaTw04aM27M8ie0g==$wxINKIoVSPue9AWTtFCETM0AFIeTTRWi+u1sUyX0RAE=$xGIUOaz+OYCBv5Qg9zgD6v4AgFZtg2qgHnurNWnf+G0=" password="3$1JoZeUaYLWtxJ0lxriBVww==$a0J6qe2RC2kiYAO+l04G1lihqNPNyUCAT21gsJzhDEE=$y5xX+gBa1QRs4PwS7Ut+AXk9NDCnAd86R6MCAOXkX5s="/>
-    </credentials >
+    </credentials>
+
+If one uses OpenShift and encrypted secret can be useds as an environment variable, a file, or an imagePullSecret. If one does not store the secret itself, but an encrypted secret this can be used like following. E.g. if there is a secret named "`oc-userid-secret`" that is mapped as an evironment variable one can use it like this:
+
+    someStartupCmd --userid=$(java -jar tupw.jar decrypt d:\keyfile.bin userid ${oc-userid-secret})
 
 The encrypted data is stored as four parts separated by '$' characters:
 
@@ -95,7 +99,7 @@ The command line program uses a library that can be found in the `dbscryptolib` 
 	
 	try (FileAndKeyEncryption MyEncryptor = new FileAndKeyEncryption(HMAC_KEY, pathToKeyFile)) {
 	   ...
-       String decryptedData = MyEncryptor.decryptData(dataToDecrypt, parameterName);
+       String decryptedData = MyEncryptor.decryptData(dataToDecrypt, subject);
 	   ...
 	   // TODO: Do whatever you need to do with the decrypted string
     } catch (Exception e) {
