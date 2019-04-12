@@ -16,6 +16,8 @@ If one uses OpenShift an encrypted secret can be used as an environment variable
 
     someStartupCmd --userid=$(java -jar tupw.jar decrypt d:\keyfile.bin userid ${oc-userid-secret})
 
+This is especially useful as environment variables show up in logs and memory dumps. If the secret is stored unencrypted it can be read in clear by anyone who has access to the logs and the memory dumps. Also, everbody who has some kind of access to a pod can echo the environment variable or cat the file. TUPW helps here in that the secret is nowhere stored in clear text format.
+
 The encrypted data is stored as four parts separated by '$' characters:
 
 1. The format code:
