@@ -9,7 +9,7 @@ This program serves as an example of how to safely store credentials in config f
 The idea is to store credentials in a config file in an encrypted form like this:
 
     <credentials>
-      <user name="dbuser" user="4$mmAq871mld4AgTUDvkQkvA$XbIxT7soZ07Rm0rGsoic1059aghAai2mG5QYl25j/84jHwELMIVeeVrzZgal2UvR$KAR9QlLreFfCmFRJIIn7ZyZZUldeq5czY5aDgLhxQUc" password="4$KZEJWdCFuP7kw2BmtJ1nBQ$mfws0F8wb74B59Cj1AlsCa55/hdl4EH49PwaHYtcx6E$0UwXrk9MpTDeYKfK7wlwMtOVoTbXzINt6puegp2RnSM"/>
+      <user name="dbuser" user="4$mmAq871mld4AgTUDvkQkvA$XbIxT7soZ07Rm0rGsoic1059aghAai2mG5QYl25j/84jHwELMIVeeVrzZgal2UvR$KAR9QlLreFfCmFRJIIn7ZyZZUldeq5czY5aDgLhxQUc" password="4$VYb030llJwQLSmOT+OwsjA$1R447MnqP71JV12qXASEd++gR3cW9AfRUHVmWThiRwU+JzGHD99p53wbIV+kKoiy$cVBESqRgkflwX2jzBkThyfAzHWJm3L1tg5LCq849Pzw"/>
     </credentials>
 
 If one uses OpenShift, GitLab or any other software that puts secrets in environment variables, files or imagePullSecrets, these secrets can be encrypted with TUPW. If one does not store the secret itself, but an encrypted secret this can be used like following. E.g. if there is a secret named "`myapp_password_secret`" that is mapped as an evironment variable one can use it like this:
@@ -58,13 +58,13 @@ The program is used like this ('d:\keyfile.bin' is the name of the key file):
 
 This generates (for example) the following output:
 
-    4$mmAq871mld4AgTUDvkQkvA$XbIxT7soZ07Rm0rGsoic1059aghAai2mG5QYl25j/84jHwELMIVeeVrzZgal2UvR$KAR9QlLreFfCmFRJIIn7ZyZZUldeq5czY5aDgLhxQUc
+    4$VYb030llJwQLSmOT+OwsjA$1R447MnqP71JV12qXASEd++gR3cW9AfRUHVmWThiRwU+JzGHD99p53wbIV+kKoiy$cVBESqRgkflwX2jzBkThyfAzHWJm3L1tg5LCq849Pzw
 	
 Note that the "iv" part (the one after the first '$' character) of the encryption will change with each invocation of the program as it is derived from a secure random number generator and hence the result of the encryption (which uses the random iv) and also the HMAC will be different, as well, even if the same key file is used in all of these invocations.
 
 Of course, one would need the keyfile to decrypt this like so:
 
-    java -jar tupw.jar decrypt d:\keyfile.bin password "4$mmAq871mld4AgTUDvkQkvA$XbIxT7soZ07Rm0rGsoic1059aghAai2mG5QYl25j/84jHwELMIVeeVrzZgal2UvR$KAR9QlLreFfCmFRJIIn7ZyZZUldeq5czY5aDgLhxQUc"
+    java -jar tupw.jar decrypt d:\keyfile.bin password "4$VYb030llJwQLSmOT+OwsjA$1R447MnqP71JV12qXASEd++gR3cW9AfRUHVmWThiRwU+JzGHD99p53wbIV+kKoiy$cVBESqRgkflwX2jzBkThyfAzHWJm3L1tg5LCq849Pzw"
 
 which yields (with the correct key file):
 
