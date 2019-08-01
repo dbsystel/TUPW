@@ -24,6 +24,7 @@
  *     2017-12-21: V2.0.0: Pad to block size. fhs
  *     2018-06-11: V2.0.1: Block size must be greater than zero. fhs
  *     2018-08-15: V2.0.2: Added some "finals". fhs
+ *     2019-05-17: V2.0.3: Added a missing "final". fhs
  */
 package dbscryptolib;
 
@@ -34,7 +35,7 @@ import java.util.Arrays;
  * Implements arbitrary tail padding for block ciphers
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 2.0.2
+ * @version 2.0.3
  */
 public class ArbitraryTailPadding {
 
@@ -88,7 +89,7 @@ public class ArbitraryTailPadding {
       final byte[] padByte = new byte[1];
 
       if (unpaddedSourceData.length > 0) {
-         byte lastByte = unpaddedSourceData[unpaddedSourceData.length - 1];
+         final byte lastByte = unpaddedSourceData[unpaddedSourceData.length - 1];
 
          do
             SECURE_PRNG.nextBytes(padByte);
