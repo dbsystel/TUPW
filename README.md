@@ -80,13 +80,13 @@ The program can also be used in a pipe to decode a file like this:
 	
 The trailing "-" tells the program that the input comes from stdin and not from the command line. This makes it possible to decrypt a secret configuration file, use it to start a server and then remove it after the sever has been started.
 
-**Important**
-
-It is the responsibility of the user of the program or the library that the same initialization vector (iv) is **nerver** used twice or more. The iv is the second part of the string after the first "$" character. In practice the psudo random number generator is very unlikely to emit the same iv more than once. But it is possible! So check the iv and if that one has been used before, run the program once again to get a unique value.
-
 Of course, this is not perfectly safe, as an attacker can get access to the machine and extract the key file and the program classes and reverse engineer the way the key is calculated.
 
 This program just makes it harder to get at the credentials, as both the file and the program code are needed to reconstruct the encryption key.
+
+**Important**
+
+It is the responsibility of the user of the program or the library that the same initialization vector (iv) is **never** used twice or more. The iv is the second part of the string after the first "$" character. In practice the pseudo random number generator is very unlikely to emit the same iv more than once. But it is possible! So check the iv and if that one has been used before, run the program once again to get a unique value.
 
 ## Library
 
