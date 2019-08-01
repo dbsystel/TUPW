@@ -54,7 +54,7 @@ The above data can only be decrypted with the same file, the same HMAC key and t
 
 The program is used like this ('d:\keyfile.bin' is the name of the key file):
 
-    java -jar tupw.jar encrypt d:\keyfile.bin password Very1Very2Very3SécurePasswôrd?!
+    java -jar tupw.jar encrypt d:\keyfile.bin password "Very1Very2Very3SécurePasswôrd?!"
 
 This generates (for example) the following output:
 
