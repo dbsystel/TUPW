@@ -9,7 +9,7 @@ This program serves as an example of how to safely store credentials in config f
 The idea is to store credentials in a config file in an encrypted form like this:
 
     <credentials>
-      <user name="dbuser" user="3$OX6llWMaTw04aM27M8ie0g==$wxINKIoVSPue9AWTtFCETM0AFIeTTRWi+u1sUyX0RAE=$xGIUOaz+OYCBv5Qg9zgD6v4AgFZtg2qgHnurNWnf+G0=" password="3$1JoZeUaYLWtxJ0lxriBVww==$a0J6qe2RC2kiYAO+l04G1lihqNPNyUCAT21gsJzhDEE=$y5xX+gBa1QRs4PwS7Ut+AXk9NDCnAd86R6MCAOXkX5s="/>
+      <user name="dbuser" user="4$mmAq871mld4AgTUDvkQkvA$XbIxT7soZ07Rm0rGsoic1059aghAai2mG5QYl25j/84jHwELMIVeeVrzZgal2UvR$KAR9QlLreFfCmFRJIIn7ZyZZUldeq5czY5aDgLhxQUc" password="4$KZEJWdCFuP7kw2BmtJ1nBQ$mfws0F8wb74B59Cj1AlsCa55/hdl4EH49PwaHYtcx6E$0UwXrk9MpTDeYKfK7wlwMtOVoTbXzINt6puegp2RnSM"/>
     </credentials>
 
 If one uses OpenShift an encrypted secret can be used as an environment variable, a file, or an imagePullSecret. If one does not store the secret itself, but an encrypted secret this can be used like following. E.g. if there is a secret named "`oc-userid-secret`" that is mapped as an evironment variable one can use it like this:
