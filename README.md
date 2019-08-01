@@ -54,7 +54,7 @@ The above data can only be decrypted with the same file, the same HMAC key and t
 
 The program is used like this ('d:\keyfile.bin' is the name of the key file):
 
-    java -jar tupw.jar encrypt d:\keyfile.bin userid dbUser
+    java -jar tupw.jar encrypt d:\keyfile.bin password Very1Very2Very3SécurePasswôrd?!
 
 This generates (for example) the following output:
 
@@ -64,11 +64,11 @@ Note that the "iv" part (the one after the first '$' character) of the encryptio
 
 Of course, one would need the keyfile to decrypt this like so:
 
-    java -jar tupw.jar decrypt d:\keyfile.bin userid "4$mmAq871mld4AgTUDvkQkvA$XbIxT7soZ07Rm0rGsoic1059aghAai2mG5QYl25j/84jHwELMIVeeVrzZgal2UvR$KAR9QlLreFfCmFRJIIn7ZyZZUldeq5czY5aDgLhxQUc"
+    java -jar tupw.jar decrypt d:\keyfile.bin password "4$mmAq871mld4AgTUDvkQkvA$XbIxT7soZ07Rm0rGsoic1059aghAai2mG5QYl25j/84jHwELMIVeeVrzZgal2UvR$KAR9QlLreFfCmFRJIIn7ZyZZUldeq5czY5aDgLhxQUc"
 
 which yields (with the correct key file):
 
-    dbUser
+    Very1Very2Very3SécurePasswôrd?!
 
 This way one can store the credentials and the key file in configuration management systems without storing them in the clear.
 
