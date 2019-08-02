@@ -39,7 +39,7 @@
  *     2019-08-01: V2.1.0: Use CBC mode, as the encrypted part is protected by a HMAC and CBC does
  *                         not suffer from the stream cipher vulnerabilities of CFB and CTR mode.
  *                         USe Base64 encoding without padding. fhs
- *     2019-08-01: V2.1.1: New data integrity exception text. fhs
+ *     2019-08-02: V2.1.1: New data integrity exception text. fhs
  */
 package dbscryptolib;
 
