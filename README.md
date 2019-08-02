@@ -72,7 +72,7 @@ which yields (with the correct key file):
 
 This way one can store the credentials and the key file in configuration management systems without storing them in the clear.
 
-Note that "userid" is the optional "subject" parameter. It can have any value you like and is used to modify the encryption key. It may also be not present, at all.
+Note that "password" is the optional "subject" parameter. It can have any value you like and is used to modify the encryption key. It may also be not present, at all.
 
 The decryption part of the program would typically be copied and used in an application to decrypt the credentials in the configuration file.
 
