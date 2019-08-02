@@ -39,7 +39,7 @@
  *     2019-08-01: V2.1.0: Use CBC mode, as the encrypted part is protected by a HMAC and CBC does
  *                         not suffer from the stream cipher vulnerabilities of CFB and CTR mode.
  *                         USe Base64 encoding without padding. fhs
- *     2019-08-02: V2.1.1: New data integrity exception text. fhs
+ *     2019-08-02: V2.1.1: New data integrity exception text. Get some data from the SPRNG after instantiation. fhs
  */
 package dbscryptolib;
 
@@ -204,8 +204,14 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @return SecureRandom instance
     */
    private SecureRandom getSecureRandomInstance() {
-      if (SECURE_RANDOM_INSTANCE == null)
+      if (SECURE_RANDOM_INSTANCE == null) {
          SECURE_RANDOM_INSTANCE = new SecureRandom();
+
+         // Now get some random data from the SPRNG to initialize it
+         final byte[] someData = new byte[723];
+
+         SECURE_RANDOM_INSTANCE.nextBytes(someData);
+      }
 
       return SECURE_RANDOM_INSTANCE;
    }
@@ -251,9 +257,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     *                                  number of '$' separated parts
     */
    private EncryptionParts getPartsFromPrintableString(final String encryptionText) throws IllegalArgumentException {
-      String[] parts;
-
-      parts = StringSplitter.split(encryptionText, PARTS_SEPARATOR);  // Use my own string splitter to avoid Java's RegEx inefficiency
+      final String[] parts = StringSplitter.split(encryptionText, PARTS_SEPARATOR);  // Use my own string splitter to avoid Java's RegEx inefficiency
 //        parts = encryptionText.split("\\Q$\\E");   // This should have been just "$". But Java stays true to it's motto: Why make it simple when there's a complicated way to do it?
 
       final EncryptionParts result = new EncryptionParts();
