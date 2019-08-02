@@ -39,6 +39,7 @@
  *     2019-08-01: V2.1.0: Use CBC mode, as the encrypted part is protected by a HMAC and CBC does
  *                         not suffer from the stream cipher vulnerabilities of CFB and CTR mode.
  *                         USe Base64 encoding without padding. fhs
+ *     2019-08-01: V2.1.1: New data integrity exception text. fhs
  */
 package dbscryptolib;
 
@@ -62,7 +63,7 @@ import java.util.Base64;
  * Implement encryption by key generated from file and key
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 2.1.0
+ * @version 2.1.1
  */
 public class FileAndKeyEncryption implements AutoCloseable {
 
@@ -448,7 +449,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
       final byte[] calculatedChecksum = getChecksumForEncryptionParts(encryptionParts);
 
       if (!SafeArrays.constantTimeEquals(calculatedChecksum, encryptionParts.checksum))
-         throw new DataIntegrityException("Checksums do not match");
+         throw new DataIntegrityException("Checksum does not match data");
    }
 
    /**

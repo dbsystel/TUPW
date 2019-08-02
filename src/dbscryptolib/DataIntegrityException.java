@@ -19,21 +19,21 @@
  *
  * Author: Frank Schwab, DB Systel GmbH
  *
- * Changes: 
+ * Changes:
  *     2018-05-25: V1.0.0: Created. fhs
+ *     2019-08-02: V1.0.1: Added missing call to super in constructor without arguments. fhs
  */
 package dbscryptolib;
 
 /**
- * Exception to indicate a data checksum mismatch
+ * Exception to indicate that data was tampered with
  *
  * @author FrankSchwab
- * @version 1.0.0
+ * @version 1.0.1
  */
 public class DataIntegrityException extends Exception {
 
-   public DataIntegrityException() {
-   }
+   public DataIntegrityException() { super(); }
 
    public DataIntegrityException(String message) {
       super(message);
