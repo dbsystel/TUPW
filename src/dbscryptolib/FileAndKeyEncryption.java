@@ -202,12 +202,13 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * Get instance of SecureRandom
     *
     * @return SecureRandom instance
-    * @throws NoSuchAlgorithmException if the algorithm specified in the securerandom.strongAlgorithms Security property
-    *         is not available
     */
-   private SecureRandom getSecureRandomInstance() throws NoSuchAlgorithmException {
+   private SecureRandom getSecureRandomInstance() {
+      // Use "new SecureRandom()" instead of "SecureRandom.getInstanceStrong()" as the latter
+      // may block indefinitely on Linux containers because too many containers reading simultaneously
+      // from "/dev/random" and the OS not having enough entropy to refill the random number generator
       if (SECURE_RANDOM_INSTANCE == null)
-         SECURE_RANDOM_INSTANCE = SecureRandom.getInstanceStrong();
+         SECURE_RANDOM_INSTANCE = new SecureRandom();
 
       return SECURE_RANDOM_INSTANCE;
    }
