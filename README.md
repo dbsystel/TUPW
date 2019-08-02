@@ -1,6 +1,6 @@
 # TUPW
 
-Safely store credentials in config files
+Safely store credentials in secrets, environment variables, and files
 
 ## Command Line Program
 
