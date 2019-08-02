@@ -239,7 +239,6 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * Get instance of SecureRandom
     *
     * @return SecureRandom instance
-    * @throws NoSuchAlgorithmException if there
     */
    private SecureRandom getSecureRandomInstance() {
       if (SECURE_RANDOM_INSTANCE == null)
