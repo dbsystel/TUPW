@@ -56,8 +56,10 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.security.Security;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Set;
 
 /**
  * Implement encryption by key generated from file and key
@@ -199,16 +201,55 @@ public class FileAndKeyEncryption implements AutoCloseable {
    }
 
    /**
+    * Get correct non-blocking SecureRandom provider
+    *
+    * @return Name of non-blocking SecureRandom provider
+    */
+   private String getSecureRandomAlgorithmName() {
+      String result = "";
+
+      final Set<String> algorithms = Security.getAlgorithms("SecureRandom");
+
+      for (String algorithm : algorithms) {
+         // Use native windows SPRNG on Windows
+         if (algorithm.startsWith("WINDOWS-")) {
+            result = algorithm;
+            break;
+         }
+
+         // Use native non-blocking SPRNG on Linux
+         if (algorithm.startsWith("NATIVE")) {
+            if (algorithm.endsWith("NONBLOCKING"))
+               result = algorithm;
+            else
+               if (!algorithm.endsWith("BLOCKING"))
+                  if (result.length() == 0)
+                     result = algorithm;
+         }
+      }
+
+      // This one should always be there
+      if (result.length() == 0)
+         result = "SHA1PRNG";
+
+      return result;
+   }
+
+   /**
     * Get instance of SecureRandom
     *
     * @return SecureRandom instance
+    * @throws NoSuchAlgorithmException if there
     */
    private SecureRandom getSecureRandomInstance() {
-      // Use "new SecureRandom()" instead of "SecureRandom.getInstanceStrong()" as the latter
-      // may block indefinitely on Linux containers because too many containers reading simultaneously
-      // from "/dev/random" and the OS not having enough entropy to refill the random number generator
       if (SECURE_RANDOM_INSTANCE == null)
-         SECURE_RANDOM_INSTANCE = new SecureRandom();
+         try {
+            SECURE_RANDOM_INSTANCE = SecureRandom.getInstance(getSecureRandomAlgorithmName());
+         }
+         catch (NoSuchAlgorithmException e) {
+            // This will always work but is less secure than the other methods
+            SECURE_RANDOM_INSTANCE = new SecureRandom();
+         }
 
       return SECURE_RANDOM_INSTANCE;
    }
