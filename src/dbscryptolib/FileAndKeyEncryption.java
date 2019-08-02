@@ -39,7 +39,7 @@
  *     2019-08-01: V2.1.0: Use CBC mode, as the encrypted part is protected by a HMAC and CBC does
  *                         not suffer from the stream cipher vulnerabilities of CFB and CTR mode.
  *                         USe Base64 encoding without padding. fhs
- *     2019-08-02: V2.1.1: New data integrity exception text. Get some data from the SPRNG after instantiation. fhs
+ *     2019-08-02: V2.1.1: New data integrity exception text. Use strong SPRNG. fhs
  */
 package dbscryptolib;
 
@@ -202,16 +202,12 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * Get instance of SecureRandom
     *
     * @return SecureRandom instance
+    * @throws NoSuchAlgorithmException if the algorithm specified in the securerandom.strongAlgorithms Security property
+    *         is not available
     */
-   private SecureRandom getSecureRandomInstance() {
-      if (SECURE_RANDOM_INSTANCE == null) {
-         SECURE_RANDOM_INSTANCE = new SecureRandom();
-
-         // Now get some random data from the SPRNG to initialize it
-         final byte[] someData = new byte[723];
-
-         SECURE_RANDOM_INSTANCE.nextBytes(someData);
-      }
+   private SecureRandom getSecureRandomInstance() throws NoSuchAlgorithmException {
+      if (SECURE_RANDOM_INSTANCE == null)
+         SECURE_RANDOM_INSTANCE = new SecureRandom().getInstanceStrong();
 
       return SECURE_RANDOM_INSTANCE;
    }
