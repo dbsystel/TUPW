@@ -41,6 +41,7 @@
  *                         Use Base64 encoding without padding. fhs
  *     2019-08-02: V2.1.1: New data integrity exception text. fhs
  *     2019-08-02: V2.2.0: Use strong SPRNG. fhs
+ *     2019-08-03: V2.2.1: Refactored SPRNG instantiation. fhs
  */
 package dbscryptolib;
 
@@ -57,16 +58,14 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.security.Security;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.Set;
 
 /**
  * Implement encryption by key generated from file and key
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 2.2.0
+ * @version 2.2.1
  */
 public class FileAndKeyEncryption implements AutoCloseable {
 
@@ -202,56 +201,13 @@ public class FileAndKeyEncryption implements AutoCloseable {
    }
 
    /**
-    * Get correct non-blocking SecureRandom provider
-    *
-    * @return Name of non-blocking SecureRandom provider
-    */
-   private String getSecureRandomAlgorithmName() {
-      String result = "";
-
-      final Set<String> algorithms = Security.getAlgorithms("SecureRandom");
-
-      for (String algorithm : algorithms) {
-         // Use native windows SPRNG on Windows
-         if (algorithm.startsWith("WINDOWS-")) {
-            result = algorithm;
-            break;
-         }
-
-         // Use native non-blocking SPRNG on Linux
-         if (algorithm.startsWith("NATIVE")) {
-            if (algorithm.endsWith("NONBLOCKING")) {
-               result = algorithm;
-               break;
-            }
-            else
-               if (!algorithm.endsWith("BLOCKING"))
-                  if (result.length() == 0)
-                     result = algorithm;
-         }
-      }
-
-      // This one should always be there
-      if (result.length() == 0)
-         result = "SHA1PRNG";
-
-      return result;
-   }
-
-   /**
     * Get instance of SecureRandom
     *
     * @return SecureRandom instance
     */
    private SecureRandom getSecureRandomInstance() {
       if (SECURE_RANDOM_INSTANCE == null)
-         try {
-            SECURE_RANDOM_INSTANCE = SecureRandom.getInstance(getSecureRandomAlgorithmName());
-         }
-         catch (NoSuchAlgorithmException e) {
-            // This will always work but is less secure than the other methods
-            SECURE_RANDOM_INSTANCE = new SecureRandom();
-         }
+         SECURE_RANDOM_INSTANCE = SecureRandomFactory.getSecureRandomInstance();
 
       return SECURE_RANDOM_INSTANCE;
    }
