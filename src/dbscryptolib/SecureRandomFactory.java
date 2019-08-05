@@ -21,6 +21,7 @@
  *
  * Changes:
  *     2019-08-03: V1.0.0: Created. fhs
+ *     2019-08-05: V1.1.0: Cache SecureRandom algorithm name. Change method name. fhs
  */
 package dbscryptolib;
 
@@ -33,9 +34,11 @@ import java.util.Set;
  * A class to get the most secure SecureRandom instance
  *
  * @author Frank Schwab
- * @version 1.0.0
+ * @version 1.1.0
  */
 public class SecureRandomFactory {
+   private static String m_SecureRandomAlgorithmName;
+
    /**
     * Get optimal SecureRandom provider
     *
@@ -43,10 +46,9 @@ public class SecureRandomFactory {
     * Choose a non-blocking SecureRandom provider. On Windows this is the "WINDOWS-PRNG" provider.
     * On *ux this is the "NATIVEPRNGNONBLOCKING" provider. If there is no non-blocking provider
     * look for just "NATIVEPRNG" as this is non-blocking for the .nextBytes method, as well.
-    * If none of these is found, use "SHA1PRNG". This one should always be there.
     * </p>
     *
-    * @return Name of optimal SecureRandom provider
+    * @return Name of optimal SecureRandom provider, or an empty string if none is found
     */
    private static String getOptimalSecureRandomAlgorithmName() {
       String result = "";
@@ -66,19 +68,14 @@ public class SecureRandomFactory {
             if (algorithm.endsWith("NONBLOCKING")) {
                result = algorithm;
                break;
-            } else
-               if (!algorithm.endsWith("BLOCKING"))  // Never use the BLOCKING provider
-                  if (result.length() == 0) {
-                     // Choose NATIVEPRNG if there is one
-                     result = algorithm;
-                     break;
-                  }
+            } else if (!algorithm.endsWith("BLOCKING"))  // Never use the BLOCKING provider
+               if (result.length() == 0) {
+                  // Choose NATIVEPRNG if there is one
+                  result = algorithm;
+                  break;
+               }
          }
       }
-
-      // If there is no WINDOWS or NATIVE provider use SHA1PRNG. It should always be there.
-      if (result.length() == 0)
-         result = "SHA1PRNG";
 
       return result;
    }
@@ -86,15 +83,28 @@ public class SecureRandomFactory {
    /**
     * Get optimal SecureRandom instance depending on the platform.
     *
+    * <p>
+    * This method retuns the default SecureRandom instance, if there is no optimal one.
+    * </p>
     * @return Optimal SecureRandom instance
     */
-   public static SecureRandom getSecureRandomInstance() {
+   public static SecureRandom getSensibleInstance() {
       SecureRandom result;
 
-      try {
-         result = SecureRandom.getInstance(getOptimalSecureRandomAlgorithmName());
-      } catch (NoSuchAlgorithmException e) {
-         // The chosen algorithm was not present, so use the default, which is guaranteed to work
+      // Only get the name of the SecureRandom algorithm if it has not been determined, yet.
+      if (m_SecureRandomAlgorithmName == null)
+         m_SecureRandomAlgorithmName = getOptimalSecureRandomAlgorithmName();
+
+      // Use the optimal algorithm, if there is one
+      if (m_SecureRandomAlgorithmName.length() > 0)
+         try {
+            result = SecureRandom.getInstance(getOptimalSecureRandomAlgorithmName());
+         } catch (NoSuchAlgorithmException e) {
+            // The chosen algorithm was not present, so use the default, which is guaranteed to work
+            result = new SecureRandom();
+         }
+      else {
+         // Choose the default if there could no optimal algorithm be found
          result = new SecureRandom();
       }
 

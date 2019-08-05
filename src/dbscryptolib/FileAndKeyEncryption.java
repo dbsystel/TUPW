@@ -42,6 +42,7 @@
  *     2019-08-02: V2.1.1: New data integrity exception text. fhs
  *     2019-08-02: V2.2.0: Use strong SPRNG. fhs
  *     2019-08-03: V2.2.1: Refactored SPRNG instantiation. fhs
+ *     2019-08-05: V2.2.2: Change method name of SPRNG instantiation. fhs
  */
 package dbscryptolib;
 
@@ -65,7 +66,7 @@ import java.util.Base64;
  * Implement encryption by key generated from file and key
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 2.2.1
+ * @version 2.2.2
  */
 public class FileAndKeyEncryption implements AutoCloseable {
 
@@ -207,7 +208,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     */
    private SecureRandom getSecureRandomInstance() {
       if (SECURE_RANDOM_INSTANCE == null)
-         SECURE_RANDOM_INSTANCE = SecureRandomFactory.getSecureRandomInstance();
+         SECURE_RANDOM_INSTANCE = SecureRandomFactory.getSensibleInstance();
 
       return SECURE_RANDOM_INSTANCE;
    }
