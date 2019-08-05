@@ -98,7 +98,7 @@ public class SecureRandomFactory {
       // Use the optimal algorithm, if there is one
       if (m_SecureRandomAlgorithmName.length() > 0)
          try {
-            result = SecureRandom.getInstance(getOptimalSecureRandomAlgorithmName());
+            result = SecureRandom.getInstance(m_SecureRandomAlgorithmName);
          } catch (NoSuchAlgorithmException e) {
             // The chosen algorithm was not present, so use the default, which is guaranteed to work
             result = new SecureRandom();
