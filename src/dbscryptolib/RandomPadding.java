@@ -19,8 +19,9 @@
  *
  * Author: Frank Schwab, DB Systel GmbH
  *
- * Changes: 
+ * Changes:
  *     2018-08-16: V1.0.0: Created. fhs
+ *     2019-08-06: V1.0.2: Use SecureRandomFactory. fhs
  */
 package dbscryptolib;
 
@@ -31,7 +32,7 @@ import java.util.Arrays;
  * Implements arbitrary tail padding for block ciphers
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.0.1
+ * @version 1.0.2
  */
 public class RandomPadding {
 
@@ -54,7 +55,7 @@ public class RandomPadding {
     * This is placed here so the expensive instantiation of the SecureRandom
     * class is done only once.
     */
-   private static final SecureRandom SECURE_PRNG = new SecureRandom();
+   private static final SecureRandom SECURE_PRNG = SecureRandomFactory.getSensibleInstance();
 
    /*
     * Private methods

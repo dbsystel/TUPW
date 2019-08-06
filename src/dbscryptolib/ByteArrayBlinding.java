@@ -19,8 +19,9 @@
  *
  * Author: Frank Schwab, DB Systel GmbH
  *
- * Changes: 
+ * Changes:
  *     2018-08-16: V1.0.0: Created. fhs
+ *     2019-08-06: V1.0.2: Use SecureRandomFactory. fhs
  */
 package dbscryptolib;
 
@@ -34,14 +35,14 @@ import java.util.Arrays;
  * Implements blinding for byte arrays
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.0.1
+ * @version 1.0.2
  */
 public class ByteArrayBlinding {
 
    /**
     * Class level secure pseudo random number generator
     */
-   private final static SecureRandom SECURE_PRNG = new SecureRandom();
+   private final static SecureRandom SECURE_PRNG = SecureRandomFactory.getSensibleInstance();
 
    private final static String ERROR_MESSAGE_INVALID_ARRAY = "Invalid blinded byte array";
    private final static String ERROR_MESSAGE_INVALID_MIN_LENGTH = "Invalid minimum length";
