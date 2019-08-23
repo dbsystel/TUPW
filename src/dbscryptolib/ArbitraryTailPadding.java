@@ -26,6 +26,7 @@
  *     2018-08-15: V2.0.2: Added some "finals". fhs
  *     2019-05-17: V2.0.3: Added a missing "final". fhs
  *     2019-08-06: V2.0.4: Use SecureRandomFactory. fhs
+ *     2019-08-23: V2.0.5: Use SecureRandom singleton. fhs
  */
 package dbscryptolib;
 
@@ -36,7 +37,7 @@ import java.util.Arrays;
  * Implements arbitrary tail padding for block ciphers
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 2.0.4
+ * @version 2.0.5
  */
 public class ArbitraryTailPadding {
 
@@ -59,7 +60,7 @@ public class ArbitraryTailPadding {
     * This is placed here so the expensive instantiation of the SecureRandom
     * class is done only once.
     */
-   private static final SecureRandom SECURE_PRNG = SecureRandomFactory.getSensibleInstance();
+   private static final SecureRandom SECURE_PRNG = SecureRandomFactory.getSensibleSingleton();
 
    /*
     * Private methods

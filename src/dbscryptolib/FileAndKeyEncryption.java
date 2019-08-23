@@ -208,7 +208,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     */
    private SecureRandom getSecureRandomInstance() {
       if (SECURE_RANDOM_INSTANCE == null)
-         SECURE_RANDOM_INSTANCE = SecureRandomFactory.getSensibleInstance();
+         SECURE_RANDOM_INSTANCE = SecureRandomFactory.getSensibleSingleton();
 
       return SECURE_RANDOM_INSTANCE;
    }
