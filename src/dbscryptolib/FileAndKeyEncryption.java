@@ -43,6 +43,7 @@
  *     2019-08-02: V2.2.0: Use strong SPRNG. fhs
  *     2019-08-03: V2.2.1: Refactored SPRNG instantiation. fhs
  *     2019-08-05: V2.2.2: Change method name of SPRNG instantiation. fhs
+ *     2019-08-23: V2.2.3: Use SecureRandom singleton. fhs
  */
 package dbscryptolib;
 
@@ -66,7 +67,7 @@ import java.util.Base64;
  * Implement encryption by key generated from file and key
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 2.2.2
+ * @version 2.2.3
  */
 public class FileAndKeyEncryption implements AutoCloseable {
 
