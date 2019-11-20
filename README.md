@@ -6,13 +6,9 @@ Safely store credentials in secrets, environment variables, and files
 
 This program serves as an example of how to safely store credentials in config files. It works as a command line tool to encrypt and decrypt credentials. The decryption part can be incorporated into an application.
 
-The idea is to store credentials in a config file in an encrypted form like this:
+The idea is to store credentials in a config file in an encrypted form. If one uses OpenShift, GitLab or any other software that puts secrets in environment variables, files or imagePullSecrets, these secrets can be encrypted with TUPW. Instead of the cleartext secret an attacker would only see something like this:
 
-    <credentials>
-      <user name="dbuser" user="4$mmAq871mld4AgTUDvkQkvA$XbIxT7soZ07Rm0rGsoic1059aghAai2mG5QYl25j/84jHwELMIVeeVrzZgal2UvR$KAR9QlLreFfCmFRJIIn7ZyZZUldeq5czY5aDgLhxQUc" password="4$VYb030llJwQLSmOT+OwsjA$1R447MnqP71JV12qXASEd++gR3cW9AfRUHVmWThiRwU+JzGHD99p53wbIV+kKoiy$cVBESqRgkflwX2jzBkThyfAzHWJm3L1tg5LCq849Pzw"/>
-    </credentials>
-
-If one uses OpenShift, GitLab or any other software that puts secrets in environment variables, files or imagePullSecrets, these secrets can be encrypted with TUPW.
+    password=4$VYb030llJwQLSmOT+OwsjA$1R447MnqP71JV12qXASEd++gR3cW9AfRUHVmWThiRwU+JzGHD99p53wbIV+kKoiy$cVBESqRgkflwX2jzBkThyfAzHWJm3L1tg5LCq849Pzw
 
 This is especially useful as environment variables show up in logs and memory dumps. If the secret is stored unencrypted it can be read in clear by anyone who has access to the logs and the memory dumps. Also, everbody who has some kind of access to a pod can echo the environment variable or cat the file. TUPW helps here in that the secret is nowhere stored in clear text format.
 
