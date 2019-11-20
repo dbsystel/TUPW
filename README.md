@@ -12,11 +12,7 @@ The idea is to store credentials in a config file in an encrypted form like this
       <user name="dbuser" user="4$mmAq871mld4AgTUDvkQkvA$XbIxT7soZ07Rm0rGsoic1059aghAai2mG5QYl25j/84jHwELMIVeeVrzZgal2UvR$KAR9QlLreFfCmFRJIIn7ZyZZUldeq5czY5aDgLhxQUc" password="4$VYb030llJwQLSmOT+OwsjA$1R447MnqP71JV12qXASEd++gR3cW9AfRUHVmWThiRwU+JzGHD99p53wbIV+kKoiy$cVBESqRgkflwX2jzBkThyfAzHWJm3L1tg5LCq849Pzw"/>
     </credentials>
 
-If one uses OpenShift, GitLab or any other software that puts secrets in environment variables, files or imagePullSecrets, these secrets can be encrypted with TUPW. If one does not store the secret itself, but an encrypted secret this can be used like following. E.g. if there is a secret named "`myapp_password_secret`" that is mapped as an evironment variable one can use it like this:
-
-    someStartupCmd --password=$(java -jar tupw.jar decrypt d:\keyfile.bin password ${myapp_password_secret})
-
-Otherwise, the environment variable can be read in the application itself and decrypted with the TUPW library there.
+If one uses OpenShift, GitLab or any other software that puts secrets in environment variables, files or imagePullSecrets, these secrets can be encrypted with TUPW.
 
 This is especially useful as environment variables show up in logs and memory dumps. If the secret is stored unencrypted it can be read in clear by anyone who has access to the logs and the memory dumps. Also, everbody who has some kind of access to a pod can echo the environment variable or cat the file. TUPW helps here in that the secret is nowhere stored in clear text format.
 
