@@ -10,7 +10,7 @@ Please note that this is *not* obfuscation. This is real encryption. Encryption 
 
 Of course, if one can use key management systems like [Azure Key Vault](https://azure.microsoft.com/en-us/services/key-vault/), [AWS KMS](https://aws.amazon.com/kms/), [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/), or [Hashicorp Vault](https://www.vaultproject.io/) these should be used. They are safer and have more features. TUPW can be used if a key management system is not available.
 
-The idea is to store secrets in an encrypted form. If an attacker breaks the application and is able to access it's files and environment variables he will see
+The idea is to store secrets in an encrypted form. If an attacker breaks the application and is able to access it's files and environment variables he will see something like
 
     4$VYb030llJwQLSmOT+OwsjA$1R447MnqP71JV12qXASEd++gR3cW9AfRUHVmWThiRwU+JzGHD99p53wbIV+kKoiy$cVBESqRgkflwX2jzBkThyfAzHWJm3L1tg5LCq849Pzw
 
