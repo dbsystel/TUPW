@@ -22,7 +22,7 @@ One can store this encrypted form in config files. If one use OpenShift, Kuberne
 
 This is especially useful as environment variables show up in logs and memory dumps. If the secret is stored unencrypted it can be read in clear by anyone who has access to the logs and the memory dumps. Also, everbody who has some kind of access to a pod can echo the environment variable or cat the file. TUPW helps here in that the secret is nowhere stored in clear text format.
 
-There encrypted form needs to keys:
+The encrypted form needs to keys:
 
    1. An encryption key
    2. A HMAC key
