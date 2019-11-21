@@ -8,7 +8,7 @@ This program and library serve as an example of how to safely store credentials.
 
 Please note that this is *not* obfuscation. This is real encryption. Encryption is hard to do correctly. TUPW helps you to get it done correctly.
 
-Of course, if one can use key management systems like [Azure Key Vault](https://azure.microsoft.com/en-us/services/key-vault/), [AWS KMS](https://aws.amazon.com/kms/), [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/), or [Hashicorp Vault](https://www.vaultproject.io/) these should be used. They are safer and have more features. TUPW can be used if a key management system is not available.
+Of course, if one can use key management systems like [Azure Key Vault](https://azure.microsoft.com/en-us/services/key-vault/), [AWS KMS](https://aws.amazon.com/kms/), [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/), or [Hashicorp Vault](https://www.vaultproject.io/) these should be used. They offer better security and have more features. TUPW can be used if a key management system is not available.
 
 The idea is to store secrets in an encrypted form. If an attacker breaks the application and is able to access it's files and environment variables he will see something like
 
