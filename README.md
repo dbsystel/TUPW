@@ -103,10 +103,12 @@ It is the responsibility of the user of the program or the library that the same
 The command line program uses a library that can be found in the `dbscryptolib` source path. This library is the interface to the encryption and decryption methods. It is used like this:
 
     // This is the static HMAC key which is only known to the program
-    // TODO: Do not use this constant byte array. Roll your own!!!!
     //
-    // Please note that one does not have to use a constant byte array.
-    // It would also be possible to store the HMAC key in a (e.g.) Kubernetes secret and read it from there.
+    // Please note that one does not have to use a constant byte array. This is used here just for simplicity.
+    // It would also be possible to store the HMAC key in a (e.g.) Kubernetes secret or some other place
+    // and read it from there.
+    //
+    // TODO: Do not use this constant byte array. Roll your own!!!!
     //
     final byte[] HMAC_KEY = {(byte) 0xB4, (byte) 0xDC, (byte) 0x1C, (byte) 0x05,
        (byte) 0xCD, (byte) 0x1C, (byte) 0x30, (byte) 0xB8,
