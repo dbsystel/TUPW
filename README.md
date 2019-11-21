@@ -104,8 +104,10 @@ The command line program uses a library that can be found in the `dbscryptolib` 
 
     // This is the static HMAC key which is only known to the program
     // TODO: Do not use this constant byte array. Roll your own!!!!
+    //
     // Please note that one does not have to use a constant byte array.
     // It would also be possible to store the HMAC key in a (e.g.) Kubernetes secret and read it from there.
+    //
     final byte[] HMAC_KEY = {(byte) 0xB4, (byte) 0xDC, (byte) 0x1C, (byte) 0x05,
        (byte) 0xCD, (byte) 0x1C, (byte) 0x30, (byte) 0xB8,
        (byte) 0x59, (byte) 0x80, (byte) 0x90, (byte) 0xC7,
