@@ -90,7 +90,7 @@ The trailing '-' tells the program that the input comes from stdin and not from 
 
 Of course, this is not perfectly safe, as an attacker can get access to the machine and extract the key file and the program classes and reverse engineer the way the key is calculated.
 
-This program just makes it harder to get at the credentials, as both the file and the program code are needed to reconstruct the encryption key.
+This program just makes it harder to get at the credentials, as the key file, the program code and the subject are needed to reconstruct the encryption key.
 
 **Important**
 
