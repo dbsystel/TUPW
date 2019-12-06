@@ -27,15 +27,14 @@
 package TUPW;
 
 import dbscryptolib.FileAndKeyEncryption;
+import org.junit.*;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import org.junit.After;
-import org.junit.AfterClass;
-import static org.junit.Assert.*;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  * Test cases for file and key encryption.
@@ -117,6 +116,11 @@ public class TestFileAndKeyEncryption {
     * Known encrypted text to decrypt with missing IV
     */
    private static final String ENCRYPTED_TEXT_WITH_MISSING_IV = "3$iJIhCFfmzwPVqDwJai30ei5WTpU3/7qhiBS7WbPQCCHJKppD06B2LsRP7tgqh+1g$C9mHKfJi5mdMdIOZWep2GhZl7fNk98c3fBD6j404RXY=";
+
+   /**
+    * Checksum error message
+    */
+   private static final String CHECKSUM_ERROR_MESSAGE = "Checksum does not match data";
 
    /*
     * Public methods
@@ -237,7 +241,7 @@ public class TestFileAndKeyEncryption {
 
          fail("Expected exception not thrown");
       } catch (Exception e) {
-         assertEquals("Exception: " + e.toString(), "Checksums do not match", e.getMessage());
+         assertEquals("Exception: " + e.toString(), CHECKSUM_ERROR_MESSAGE, e.getMessage());
       }
    }
 
@@ -254,7 +258,7 @@ public class TestFileAndKeyEncryption {
 
          fail("Expected exception not thrown");
       } catch (Exception e) {
-         assertEquals("Exception: " + e.toString(), "Checksums do not match", e.getMessage());
+         assertEquals("Exception: " + e.toString(), CHECKSUM_ERROR_MESSAGE, e.getMessage());
       }
    }
 
@@ -270,7 +274,7 @@ public class TestFileAndKeyEncryption {
 
          fail("Expected exception not thrown");
       } catch (Exception e) {
-         assertEquals("Exception: " + e.toString(), "Checksums do not match", e.getMessage());
+         assertEquals("Exception: " + e.toString(), CHECKSUM_ERROR_MESSAGE, e.getMessage());
       }
    }
 
