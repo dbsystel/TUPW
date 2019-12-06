@@ -40,7 +40,7 @@ import static org.junit.Assert.fail;
  * Test cases for file and key encryption.
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.2.0
+ * @version 1.2.1
  */
 public class TestFileAndKeyEncryption {
 
