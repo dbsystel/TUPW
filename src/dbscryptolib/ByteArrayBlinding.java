@@ -1,20 +1,20 @@
 /*
  * Copyright (c) 2018, DB Systel GmbH
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
- * 
+ *
  * 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
- * 
+ *
  * 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,
  * BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
  * SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
  * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * Author: Frank Schwab, DB Systel GmbH
@@ -23,10 +23,12 @@
  *     2018-08-16: V1.0.0: Created. fhs
  *     2019-08-06: V1.0.2: Use SecureRandomFactory. fhs
  *     2019-08-23: V1.0.3: Use SecureRandom singleton. fhs
+ *     2020-02-11: V1.1.0: Strengthen blinding length tests. fhs
  */
 package dbscryptolib;
 
 import dbsnumberlib.PackedUnsignedInteger;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.SecureRandom;
@@ -36,7 +38,7 @@ import java.util.Arrays;
  * Implements blinding for byte arrays
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.0.3
+ * @version 1.1.0
  */
 public class ByteArrayBlinding {
 
@@ -48,62 +50,64 @@ public class ByteArrayBlinding {
    private final static String ERROR_MESSAGE_INVALID_ARRAY = "Invalid blinded byte array";
    private final static String ERROR_MESSAGE_INVALID_MIN_LENGTH = "Invalid minimum length";
 
-   private final static int INDEX_PREFIX = 0;
-   private final static int INDEX_POSTFIX = 1;
-   private final static int INDEX_SOURCE_LENGTH = 2;
-   
+   private final static int INDEX_PREFIX_LENGTH  = 0;
+   private final static int INDEX_POSTFIX_LENGTH = 1;
+   private final static int INDEX_SOURCE_LENGTH  = 2;
+
+   private final static int MAX_NORMAL_SINGLE_BLINDING_LENGTH = 15;   // This needs to be a power of 2 minus 1
+
    private final static int MAX_MINIMUM_LENGTH = 256;
+//   private final static int MAX_SINGLE_LENGTH = (MAX_MINIMUM_LENGTH >>> 1) - 1;
 
    /**
     * Check the validity of the requested minimum length
-    * 
+    *
     * @param minimumLength Requested minimum length
-    * @throws IllegalArgumentException 
+    * @throws IllegalArgumentException
     */
    private static void checkMinimumLength(final int minimumLength) throws IllegalArgumentException {
       if (minimumLength < 0)
          throw new IllegalArgumentException(ERROR_MESSAGE_INVALID_MIN_LENGTH);
-      else
-         if (minimumLength > MAX_MINIMUM_LENGTH)
-            throw new IllegalArgumentException(ERROR_MESSAGE_INVALID_MIN_LENGTH);
+      else if (minimumLength > MAX_MINIMUM_LENGTH)
+         throw new IllegalArgumentException(ERROR_MESSAGE_INVALID_MIN_LENGTH);
    }
 
    /**
     * Adapt blinding lengths so that the result will have at least minimum length
-    * 
+    *
     * <p>The result will be returned in the array of blinding lengths</p>
-    * 
-    * @param blindingLength Array of the two blinding lengths
+    *
+    * @param blindingLength     Array of the two blinding lengths
     * @param sourceLengthLength Length of the source length
-    * @param sourceLength Length of source
-    * @param minimumLength Required minimum length
+    * @param sourceLength       Length of source
+    * @param minimumLength      Required minimum length
     */
-   private static void adaptBlindLengthsToMinimumLength (int [] blindingLength, final int sourceLengthLength, final int sourceLength, final int minimumLength) {
-      final int combinedLength = 2 + sourceLengthLength + blindingLength[INDEX_PREFIX] + sourceLength +  blindingLength[INDEX_POSTFIX];
+   private static void adaptBlindLengthsToMinimumLength(int[] blindingLength, final int sourceLengthLength, final int sourceLength, final int minimumLength) {
+      final int combinedLength = 2 + sourceLengthLength + blindingLength[INDEX_PREFIX_LENGTH] + sourceLength + blindingLength[INDEX_POSTFIX_LENGTH];
 
       if (combinedLength < minimumLength) {
          final int diff = minimumLength - combinedLength;
          final int halfDiff = diff >>> 1;
 
-         blindingLength[INDEX_PREFIX] += halfDiff;
-         blindingLength[INDEX_POSTFIX] += halfDiff;
+         blindingLength[INDEX_PREFIX_LENGTH] += halfDiff;
+         blindingLength[INDEX_POSTFIX_LENGTH] += halfDiff;
 
          // Adjust for odd difference
          if ((diff & 1) != 0)
             if ((diff & 2) != 0)
-               blindingLength[INDEX_PREFIX]++;
+               blindingLength[INDEX_PREFIX_LENGTH]++;
             else
-               blindingLength[INDEX_POSTFIX]++;
+               blindingLength[INDEX_POSTFIX_LENGTH]++;
       }
    }
-   
+
    /**
     * Add blinders to a byte array
     *
     * <p>Note: There may be no blinding, at all! I.e. the "blinded" array is the same, as the source array
     * This behaviour is intentional. So an attacker will not known, whether there was blinding, or not.</p>
-    * 
-    * @param sourceBytes Source bytes to blinding
+    *
+    * @param sourceBytes   Source bytes to blinding
     * @param minimumLength Minimum length of blinded array
     * @return Blinded byte array
     * @throws IllegalArgumentException
@@ -111,21 +115,21 @@ public class ByteArrayBlinding {
     */
    public static byte[] buildBlindedByteArray(final byte[] sourceBytes, final int minimumLength) throws IllegalArgumentException, IOException {
       checkMinimumLength(minimumLength);
-      
-      final int [] blindingLength = new int[2];
-      
-      // Max. length of blindings is 15 bytes, each.
-      blindingLength[INDEX_PREFIX] = SECURE_PRNG.nextInt() & 0x0f;
-      blindingLength[INDEX_POSTFIX] = SECURE_PRNG.nextInt() & 0x0f;
 
-      final byte [] packedSourceLength = PackedUnsignedInteger.fromInteger(sourceBytes.length);
-      
-      // Adapt blinding lengths to be at least minimum length
+      final int[] blindingLength = new int[2];
+
+      blindingLength[INDEX_PREFIX_LENGTH] = SECURE_PRNG.nextInt() & MAX_NORMAL_SINGLE_BLINDING_LENGTH;
+      blindingLength[INDEX_POSTFIX_LENGTH] = SECURE_PRNG.nextInt() & MAX_NORMAL_SINGLE_BLINDING_LENGTH;
+
+      final byte[] packedSourceLength = PackedUnsignedInteger.fromInteger(sourceBytes.length);
+
+      // Adapt blinding lengths to be at least minimum length. This may be much larger than MAX_NORMAL_SINGLE_BLINDING_LENGTH
+      // and is always smaller than (MAX_MINIMUM_LENGTH >>> 1)
       if (minimumLength > 0)
-         adaptBlindLengthsToMinimumLength (blindingLength, packedSourceLength.length, sourceBytes.length, minimumLength);
-      
-      final byte[] prefixBlinding = new byte[blindingLength[INDEX_PREFIX]];
-      final byte[] postfixBlinding = new byte[blindingLength[INDEX_POSTFIX]];
+         adaptBlindLengthsToMinimumLength(blindingLength, packedSourceLength.length, sourceBytes.length, minimumLength);
+
+      final byte[] prefixBlinding = new byte[blindingLength[INDEX_PREFIX_LENGTH]];
+      final byte[] postfixBlinding = new byte[blindingLength[INDEX_POSTFIX_LENGTH]];
 
       SECURE_PRNG.nextBytes(prefixBlinding);
       SECURE_PRNG.nextBytes(postfixBlinding);
@@ -134,8 +138,8 @@ public class ByteArrayBlinding {
 
       ByteArrayOutputStream resultStream = new ByteArrayOutputStream(resultLength);
 
-      resultStream.write(blindingLength[INDEX_PREFIX]);
-      resultStream.write(blindingLength[INDEX_POSTFIX]);
+      resultStream.write(blindingLength[INDEX_PREFIX_LENGTH]);
+      resultStream.write(blindingLength[INDEX_POSTFIX_LENGTH]);
       resultStream.write(packedSourceLength);
       resultStream.write(prefixBlinding);
       resultStream.write(sourceBytes);
@@ -178,19 +182,23 @@ public class ByteArrayBlinding {
       if (sourceBytes.length > INDEX_SOURCE_LENGTH) {
          final int packedNumberLength = PackedUnsignedInteger.getExpectedLength(sourceBytes[INDEX_SOURCE_LENGTH]);
 
-         final int prefixBlindingLength = sourceBytes[0] + 2 + packedNumberLength;
-         final int postfixBlindingLength = sourceBytes[1];
-         
-         final int totalBlindingsLength = prefixBlindingLength + postfixBlindingLength;
-         final int dataLength = PackedUnsignedInteger.toIntegerFromArray(sourceBytes, INDEX_SOURCE_LENGTH);
+         if(sourceBytes[INDEX_PREFIX_LENGTH] >= 0) {
+            final int prefixBlindingLength = sourceBytes[INDEX_PREFIX_LENGTH] + 2 + packedNumberLength;
 
-         // The largest number in the following addition can only be just over 1073741823
-         // This can never overflow into negative values
-         if ((totalBlindingsLength + dataLength) <= sourceBytes.length)
-            return Arrays.copyOfRange(sourceBytes, prefixBlindingLength, dataLength + prefixBlindingLength);
+            if (sourceBytes[INDEX_POSTFIX_LENGTH] >= 0) {
+               final int postfixBlindingLength = sourceBytes[INDEX_POSTFIX_LENGTH];
+
+               final int totalBlindingsLength = prefixBlindingLength + postfixBlindingLength;
+               final int dataLength = PackedUnsignedInteger.toIntegerFromArray(sourceBytes, INDEX_SOURCE_LENGTH);
+
+               // The largest number in the following addition can only be just over 1073741823
+               // This can never overflow into negative values
+               if ((totalBlindingsLength + dataLength) <= sourceBytes.length)
+                  return Arrays.copyOfRange(sourceBytes, prefixBlindingLength, dataLength + prefixBlindingLength);
+            }
+         }
       }
-      
+
       throw new IllegalArgumentException(ERROR_MESSAGE_INVALID_ARRAY);
    }
-
 }

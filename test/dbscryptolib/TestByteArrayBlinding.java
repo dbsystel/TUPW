@@ -27,6 +27,7 @@ package dbscryptolib;
 import org.junit.*;
 
 import java.io.IOException;
+import java.security.SecureRandom;
 import java.util.Random;
 
 import static org.junit.Assert.*;
@@ -106,4 +107,26 @@ public class TestByteArrayBlinding {
       assertArrayEquals("Data is not the same after blinding and unblinding", data4, unblindedData);
    }
 
+   @Test
+   public void TestBlindingLoop() throws IOException {
+      SecureRandom rng = SecureRandomFactory.getSensibleInstance();
+
+      byte[] blindedData;
+      byte[] unblindedData;
+
+      int minimumLength;
+
+      for (int dataSize = 1; dataSize <= 50; dataSize++) {
+         byte[] data1 = new byte[dataSize];
+         rng.nextBytes(data1);
+
+         for (int i = 0; i < 256; i++) {
+            minimumLength = rng.nextInt(65);
+
+            blindedData = ByteArrayBlinding.buildBlindedByteArray(data1, minimumLength);
+            unblindedData = ByteArrayBlinding.unBlindByteArray(blindedData);
+            assertArrayEquals("Data is not the same after blinding and unblinding", data1, unblindedData);
+         }
+      }
+   }
 }

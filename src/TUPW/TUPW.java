@@ -37,6 +37,7 @@
  *     2018-08-17: V3.3.0: Use blinding and random padding. fhs
  *     2019-03-06: V3.3.1: Minor changes in SecureSecretKeySpec. fhs
  *     2019-03-07: V4.0.0: Add a "subject" to the command line that will change the encryption key. fhs
+ *     2019-03-07: V4.0.1: Strengthen test for invalid blinding data. fhs
  */
 package TUPW;
 
@@ -55,7 +56,7 @@ import java.io.InputStream;
  *    2: Not enough arguments
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 4.0.0
+ * @version 4.0.1
  */
 public class TUPW {
    private static final int MAX_INPUT_BYTES = 50000000;
