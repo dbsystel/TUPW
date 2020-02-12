@@ -45,8 +45,8 @@ The encrypted data is stored as four parts separated by '$' characters:
     * 1 =`{IV}{AES-128-CFB-ABytPadding}{HMAC}`
     * 2 =`{IV}{AES-128-CTR-ABytPadding}{HMAC}`
     * 3 =`{IV}{AES-128-CTR-Blinded-Data-and-RandomPadding}{HMAC}`
-    * 4 =`{IV}{AES-128-CBC-Blinded-Data-and-RandomPadding}{HMAC}`
-    * 5 =`{IV}{AES-128-CBC-Blinded-Data-and-RandomPadding}{HMAC-correct}`
+    * 4 =`{IV}{AES-128-CBC-Blinded-Data-and-RandomPadding}{HMAC (wrong when subject present)}`
+    * 5 =`{IV}{AES-128-CBC-Blinded-Data-and-RandomPadding}{HMAC}`
 2. The IV
 3. The data encrypted with the method specified in the format code
 3. The HMAC of the format code, the IV and the encrypted data
