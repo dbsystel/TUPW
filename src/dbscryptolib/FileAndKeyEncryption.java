@@ -579,6 +579,8 @@ public class FileAndKeyEncryption implements AutoCloseable {
       try (SecureSecretKeySpec hmacKey = new SecureSecretKeySpec(key, HMAC_256_ALGORITHM_NAME)) {
          hmac.init(hmacKey);
          result = hmac.doFinal(data);
+      } catch (final Exception e) {
+         throw e; // Rethrow any exception. hmacKey will have been closed by try-with-resources.
       }
 
       return result;
