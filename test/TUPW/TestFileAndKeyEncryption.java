@@ -23,6 +23,7 @@
  *     2015-12-20: V1.0.0: Created. fhs
  *     2015-12-21: V1.1.0: Change to correct padding format. fhs
  *     2018-08-21: V1.2.0: Test format 3 and use predictable file. fhs
+ *     2020-02-12: V1.3.0: More tests with subject and different versions. fhs
  */
 package TUPW;
 
@@ -40,7 +41,7 @@ import static org.junit.Assert.fail;
  * Test cases for file and key encryption.
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.2.1
+ * @version 1.3.0
  */
 public class TestFileAndKeyEncryption {
 
@@ -70,12 +71,16 @@ public class TestFileAndKeyEncryption {
    /**
     * Known clear text to encrypt
     */
-   private static final String CLEAR_TEXT = "This is a clear Text";
+   private static final String CLEAR_TEXT_V3 = "This is a clear Text";
+   private static final String CLEAR_TEXT_V5 = "This#”s?a§StR4nGé€PàS!Wörd9";
 
    /**
     * Known encrypted text to decrypt
     */
-   private static final String ENCRYPTED_TEXT = "3$J/LJT9XGjwfmsKsvHzFefQ==$iJIhCFfmzwPVqDwJai30ei5WTpU3/7qhiBS7WbPQCCHJKppD06B2LsRP7tgqh+1g$C9mHKfJi5mdMdIOZWep2GhZl7fNk98c3fBD6j404RXY=";
+   private static final String ENCRYPTED_TEXT_V3 = "3$J/LJT9XGjwfmsKsvHzFefQ==$iJIhCFfmzwPVqDwJai30ei5WTpU3/7qhiBS7WbPQCCHJKppD06B2LsRP7tgqh+1g$C9mHKfJi5mdMdIOZWep2GhZl7fNk98c3fBD6j404RXY=";
+   private static final String SUBJECT = "maven_repo_pass";
+   private static final String WRONG_SUBJECT = "maven_repo_paxx";
+   private static final String ENCRYPTED_TEXT_V5 = "5$Qs6C7prscyK5/OiJRsjWtw$bobPzPN6BJI0Od9pMSUWrSXp5hm/U+0ihzrWH30wMhrZGFPGsnNl/Mv3xJLdHdE03PpD1CW99AK2IZKk006hVA$nP3mG9F4eKvYJoFEiOhMguzMbgpo7XR+JkNJnA6qdhQ";
 
    /**
     * Known encrypted text to decrypt with invalid HMAC
@@ -180,11 +185,30 @@ public class TestFileAndKeyEncryption {
       try {
          FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(HMAC_KEY, NOT_RANDOM_FILE_NAME);
 
-         String encryptedText = myEncryptor.encryptData(CLEAR_TEXT);
+         String encryptedText = myEncryptor.encryptData(CLEAR_TEXT_V5);
 
          String decryptedText = myEncryptor.decryptData(encryptedText);
 
-         assertEquals("Decrypted text is not the same as encrypted text", CLEAR_TEXT, decryptedText);
+         assertEquals("Decrypted text is not the same as encrypted text", CLEAR_TEXT_V5, decryptedText);
+      } catch (Exception e) {
+         e.printStackTrace();
+         fail("Exception: " + e.toString());
+      }
+   }
+
+   /**
+    * Test if the encryption of a given text is correctly decrypted.
+    */
+   @Test
+   public void TestEncryptionDecryptionWithSubject() {
+      try {
+         FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(HMAC_KEY, NOT_RANDOM_FILE_NAME);
+
+         String encryptedText = myEncryptor.encryptData(CLEAR_TEXT_V5, SUBJECT);
+
+         String decryptedText = myEncryptor.decryptData(encryptedText, SUBJECT);
+
+         assertEquals("Decrypted text is not the same as encrypted text", CLEAR_TEXT_V5, decryptedText);
       } catch (Exception e) {
          e.printStackTrace();
          fail("Exception: " + e.toString());
@@ -199,11 +223,32 @@ public class TestFileAndKeyEncryption {
       try {
          final String emptyString = "";
 
-         FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(HMAC_KEY, NOT_RANDOM_FILE_NAME);
+         final FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(HMAC_KEY, NOT_RANDOM_FILE_NAME);
 
-         String encryptedText = myEncryptor.encryptData(emptyString);
+         final String encryptedText = myEncryptor.encryptData(emptyString);
 
-         String decryptedText = myEncryptor.decryptData(encryptedText);
+         final String decryptedText = myEncryptor.decryptData(encryptedText);
+
+         assertEquals("Decrypted text is not the same as encrypted text", emptyString, decryptedText);
+      } catch (Exception e) {
+         e.printStackTrace();
+         fail("Exception: " + e.toString());
+      }
+   }
+
+   /**
+    * Test if the encryption of a given text is correctly decrypted.
+    */
+   @Test
+   public void TestEmptyEncryptionDecryptionWithSubject() {
+      try {
+         final String emptyString = "";
+
+         final FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(HMAC_KEY, NOT_RANDOM_FILE_NAME);
+
+         final String encryptedText = myEncryptor.encryptData(emptyString, SUBJECT);
+
+         final String decryptedText = myEncryptor.decryptData(encryptedText, SUBJECT);
 
          assertEquals("Decrypted text is not the same as encrypted text", emptyString, decryptedText);
       } catch (Exception e) {
@@ -220,12 +265,45 @@ public class TestFileAndKeyEncryption {
       try {
          FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(HMAC_KEY, NOT_RANDOM_FILE_NAME);
 
-         String decryptedText = myEncryptor.decryptData(ENCRYPTED_TEXT);
+         String decryptedText = myEncryptor.decryptData(ENCRYPTED_TEXT_V3);
 
-         assertEquals("Decrypted text is not the same as encrypted text", CLEAR_TEXT, decryptedText);
+         assertEquals("Decrypted text is not the same as encrypted text", CLEAR_TEXT_V3, decryptedText);
       } catch (Exception e) {
          e.printStackTrace();
          fail("Exception: " + e.toString());
+      }
+   }
+
+   /**
+    * Test if a given encrypted text is correctly decrypted.
+    */
+   @Test
+   public void TestKnownDecryptionWithSubject() {
+      try {
+         FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(HMAC_KEY, NOT_RANDOM_FILE_NAME);
+
+         String decryptedText = myEncryptor.decryptData(ENCRYPTED_TEXT_V5, SUBJECT);
+
+         assertEquals("Decrypted text is not the same as encrypted text", CLEAR_TEXT_V5, decryptedText);
+      } catch (Exception e) {
+         e.printStackTrace();
+         fail("Exception: " + e.toString());
+      }
+   }
+
+   /**
+    * Test if a given encrypted text with an invalid HMAC throws an exception.
+    */
+   @Test
+   public void TestDecryptionWithWrongSubject() {
+      try {
+         FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(HMAC_KEY, NOT_RANDOM_FILE_NAME);
+
+         String decryptedText = myEncryptor.decryptData(ENCRYPTED_TEXT_V5, WRONG_SUBJECT);
+
+         fail("Expected exception not thrown");
+      } catch (Exception e) {
+         assertEquals("Exception: " + e.toString(), CHECKSUM_ERROR_MESSAGE, e.getMessage());
       }
    }
 

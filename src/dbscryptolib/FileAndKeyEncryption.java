@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, DB Systel GmbH
+ * Copyright (c) 2020, DB Systel GmbH
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -44,6 +44,7 @@
  *     2019-08-03: V2.2.1: Refactored SPRNG instantiation. fhs
  *     2019-08-05: V2.2.2: Change method name of SPRNG instantiation. fhs
  *     2019-08-23: V2.2.3: Use SecureRandom singleton. fhs
+ *     2020-02-12: V2.3.0: Correct wrong generation of keys with the "subject" parameter. fhs
  */
 package dbscryptolib;
 
@@ -67,7 +68,7 @@ import java.util.Base64;
  * Implement encryption by key generated from file and key
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 2.2.3
+ * @version 2.3.0
  */
 public class FileAndKeyEncryption implements AutoCloseable {
 
@@ -79,7 +80,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * Boundaries for valid format ids
     */
    private static final byte FORMAT_ID_MIN = 1;
-   private static final byte FORMAT_ID_MAX = 4;
+   private static final byte FORMAT_ID_MAX = 5;
 
    /**
     * HMAC algorithm to be used
@@ -107,6 +108,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
            AES_ALGORITHM_NAME + "/CFB/NoPadding",
            AES_ALGORITHM_NAME + "/CTR/NoPadding",
            AES_ALGORITHM_NAME + "/CTR/NoPadding",
+           AES_ALGORITHM_NAME + "/CBC/NoPadding",
            AES_ALGORITHM_NAME + "/CBC/NoPadding"};
 
    /**
@@ -183,7 +185,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * Instance variables
     */
    private ProtectedByteArray m_EncryptionKey;
-   private SecureSecretKeySpec m_HMACKey;
+   private ProtectedByteArray m_HMACKey;
 
    /*
     * Private methods
@@ -297,36 +299,68 @@ public class FileAndKeyEncryption implements AutoCloseable {
    }
 
    /**
-    * Get encryption key with respect to a subject
+    * Get SecureSecretKeySpec with respect to a subject
     *
-    * @param subjectBytes The subject as a byte array (may have length 0)
+    * @param hmacKey The key to use for HMAC calculation
+    * @param baseKey The key the subject key is derived from as a byte array
+    * @param forAlgorithmName Algorithm name for the SecureSecretKeySpec to create
+    * @param subjectBytes The subject as a byte array
     * @throws InvalidKeyException      if the key is not valid for the HMAC algorithm (must never happen)
     * @throws NoSuchAlgorithmException if there is no HMAC-256 algorithm (must never happen)
+    * @return SecureSecretKeySpec with the specified subject
     */
-   private SecureSecretKeySpec getSecretKeySpecForSubject(final byte[] subjectBytes) throws InvalidKeyException, NoSuchAlgorithmException {
+   private SecureSecretKeySpec getSecretKeySpecForKeyWithSubject(final ProtectedByteArray hmacKey,
+                                                                 final ProtectedByteArray baseKey,
+                                                                 final String forAlgorithmName,
+                                                                 final byte[] subjectBytes) throws InvalidKeyException, NoSuchAlgorithmException {
       final Mac hmac = getHMACInstance();
 
-      hmac.init(this.m_HMACKey);
-      final byte[] keyBytes = this.m_EncryptionKey.getData();
-      hmac.update(keyBytes);
-      Arrays.fill(keyBytes, (byte) 0);
+      final byte[] hmacKeyBytes = hmacKey.getData();
+      final SecureSecretKeySpec hmacKeySpec = new SecureSecretKeySpec(hmacKeyBytes, HMAC_256_ALGORITHM_NAME);
+      Arrays.fill(hmacKeyBytes, (byte) 0);
+
+      hmac.init(hmacKeySpec);
+
+      final byte[] baseKeyBytes = baseKey.getData();
+      hmac.update(baseKeyBytes);
+      Arrays.fill(baseKeyBytes, (byte) 0);
+
       hmac.update(PREFIX_SALT);
       hmac.update(subjectBytes);
 
-      return new SecureSecretKeySpec(hmac.doFinal(POSTFIX_SALT), AES_ALGORITHM_NAME);
+      return new SecureSecretKeySpec(hmac.doFinal(POSTFIX_SALT), forAlgorithmName);
    }
 
    /**
-    * Get default SecureSecretKeySpec
+    * Get default SecureSecretKeySpec for key
     *
-    * @return Default SecureSecretKeySpec
+    * @param baseKey The key to wrap in a SecureSecretKeySpec
+    * @param forAlgorithmName Algorithm name for the SecureSecretKeySpec to create
+    * @return SecureSecretKeySpec of specified key
     */
-   private SecureSecretKeySpec getDefaultSecretKeySpec() {
-      final byte[] keyBytes = m_EncryptionKey.getData();
-      final SecureSecretKeySpec result = new SecureSecretKeySpec(keyBytes, AES_ALGORITHM_NAME);
-      Arrays.fill(keyBytes, (byte) 0);
+   private SecureSecretKeySpec getDefaultSecretKeySpecForKey(final ProtectedByteArray baseKey,
+                                                             final String forAlgorithmName) {
+      final byte[] baseKeyBytes = baseKey.getData();
+      final SecureSecretKeySpec result = new SecureSecretKeySpec(baseKeyBytes, forAlgorithmName);
+      Arrays.fill(baseKeyBytes, (byte) 0);
 
       return result;
+   }
+
+   /**
+    * Get default SecureSecretKeySpec for encryption
+    * @return SecureSecretKeySpec for default encryption key
+    */
+   private SecureSecretKeySpec getDefaultSecretKeySpecForEncryption() {
+      return getDefaultSecretKeySpecForKey(this.m_EncryptionKey, AES_ALGORITHM_NAME);
+   }
+
+   /**
+    * Get default SecureSecretKeySpec for HMAC calculation
+    * @return SecureSecretKeySpec for default HMAC key
+    */
+   private SecureSecretKeySpec getDefaultSecretKeySpecForHMAC() {
+      return getDefaultSecretKeySpecForKey(this.m_HMACKey, HMAC_256_ALGORITHM_NAME);
    }
 
    /**
@@ -336,11 +370,25 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws InvalidKeyException      if the key is not valid for the HMAC algorithm (must never happen)
     * @throws NoSuchAlgorithmException if there is no HMAC-256 algorithm (must never happen)
     */
-   private SecureSecretKeySpec getSecretKeySpecDependingOnSubject(final byte[] subjectBytes) throws InvalidKeyException, NoSuchAlgorithmException {
+   private SecureSecretKeySpec getSecretKeySpecForEncryptionDependingOnSubject(final byte[] subjectBytes) throws InvalidKeyException, NoSuchAlgorithmException {
       if (subjectBytes.length > 0)
-         return getSecretKeySpecForSubject(subjectBytes);
+         return getSecretKeySpecForKeyWithSubject(this.m_HMACKey, this.m_EncryptionKey, AES_ALGORITHM_NAME, subjectBytes);
       else
-         return getDefaultSecretKeySpec();
+         return getDefaultSecretKeySpecForEncryption();
+   }
+
+   /**
+    * Get HMAC key depending on whether a subject is present or not
+    *
+    * @param subjectBytes The subject as a byte array (may have length 0)
+    * @throws InvalidKeyException      if the key is not valid for the HMAC algorithm (must never happen)
+    * @throws NoSuchAlgorithmException if there is no HMAC-256 algorithm (must never happen)
+    */
+   private SecureSecretKeySpec getSecretKeySpecForHMACDependingOnSubject(final byte[] subjectBytes) throws InvalidKeyException, NoSuchAlgorithmException {
+      if (subjectBytes.length > 0)
+         return getSecretKeySpecForKeyWithSubject(this.m_EncryptionKey, this.m_HMACKey, HMAC_256_ALGORITHM_NAME, subjectBytes);
+      else
+         return getDefaultSecretKeySpecForHMAC();
    }
 
    /**
@@ -363,7 +411,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
 
       final Cipher aesCipher = Cipher.getInstance(encryptionSpecification);
 
-      final SecureSecretKeySpec decryptionKey = getSecretKeySpecDependingOnSubject(subjectBytes);
+      final SecureSecretKeySpec decryptionKey = getSecretKeySpecForEncryptionDependingOnSubject(subjectBytes);
 
       aesCipher.init(Cipher.DECRYPT_MODE, decryptionKey, new IvParameterSpec(encryptionParts.iv));
 
@@ -429,10 +477,14 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws InvalidKeyException      if the key is not valid for the HMAC algorithm (must never happen)
     * @throws NoSuchAlgorithmException if there is no HMAC-256 algorithm (must never happen)
     */
-   private byte[] getChecksumForEncryptionParts(final EncryptionParts encryptionParts) throws InvalidKeyException, NoSuchAlgorithmException {
+   private byte[] getChecksumForEncryptionParts(final EncryptionParts encryptionParts, final byte[] subjectBytes) throws InvalidKeyException, NoSuchAlgorithmException {
       final Mac hmac = getHMACInstance();
 
-      hmac.init(this.m_HMACKey);
+      if (encryptionParts.formatId >= 5)
+         hmac.init(getSecretKeySpecForHMACDependingOnSubject(subjectBytes));
+      else
+         hmac.init(getDefaultSecretKeySpecForHMAC());
+
       hmac.update(encryptionParts.formatId);
       hmac.update(encryptionParts.iv);
 
@@ -447,8 +499,8 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws InvalidKeyException      if the key is not valid for the HMAC algorithm (must never happen)
     * @throws NoSuchAlgorithmException if there is no HMAC-256 algorithm (must never happen)
     */
-   private void checkChecksumForEncryptionParts(EncryptionParts encryptionParts) throws DataIntegrityException, InvalidKeyException, NoSuchAlgorithmException {
-      final byte[] calculatedChecksum = getChecksumForEncryptionParts(encryptionParts);
+   private void checkChecksumForEncryptionParts(final EncryptionParts encryptionParts, final byte[] subjectBytes) throws DataIntegrityException, InvalidKeyException, NoSuchAlgorithmException {
+      final byte[] calculatedChecksum = getChecksumForEncryptionParts(encryptionParts, subjectBytes);
 
       if (!SafeArrays.constantTimeEquals(calculatedChecksum, encryptionParts.checksum))
          throw new DataIntegrityException("Checksum does not match data");
@@ -474,7 +526,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
       EncryptionParts result = new EncryptionParts();
 
       // Set format id
-      result.formatId = 4;
+      result.formatId = FORMAT_ID_MAX;
 
       final byte[] sourceBytes = sourceString.getBytes(STRING_ENCODING_FOR_DATA);
 
@@ -497,7 +549,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
 
       getSecureRandomInstance().nextBytes(result.iv);
 
-      final SecureSecretKeySpec encryptionKey = getSecretKeySpecDependingOnSubject(subjectBytes);
+      final SecureSecretKeySpec encryptionKey = getSecretKeySpecForEncryptionDependingOnSubject(subjectBytes);
 
       // Encrypt the source string with the iv
       aesCipher.init(Cipher.ENCRYPT_MODE, encryptionKey, new IvParameterSpec(result.iv));
@@ -527,8 +579,6 @@ public class FileAndKeyEncryption implements AutoCloseable {
       try (SecureSecretKeySpec hmacKey = new SecureSecretKeySpec(key, HMAC_256_ALGORITHM_NAME)) {
          hmac.init(hmacKey);
          result = hmac.doFinal(data);
-      } catch (final Exception e) {
-         throw e; // Rethrow any exception. hmacKey will have been closed by try-with-resources.
       }
 
       return result;
@@ -546,10 +596,8 @@ public class FileAndKeyEncryption implements AutoCloseable {
    private void setKeysFromKeyAndFile(final byte[] hmacKey, final Path keyFile) throws InvalidKeyException, IOException, NoSuchAlgorithmException {
       final byte[] hmacOfKeyFile = getHmacValueForBytes(hmacKey, Files.readAllBytes(keyFile));
 
-      byte[] keyPart;
-
       // 1. half of file HMAC is used as the encryption key of this instance
-      keyPart = Arrays.copyOfRange(hmacOfKeyFile, 0, 16);
+      byte[] keyPart = Arrays.copyOfRange(hmacOfKeyFile, 0, 16);
 
       this.m_EncryptionKey = new ProtectedByteArray(keyPart);
       Arrays.fill(keyPart, (byte) 0);
@@ -559,7 +607,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
 
       Arrays.fill(hmacOfKeyFile, (byte) 0);
 
-      this.m_HMACKey = new SecureSecretKeySpec(keyPart, HMAC_256_ALGORITHM_NAME);
+      this.m_HMACKey = new ProtectedByteArray(keyPart);
       Arrays.fill(keyPart, (byte) 0);
    }
 
@@ -604,9 +652,11 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws UnsupportedEncodingException       if there is no UTF-8 encoding (must never happen)
     */
    public String encryptData(final String stringToEncrypt, final String subject) throws BadPaddingException, IllegalArgumentException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
-      EncryptionParts encryptionParts = rawDataEncryption(stringToEncrypt, subject.getBytes(STRING_ENCODING_FOR_DATA));
+      final byte[] subjectBytes = subject.getBytes(STRING_ENCODING_FOR_DATA);
 
-      encryptionParts.checksum = getChecksumForEncryptionParts(encryptionParts);
+      EncryptionParts encryptionParts = rawDataEncryption(stringToEncrypt, subjectBytes);
+
+      encryptionParts.checksum = getChecksumForEncryptionParts(encryptionParts, subjectBytes);
 
       String result = makePrintableStringFromEncryptionParts(encryptionParts);
 
@@ -652,11 +702,13 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws UnsupportedEncodingException       if there is no UTF-8 encoding (must never happen)
     */
    public String decryptData(final String stringToDecrypt, final String subject) throws BadPaddingException, DataIntegrityException, IllegalArgumentException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
+      final byte[] subjectBytes = subject.getBytes(STRING_ENCODING_FOR_DATA);
+
       final EncryptionParts encryptionParts = getPartsFromPrintableString(stringToDecrypt);
 
-      checkChecksumForEncryptionParts(encryptionParts);
+      checkChecksumForEncryptionParts(encryptionParts, subjectBytes);
 
-      final String result = rawDataDecryption(encryptionParts, subject.getBytes(STRING_ENCODING_FOR_DATA));
+      final String result = rawDataDecryption(encryptionParts, subjectBytes);
 
       encryptionParts.zap();
 
