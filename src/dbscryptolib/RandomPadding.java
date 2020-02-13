@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, DB Systel GmbH
+ * Copyright (c) 2020, DB Systel GmbH
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -30,8 +30,11 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 
 /**
- * Implements arbitrary tail padding for block ciphers
+ * Implements random padding for block ciphers
  *
+ * <p>Attention: Random padding is <b>not</b> reversible.
+ * It can only be used to pad data where the length is known.</p>
+ * 
  * @author Frank Schwab, DB Systel GmbH
  * @version 1.0.3
  */
@@ -133,7 +136,7 @@ public class RandomPadding {
    /**
     * Remove padding bytes from source data
     *
-    * <p>Note: Random padding can not be removed</p>
+    * <p>Note: Random padding can not be removed.</p>
     * 
     * @param paddedSourceData Data with padding bytes
     * @return Never

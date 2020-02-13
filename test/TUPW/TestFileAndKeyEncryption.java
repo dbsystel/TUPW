@@ -127,6 +127,12 @@ public class TestFileAndKeyEncryption {
     */
    private static final String CHECKSUM_ERROR_MESSAGE = "Checksum does not match data";
 
+   /**
+    * Invalid format id error message
+    */
+   private static final String INVALID_FORMAT_ID_ERROR_MESSAGE = "Invalid format id";
+
+
    /*
     * Public methods
     */
@@ -384,7 +390,7 @@ public class TestFileAndKeyEncryption {
 
          fail("Expected exception not thrown");
       } catch (Exception e) {
-         assertEquals("Exception: " + e.toString(), "Invalid format id", e.getMessage());
+         assertEquals("Exception: " + e.toString(), INVALID_FORMAT_ID_ERROR_MESSAGE, e.getMessage());
       }
    }
 
@@ -400,7 +406,7 @@ public class TestFileAndKeyEncryption {
 
          fail("Expected exception not thrown");
       } catch (Exception e) {
-         assertEquals("Exception: " + e.toString(), "Invalid format id", e.getMessage());
+         assertEquals("Exception: " + e.toString(), INVALID_FORMAT_ID_ERROR_MESSAGE, e.getMessage());
       }
    }
 
