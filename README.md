@@ -116,9 +116,9 @@ This program just makes it harder to get at the credentials, as the key file, th
 
 It is the responsibility of the user of the program or the library that the same initialization vector (iv) is **never** used twice or more. The iv is the second part of the string after the first '$' character. In practice the pseudo random number generator is very unlikely to emit the same iv more than once. But it is possible! So check the iv and if that one has been used before, run the program once again to get a unique value.
 
-## Library
+## Class
 
-The command line program uses a library that can be found in the `dbscryptolib` source path. This library is the interface to the encryption and decryption methods. It is used like this:
+The command line program uses a class that can be found in the `dbscryptolib` source path. This class is the interface to the encryption and decryption methods. It is used like this:
 
     // This is the static HMAC key which is only known to the program
     //
@@ -155,6 +155,8 @@ The class instance then generates a key from the HMAC of the key file and stores
 The class is meant to be instantiated once and then used throughout the lifetime of the program as needed. It should not be instantiated every time it is used as reading the key file and calculating the HMAC of it is quite expensive. The class stores the calculated key in a secure manner in an instance of the `SecureSecretKeySpec` class which can be found in the `dbscryptolib` source path.
 
 The key file may have any name and any old content. There is no special format. It should not be empty.
+
+It is not necessary that the HMAC key is stored in the program as a byte array. It can be generated in any form that seems fit. The only requirement is, that it should be something that is generated in or supplied by the program binary. One could also use a number generator or some kind of calculation that may be controlled by some configuration parameter. Just use your imagination.
 
 ## Blinding
 
