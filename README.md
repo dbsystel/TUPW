@@ -14,7 +14,7 @@ The idea is to store secrets in an encrypted form and to distribute the elements
 
 Because of the encryption an attacker that breaks the application and is able to access it's files and environment variables will see something like
 
-    4$VYb030llJwQLSmOT+OwsjA$1R447MnqP71JV12qXASEd++gR3cW9AfRUHVmWThiRwU+JzGHD99p53wbIV+kKoiy$cVBESqRgkflwX2jzBkThyfAzHWJm3L1tg5LCq849Pzw
+    5$S/47B794DDlJla/Uj0oGpA$4FTJILMIqjcxfKn7jIBiLwudgYa5RU1zmJp3Nj9U7WL/LNIOnnBe3CXlyc171SiM$gOptFPkd69OXVG12us6TbK+QdyRtfu5U6tsRuebAxDU
 
 instead of
 
@@ -84,13 +84,13 @@ The command line program is used like this ('d:\keyfile.bin' is the name of the 
 
 This generates (for example) the following output:
 
-    4$VYb030llJwQLSmOT+OwsjA$1R447MnqP71JV12qXASEd++gR3cW9AfRUHVmWThiRwU+JzGHD99p53wbIV+kKoiy$cVBESqRgkflwX2jzBkThyfAzHWJm3L1tg5LCq849Pzw
+    5$S/47B794DDlJla/Uj0oGpA$4FTJILMIqjcxfKn7jIBiLwudgYa5RU1zmJp3Nj9U7WL/LNIOnnBe3CXlyc171SiM$gOptFPkd69OXVG12us6TbK+QdyRtfu5U6tsRuebAxDU
 	
 Note that the "iv" part (the one after the first '$' character) of the encryption will change with each invocation of the program as it is derived from a secure random number generator and hence the result of the encryption (which uses the random iv) and also the HMAC will be different, as well, even if the same key file is used in all of these invocations.
 
 Of course, one would need the keyfile to decrypt this like so:
 
-    java -jar tupw.jar decrypt d:\keyfile.bin password "4$VYb030llJwQLSmOT+OwsjA$1R447MnqP71JV12qXASEd++gR3cW9AfRUHVmWThiRwU+JzGHD99p53wbIV+kKoiy$cVBESqRgkflwX2jzBkThyfAzHWJm3L1tg5LCq849Pzw"
+    java -jar tupw.jar decrypt d:\keyfile.bin password "5$S/47B794DDlJla/Uj0oGpA$4FTJILMIqjcxfKn7jIBiLwudgYa5RU1zmJp3Nj9U7WL/LNIOnnBe3CXlyc171SiM$gOptFPkd69OXVG12us6TbK+QdyRtfu5U6tsRuebAxDU"
 
 which yields (with the correct key file):
 
