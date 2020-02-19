@@ -45,6 +45,7 @@
  *     2019-08-05: V2.2.2: Change method name of SPRNG instantiation. fhs
  *     2019-08-23: V2.2.3: Use SecureRandom singleton. fhs
  *     2020-02-12: V2.3.0: Correct wrong generation of keys with the "subject" parameter. fhs
+ *     2020-02-19: V2.3.1: Some more zapping of intermediate key byte arrays. fhs
  */
 package dbscryptolib;
 
@@ -68,7 +69,7 @@ import java.util.Base64;
  * Implement encryption by key generated from file and key
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 2.3.0
+ * @version 2.3.1
  */
 public class FileAndKeyEncryption implements AutoCloseable {
 
@@ -328,7 +329,11 @@ public class FileAndKeyEncryption implements AutoCloseable {
       hmac.update(PREFIX_SALT);
       hmac.update(subjectBytes);
 
-      return new SecureSecretKeySpec(hmac.doFinal(POSTFIX_SALT), forAlgorithmName);
+      final byte[] computedKey = hmac.doFinal(POSTFIX_SALT);
+      final SecureSecretKeySpec result = new SecureSecretKeySpec(computedKey, forAlgorithmName);
+      Arrays.fill(computedKey, (byte) 0);
+
+      return result;
    }
 
    /**
