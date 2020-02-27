@@ -42,7 +42,9 @@ import org.junit.runners.Suite;
         {TUPW.TestFileAndKeyEncryption.class,
          dbscryptolib.TestABytPadding.class,
          dbscryptolib.TestByteArrayBlinding.class,
+         dbscryptolib.TestJCECryptoStrength.class,
          dbsnumberlib.TestPackedUnsignedInteger.class,
+         dbsnumberlib.TestPRNG.class,
          dbsstringlib.TestStringSplitter.class,}
 )
 public class RunAllTests {

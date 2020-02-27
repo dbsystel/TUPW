@@ -33,7 +33,7 @@ import static org.junit.Assert.fail;
 
 
 /**
- * Test cases for ByteArrayBlinding
+ * Test cases for Packed Unsigned Integer
  *
  * @author Frank Schwab, DB Systel GmbH
  * @version 1.1.0

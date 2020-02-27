@@ -118,35 +118,37 @@ It is the responsibility of the user of the program or the library that the same
 
 ## Class
 
-The command line program uses a class that can be found in the `dbscryptolib` source path. This class is the interface to the encryption and decryption methods. It is used like this:
+The command line program uses a class that can be found in the `dbscryptolib` source path. This class is the interface to the encryption and decryption methods. One way is to use it with a file name like this:
 
-    // This is the static HMAC key which is only known to the program
-    //
-    // Please note that one does not have to use a constant byte array. This is used here just for simplicity.
-    // It would also be possible to store the HMAC key in a (e.g.) Kubernetes secret or some other place
-    // and read it from there.
-    //
-    // TODO: Do not use this constant byte array. Roll your own!!!!
-    //
-    final byte[] HMAC_KEY = {(byte) 0xB4, (byte) 0xDC, (byte) 0x1C, (byte) 0x05,
-       (byte) 0xCD, (byte) 0x1C, (byte) 0x30, (byte) 0xB8,
-       (byte) 0x59, (byte) 0x80, (byte) 0x90, (byte) 0xC7,
-       (byte) 0xFA, (byte) 0x4D, (byte) 0x07, (byte) 0x12,
-       (byte) 0xD2, (byte) 0xA0, (byte) 0x67, (byte) 0xF5,
-       (byte) 0x4C, (byte) 0x17, (byte) 0x11, (byte) 0xD0,
-       (byte) 0x90, (byte) 0xF6, (byte) 0x53, (byte) 0x8A,
-       (byte) 0x0B, (byte) 0xDF, (byte) 0xA4, (byte) 0x17};
+```java
+// This is the static HMAC key which is only known to the program
+//
+// Please note that one does not have to use a constant byte array. This is used here just for simplicity.
+// It would also be possible to store the HMAC key in a (e.g.) Kubernetes secret or some other place
+// and read it from there.
+//
+// TODO: Do not use this constant byte array. Roll your own!!!!
+// Minimum HMAC key length is 14 bytes
+   final byte[] HMAC_KEY = {(byte) 0xB4, (byte) 0xDC, (byte) 0x1C, (byte) 0x05,
+      (byte) 0xCD, (byte) 0x1C, (byte) 0x30, (byte) 0xB8,
+      (byte) 0x59, (byte) 0x80, (byte) 0x90, (byte) 0xC7,
+      (byte) 0xFA, (byte) 0x4D, (byte) 0x07, (byte) 0x12,
+      (byte) 0xD2, (byte) 0xA0, (byte) 0x67, (byte) 0xF5,
+      (byte) 0x4C, (byte) 0x17, (byte) 0x11, (byte) 0xD0,
+      (byte) 0x90, (byte) 0xF6, (byte) 0x53, (byte) 0x8A,
+      (byte) 0x0B, (byte) 0xDF, (byte) 0xA4, (byte) 0x17};
     
-	...
+   ...
 	
-	try (FileAndKeyEncryption MyEncryptor = new FileAndKeyEncryption(HMAC_KEY, pathToKeyFile)) {
-	   ...
-       String decryptedData = MyEncryptor.decryptData(dataToDecrypt, subject);
-	   ...
-	   // TODO: Do whatever you need to do with the decrypted string
-    } catch (Exception e) {
-       System.err.print(e.toString());
-    }
+   try (FileAndKeyEncryption MyEncryptor = new FileAndKeyEncryption(HMAC_KEY, pathToKeyFile)) {
+	  ...
+      String decryptedData = MyEncryptor.decryptData(dataToDecrypt, subject);
+	  ...
+	  // TODO: Do whatever you need to do with the decrypted string
+   } catch (Exception e) {
+      System.err.print(e.toString());
+   }
+```
 
 I.e. the class `FileAndKeyEncryption` is instantiated with an HMAC key that is encoded in the program's source code and a key file whose path can be supplied as a parameter, or be read from a configuration file.
 
@@ -156,7 +158,78 @@ The class is meant to be instantiated once and then used throughout the lifetime
 
 The key file may have any name and any old content. There is no special format. It should not be empty.
 
-It is not necessary that the HMAC key is stored in the program as a byte array. It can be generated in any form that seems fit. The only requirement is, that it should be something that is generated in or supplied by the program binary. One could also use a number generator or some kind of calculation that may be controlled by some configuration parameter. Just use your imagination.
+It is not necessary that the HMAC key is stored in the program as a byte array. It can be generated in any form that seems fit. The only requirement is, that it should be something that is generated in or supplied by the program binary. E.g., one could also use a number generator or some kind of calculation that may be controlled by some configuration parameter:
+
+```java
+   /**
+    * Implements a method that creates a deterministic HMAC key from
+    * a pseudo-random number generator with as fixed key
+    *
+    * @return The deterministic HMAC key
+    */
+   private static byte[] createHMACKey() {
+      final byte[] result = new byte[32];  // This has to be at least 14 bytes long
+      // TODO: Do not use this seed constant. Roll your own!!!!
+      final ISimplePseudoRandomNumberGenerator xs128 = new Xoroshiro128plusplus(0x5A7F93DDD402915AL);
+
+      for(int i=0; i<result.length; i++ )
+         result[i] = xs128.nextByte();
+
+      return result;
+   }
+   
+   ...
+   
+   // Calculate the HMAC_KEY in a deterministic way
+   final byte[] CALCULATED_HMAC_KEY = createHMACKey();    
+
+   ...
+	
+   try (FileAndKeyEncryption MyEncryptor = new FileAndKeyEncryption(CALCULATED_HMAC_KEY, pathToKeyFile)) {
+	  ...
+      String decryptedData = MyEncryptor.decryptData(dataToDecrypt, subject);
+	  ...
+	  // TODO: Do whatever you need to do with the decrypted string
+   } catch (Exception e) {
+      System.err.print(e.toString());
+   }
+```
+
+Just use your imagination.
+
+Instead of using a file one can gather some external contents in any way one likes and feed this to the program
+
+```java
+// This is the static HMAC key which is only known to the program
+//
+// Please note that one does not have to use a constant byte array. This is used here just for simplicity.
+// It would also be possible to store the HMAC key in a (e.g.) Kubernetes secret or some other place
+// and read it from there.
+//
+// TODO: Do not use this constant byte array. Roll your own!!!!
+// Minimum HMAC key length is 14 bytes
+   final byte[] HMAC_KEY = {(byte) 0xB4, (byte) 0xDC, (byte) 0x1C, (byte) 0x05,
+      (byte) 0xCD, (byte) 0x1C, (byte) 0x30, (byte) 0xB8,
+      (byte) 0x59, (byte) 0x80, (byte) 0x90, (byte) 0xC7,
+      (byte) 0xFA, (byte) 0x4D, (byte) 0x07, (byte) 0x12,
+      (byte) 0xD2, (byte) 0xA0, (byte) 0x67, (byte) 0xF5,
+      (byte) 0x4C, (byte) 0x17, (byte) 0x11, (byte) 0xD0,
+      (byte) 0x90, (byte) 0xF6, (byte) 0x53, (byte) 0x8A,
+      (byte) 0x0B, (byte) 0xDF, (byte) 0xA4, (byte) 0x17};
+    
+   ...
+
+   // Instead of using a file one can also feed byte arrays to the FileAndKeyEncryption constructor. The only requirement is that these byte arrays
+   // have been obtained from outside the program!
+   try (FileAndKeyEncryption MyEncryptor = new FileAndKeyEncryption(HMAC_KEY, System.getenv("SOME_ENV_VARIABLE").getbytes("UTF-8"), some_byte_array_with_an_external_source, some_configuration_string.getbytes("UTF-8")) {
+	  ...
+      String decryptedData = MyEncryptor.decryptData(dataToDecrypt, subject);
+	  ...
+	  // TODO: Do whatever you need to do with the decrypted string
+   } catch (Exception e) {
+      System.err.print(e.toString());
+   }
+```
 
 ## Blinding
 
