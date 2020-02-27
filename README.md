@@ -128,7 +128,7 @@ The command line program uses a class that can be found in the `dbscryptolib` so
 // and read it from there.
 //
 // TODO: Do not use this constant byte array. Roll your own!!!!
-// Minimum HMAC key length is 14 bytes
+// Minimum HMAC key length is 14 bytes, maximum length is 32 bytes
    final byte[] HMAC_KEY = {(byte) 0xB4, (byte) 0xDC, (byte) 0x1C, (byte) 0x05,
       (byte) 0xCD, (byte) 0x1C, (byte) 0x30, (byte) 0xB8,
       (byte) 0x59, (byte) 0x80, (byte) 0x90, (byte) 0xC7,
@@ -207,7 +207,7 @@ Instead of using a file one can gather some external contents in any way one lik
 // and read it from there.
 //
 // TODO: Do not use this constant byte array. Roll your own!!!!
-// Minimum HMAC key length is 14 bytes
+// Minimum HMAC key length is 14 bytes, maximum length is 32 bytes
    final byte[] HMAC_KEY = {(byte) 0xB4, (byte) 0xDC, (byte) 0x1C, (byte) 0x05,
       (byte) 0xCD, (byte) 0x1C, (byte) 0x30, (byte) 0xB8,
       (byte) 0x59, (byte) 0x80, (byte) 0x90, (byte) 0xC7,
