@@ -456,7 +456,43 @@ public class TestFileAndKeyEncryption {
 
          fail("Expected exception not thrown");
       } catch (Exception e) {
-         assertEquals("Exception: " + e.toString(), "The HMAC key does not have a length of 32 bytes", e.getMessage());
+         assertEquals("Exception: " + e.toString(), "HMAC key length is less than 14", e.getMessage());
+      }
+   }
+
+   /**
+    * Test if an empty HMAC throws an exception.
+    */
+   @Test
+   public void TestKnownDecryptionWithShortHMAC() {
+      try {
+         byte[] shortHMAC = new byte[10];
+
+         FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(shortHMAC, NOT_RANDOM_FILE_NAME);
+
+         String decryptedText = myEncryptor.decryptData(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
+
+         fail("Expected exception not thrown");
+      } catch (Exception e) {
+         assertEquals("Exception: " + e.toString(), "HMAC key length is less than 14", e.getMessage());
+      }
+   }
+
+   /**
+    * Test if an empty HMAC throws an exception.
+    */
+   @Test
+   public void TestKnownDecryptionWithTooLargeHMAC() {
+      try {
+         byte[] largeHMAC = new byte[70];
+
+         FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(largeHMAC, NOT_RANDOM_FILE_NAME);
+
+         String decryptedText = myEncryptor.decryptData(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
+
+         fail("Expected exception not thrown");
+      } catch (Exception e) {
+         assertEquals("Exception: " + e.toString(), "HMAC key length is larger than 32", e.getMessage());
       }
    }
 

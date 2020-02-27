@@ -48,6 +48,7 @@
  *     2020-02-19: V2.3.1: Some more zapping of intermediate key byte arrays. fhs
  *     2020-02-24: V3.0.0: Use any provided bytes as the sources for key derivation, not just
  *                         the contents of a file. fhs
+ *     2020-02-27: V3.0.1: Added maximum HMAC key length. fhs
  */
 package dbscryptolib;
 
@@ -71,7 +72,7 @@ import java.util.Base64;
  * Implement encryption by key generated from file and key
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 3.0.0
+ * @version 3.0.1
  */
 public class FileAndKeyEncryption implements AutoCloseable {
 
@@ -94,6 +95,15 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * Miniumum length of key for HMAC algorithm
     */
    private static final int MINIMUM_HMAC_KEY_LENGTH = 14;
+
+   /**
+    * Maxiumum length of key for HMAC algorithm
+    *
+    * <p>The HMAC key must not be larger than the block size of the underlying hash algorithm.
+    * Here this is 32 bytes (256 bits). If the hash block size changes this constant
+    * must be changed, as well.</p>
+    */
+   private static final int MAXIMUM_HMAC_KEY_LENGTH = 32;
 
    /**
     * Encryption algorithm
@@ -238,6 +248,9 @@ public class FileAndKeyEncryption implements AutoCloseable {
       if (aHMACKey != null) {
          if (aHMACKey.length < MINIMUM_HMAC_KEY_LENGTH)
             throw new IllegalArgumentException("HMAC key length is less than " + Integer.toString(MINIMUM_HMAC_KEY_LENGTH));
+
+         if (aHMACKey.length > MAXIMUM_HMAC_KEY_LENGTH)
+            throw new IllegalArgumentException("HMAC key length is larger than " + Integer.toString(MAXIMUM_HMAC_KEY_LENGTH));
       }
       else
          throw new IllegalArgumentException("HMAC key is null");
