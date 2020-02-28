@@ -50,9 +50,11 @@
  *                         the contents of a file. fhs
  *     2020-02-27: V3.0.1: Added maximum HMAC key length. fhs
  *     2020-02-27: V3.1.0: Some hardening against null pointers. fhs
+ *     2020-02-28: V3.2.0: Check entropy of provided source bytes. fhs
  */
 package dbscryptolib;
 
+import dbsstatisticslib.EntropyCalculator;
 import dbsstringlib.StringSplitter;
 
 import javax.crypto.*;
@@ -73,7 +75,7 @@ import java.util.Base64;
  * Implement encryption by key generated from file and key
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 3.1.0
+ * @version 3.2.0
  */
 public class FileAndKeyEncryption implements AutoCloseable {
 
@@ -144,6 +146,11 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * Maximum source bytes length
     */
    private static final int MAXIMUM_SOURCE_BYTES_LENGTH = 10000000;
+
+   /**
+    * Minimum source bytes information in bits
+    */
+   private static final int MINIMUM_SOURCE_BITS = 128;
 
    /**
     * Prefix salt for key modification with a "subject"
@@ -252,26 +259,8 @@ public class FileAndKeyEncryption implements AutoCloseable {
 
          if (aHMACKey.length > MAXIMUM_HMAC_KEY_LENGTH)
             throw new IllegalArgumentException("HMAC key length is larger than " + Integer.toString(MAXIMUM_HMAC_KEY_LENGTH));
-      }
-      else
+      } else
          throw new IllegalArgumentException("HMAC key is null");
-   }
-
-   /**
-    * Check size of key file
-    *
-    * @param keyFile Path of key file
-    * @throws IllegalArgumentException if key file is empty or too large
-    * @throws IOException              if there was an IO error while reading the file size
-    */
-   private void checkKeyFileSize(final Path keyFile) throws IllegalArgumentException, IOException {
-      final long keyFileSize = Files.size(keyFile);
-
-      if (keyFileSize < MINIMUM_SOURCE_BYTES_LENGTH)
-         throw new IllegalArgumentException("Key file is smaller than " + MINIMUM_SOURCE_BYTES_LENGTH + " bytes");
-
-      if (keyFileSize > MAXIMUM_SOURCE_BYTES_LENGTH)
-         throw new IllegalArgumentException("Key file is larger than " + MAXIMUM_SOURCE_BYTES_LENGTH + " bytes");
    }
 
    /**
@@ -279,21 +268,27 @@ public class FileAndKeyEncryption implements AutoCloseable {
     *
     * @param sourceBytes Array of source byte arrays
     */
-   private void checkSourceBytes(final byte[] ... sourceBytes) {
-         int totalLength = 0;
+   private void checkSourceBytes(final byte[]... sourceBytes) {
+      int totalLength = 0;
 
-         for (int i = 0; i < sourceBytes.length; i++) {
-            if (sourceBytes[i] != null)
-               totalLength += sourceBytes[i].length;
-            else
-               throw new IllegalArgumentException((i+1) + ". source byte array is null");
-         }
+      EntropyCalculator ec = new EntropyCalculator();
 
-         if (totalLength < MINIMUM_SOURCE_BYTES_LENGTH)
-            throw new IllegalArgumentException("There are less than " + MINIMUM_SOURCE_BYTES_LENGTH + " source bytes");
+      for (int i = 0; i < sourceBytes.length; i++) {
+         if (sourceBytes[i] != null) {
+            ec.addBytes(sourceBytes[i]);
+            totalLength += sourceBytes[i].length;
+         } else
+            throw new IllegalArgumentException((i + 1) + ". source byte array is null");
+      }
 
-         if (totalLength > MAXIMUM_SOURCE_BYTES_LENGTH)
-            throw new IllegalArgumentException("There are more than " + MAXIMUM_SOURCE_BYTES_LENGTH + " source bytes");
+      if (ec.getInformationInBits() < MINIMUM_SOURCE_BITS)
+         throw new IllegalArgumentException("There is not enough information provided in the source bytes. Try to increase the length by " + (((int) Math.round(MINIMUM_SOURCE_BITS / ec.getEntropy()))- totalLength + 1) + " bytes");
+
+      if (totalLength < MINIMUM_SOURCE_BYTES_LENGTH)
+         throw new IllegalArgumentException("There are less than " + MINIMUM_SOURCE_BYTES_LENGTH + " source bytes");
+
+      if (totalLength > MAXIMUM_SOURCE_BYTES_LENGTH)
+         throw new IllegalArgumentException("There are more than " + MAXIMUM_SOURCE_BYTES_LENGTH + " source bytes");
    }
 
    /**
@@ -352,13 +347,13 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * <p>This method returns a 256 bit key, whereas, when there is no subject
     * a 128 bit key is used.</p>
     *
-    * @param hmacKey The key to use for HMAC calculation
-    * @param baseKey The key the subject key is derived from as a byte array
+    * @param hmacKey          The key to use for HMAC calculation
+    * @param baseKey          The key the subject key is derived from as a byte array
     * @param forAlgorithmName Algorithm name for the SecureSecretKeySpec to create
-    * @param subjectBytes The subject as a byte array
+    * @param subjectBytes     The subject as a byte array
+    * @return SecureSecretKeySpec with the specified subject
     * @throws InvalidKeyException      if the key is not valid for the HMAC algorithm (must never happen)
     * @throws NoSuchAlgorithmException if there is no HMAC-256 algorithm (must never happen)
-    * @return SecureSecretKeySpec with the specified subject
     */
    private SecureSecretKeySpec getSecretKeySpecForKeyWithSubject(final ProtectedByteArray hmacKey,
                                                                  final ProtectedByteArray baseKey,
@@ -389,7 +384,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
    /**
     * Get default SecureSecretKeySpec for key
     *
-    * @param baseKey The key to wrap in a SecureSecretKeySpec
+    * @param baseKey          The key to wrap in a SecureSecretKeySpec
     * @param forAlgorithmName Algorithm name for the SecureSecretKeySpec to create
     * @return SecureSecretKeySpec of specified key
     */
@@ -404,6 +399,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
 
    /**
     * Get default SecureSecretKeySpec for encryption
+    *
     * @return SecureSecretKeySpec for default encryption key
     */
    private SecureSecretKeySpec getDefaultSecretKeySpecForEncryption() {
@@ -412,6 +408,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
 
    /**
     * Get default SecureSecretKeySpec for HMAC calculation
+    *
     * @return SecureSecretKeySpec for default HMAC key
     */
    private SecureSecretKeySpec getDefaultSecretKeySpecForHMAC() {
@@ -621,20 +618,20 @@ public class FileAndKeyEncryption implements AutoCloseable {
    /**
     * Get HMAC value of an array of byte arrays
     *
-    * @param key The key for the HMAC
+    * @param key         The key for the HMAC
     * @param sourceBytes The source bytes to be hashed
     * @return HMAC value of the specified data with specified key
     * @throws InvalidKeyException      if the key is not valid for the HMAC algorithm (must never happen)
     * @throws NoSuchAlgorithmException if there is no HMAC-256 algorithm (must never happen)
     */
-   private byte[] getHmacValueOfSourceBytes(final byte[] key, final byte[] ... sourceBytes) throws InvalidKeyException, NoSuchAlgorithmException {
+   private byte[] getHmacValueOfSourceBytes(final byte[] key, final byte[]... sourceBytes) throws InvalidKeyException, NoSuchAlgorithmException {
       final Mac hmac = getHMACInstance();
       byte[] result = null;
 
       try (SecureSecretKeySpec hmacKey = new SecureSecretKeySpec(key, HMAC_256_ALGORITHM_NAME)) {
          hmac.init(hmacKey);
 
-         for(int i = 0; i < sourceBytes.length; i++)
+         for (int i = 0; i < sourceBytes.length; i++)
             hmac.update(sourceBytes[i]);
 
          result = hmac.doFinal();
@@ -649,7 +646,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * Get the content of the key file
     *
     * @param keyFile Key file to be used
-    * @throws IOException              if there is an error reading the key file
+    * @throws IOException if there is an error reading the key file
     */
    private byte[] getContentOfFile(final Path keyFile) throws IOException {
       final byte[] result = Files.readAllBytes(keyFile);
@@ -660,13 +657,13 @@ public class FileAndKeyEncryption implements AutoCloseable {
    /**
     * Set the keys of this instance from the supplied byte arrays and a HMAC key
     *
-    * @param hmacKey HMAC key to be used
+    * @param hmacKey     HMAC key to be used
     * @param sourceBytes bytes to be used for key derivation
     * @throws InvalidKeyException      if the key is not valid for the HMAC algorithm (must never happen)
     * @throws IOException              if there is an error reading the key file
     * @throws NoSuchAlgorithmException if there is no HMAC-256 algorithm (must never happen)
     */
-   private void setKeysFromKeyAndSourceBytes(final byte[] hmacKey, final byte[] ... sourceBytes) throws InvalidKeyException, IOException, NoSuchAlgorithmException {
+   private void setKeysFromKeyAndSourceBytes(final byte[] hmacKey, final byte[]... sourceBytes) throws InvalidKeyException, IOException, NoSuchAlgorithmException {
       final byte[] hmacOfSourceBytes = getHmacValueOfSourceBytes(hmacKey, sourceBytes);
 
       // 1. half of file HMAC is used as the encryption key of this instance
@@ -702,7 +699,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws IOException              if there was an error while reading the key file
     * @throws NoSuchAlgorithmException if the encryption algorithm is invalid (must never happen)
     */
-   public FileAndKeyEncryption(final byte[] hmacKey, final byte[] ... sourceBytes) throws IllegalArgumentException, InvalidKeyException, IOException, NoSuchAlgorithmException {
+   public FileAndKeyEncryption(final byte[] hmacKey, final byte[]... sourceBytes) throws IllegalArgumentException, InvalidKeyException, IOException, NoSuchAlgorithmException {
       checkHMACKey(hmacKey);
 
       checkSourceBytes(sourceBytes);
@@ -727,17 +724,15 @@ public class FileAndKeyEncryption implements AutoCloseable {
 
       try {
          keyFile = Paths.get(keyFilePath);
-      }
-      catch (NullPointerException e) {
+      } catch (NullPointerException e) {
          throw new IllegalArgumentException("Key file path is null");
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
          throw new IllegalArgumentException("Key file path is invalid: " + e.getMessage());
       }
 
-      checkKeyFileSize(keyFile);
-
       final byte[] keyFileBytes = getContentOfFile(keyFile);
+
+      checkSourceBytes(keyFileBytes);
 
       setKeysFromKeyAndSourceBytes(hmacKey, keyFileBytes);
 

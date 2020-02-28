@@ -24,7 +24,8 @@
  *     2015-12-21: V1.1.0: Change to correct padding format. fhs
  *     2018-08-21: V1.2.0: Test format 3 and use predictable file. fhs
  *     2020-02-12: V1.3.0: More tests with subject and different versions. fhs
- *     2020-02-12: V1.4.0: Added tests with invalid parameters. fhs
+ *     2020-02-27: V1.4.0: Added tests with invalid parameters. fhs
+ *     2020-02-28: V1.5.0: Added test with not enough information in source bytes. fhs
  */
 package TUPW;
 
@@ -41,7 +42,7 @@ import static org.junit.Assert.*;
  * Test cases for file and key encryption.
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.4.0
+ * @version 1.5.0
  */
 public class TestFileAndKeyEncryption {
 
@@ -586,6 +587,26 @@ public class TestFileAndKeyEncryption {
          fail("Expected exception not thrown");
       } catch (Exception e) {
          assertEquals("Exception: " + e.toString(), "2. source byte array is null", e.getMessage());
+      }
+   }
+
+   /**
+    * Test if a null source byte array after a non-null byte array throws an exception.
+    */
+   @Test
+   public void TestShortSourceBytes() {
+      try {
+         byte[] aSourceByteArray = {(byte) 0xaa, (byte) 0xbb, (byte) 0xcc};
+
+         FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(HMAC_KEY, aSourceByteArray);
+
+         String decryptedText = myEncryptor.decryptData(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
+
+         fail("Expected exception not thrown");
+      } catch (Exception e) {
+         final String exceptionMessage = e.toString();
+
+         assertTrue("Unexpected exception: " + exceptionMessage, exceptionMessage.contains("not enough information provided"));
       }
    }
 

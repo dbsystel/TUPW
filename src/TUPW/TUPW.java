@@ -43,7 +43,6 @@
 package TUPW;
 
 import dbscryptolib.FileAndKeyEncryption;
-import dbsnumberlib.ISimplePseudoRandomNumberGenerator;
 import dbsnumberlib.Xoroshiro128plusplus;
 
 import java.io.ByteArrayOutputStream;
@@ -75,7 +74,7 @@ public class TUPW {
    private static byte[] createHMACKey() {
       final byte[] result = new byte[32];
       // TODO: Do not use this seed constant. Roll your own!!!!
-      final ISimplePseudoRandomNumberGenerator xs128 = new Xoroshiro128plusplus(0x5A7F93DDD402915AL);
+      final Xoroshiro128plusplus xs128 = new Xoroshiro128plusplus(0x5A7F93DDD402915AL);
 
       for(int i=0; i<result.length; i++ )
          result[i] = xs128.nextByte();
