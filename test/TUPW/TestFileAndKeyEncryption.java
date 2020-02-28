@@ -24,6 +24,7 @@
  *     2015-12-21: V1.1.0: Change to correct padding format. fhs
  *     2018-08-21: V1.2.0: Test format 3 and use predictable file. fhs
  *     2020-02-12: V1.3.0: More tests with subject and different versions. fhs
+ *     2020-02-12: V1.4.0: Added tests with invalid parameters. fhs
  */
 package TUPW;
 
@@ -34,14 +35,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /**
  * Test cases for file and key encryption.
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.3.0
+ * @version 1.4.0
  */
 public class TestFileAndKeyEncryption {
 
@@ -461,7 +461,7 @@ public class TestFileAndKeyEncryption {
    }
 
    /**
-    * Test if an empty HMAC throws an exception.
+    * Test if a too short HMAC throws an exception.
     */
    @Test
    public void TestKnownDecryptionWithShortHMAC() {
@@ -479,7 +479,7 @@ public class TestFileAndKeyEncryption {
    }
 
    /**
-    * Test if an empty HMAC throws an exception.
+    * Test if a too large HMAC throws an exception.
     */
    @Test
    public void TestKnownDecryptionWithTooLargeHMAC() {
@@ -493,6 +493,99 @@ public class TestFileAndKeyEncryption {
          fail("Expected exception not thrown");
       } catch (Exception e) {
          assertEquals("Exception: " + e.toString(), "HMAC key length is larger than 32", e.getMessage());
+      }
+   }
+
+   /**
+    * Test if null HMAC key throws an exception.
+    */
+   @Test
+   public void TestNullHMACKey() {
+      try {
+         byte[] aHMACKey = null;
+
+         FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(aHMACKey, NOT_RANDOM_FILE_NAME);
+
+         String decryptedText = myEncryptor.decryptData(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
+
+         fail("Expected exception not thrown");
+      } catch (Exception e) {
+         assertEquals("Exception: " + e.toString(), "HMAC key is null", e.getMessage());
+      }
+   }
+
+   /**
+    * Test if invalid file name throws an exception.
+    */
+   @Test
+   public void TestInvalidFileName() {
+      try {
+         String anInvalidFileName = "|<>&";
+
+         FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(HMAC_KEY, anInvalidFileName);
+
+         String decryptedText = myEncryptor.decryptData(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
+
+         fail("Expected exception not thrown");
+      } catch (Exception e) {
+         final String exceptionMessage = e.toString();
+
+         assertTrue("Unexpected exception: " + exceptionMessage, exceptionMessage.contains("Key file path is invalid: "));
+      }
+   }
+
+   /**
+    * Test if null file name throws an exception.
+    */
+   @Test
+   public void TestNullFileName() {
+      try {
+         String aFileName = null;
+
+         FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(HMAC_KEY, aFileName);
+
+         String decryptedText = myEncryptor.decryptData(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
+
+         fail("Expected exception not thrown");
+      } catch (Exception e) {
+         assertEquals("Exception: " + e.toString(), "Key file path is null", e.getMessage());
+      }
+   }
+
+   /**
+    * Test if one null source byte array throws an exception.
+    */
+   @Test
+   public void TestOneNullByteArray() {
+      try {
+         byte[] aSourceByteArray = null;
+
+         FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(HMAC_KEY, aSourceByteArray);
+
+         String decryptedText = myEncryptor.decryptData(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
+
+         fail("Expected exception not thrown");
+      } catch (Exception e) {
+         assertEquals("Exception: " + e.toString(), "1. source byte array is null", e.getMessage());
+      }
+   }
+
+   /**
+    * Test if a null source byte array after a non-null byte array throws an exception.
+    */
+   @Test
+   public void TestAnotherNullByteArray() {
+      try {
+         byte[] aSourceByteArray = {(byte) 0xaa, (byte) 0xbb, (byte) 0xcc};
+         byte[] anotherSourceByteArray = null;
+
+         FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(HMAC_KEY, aSourceByteArray, anotherSourceByteArray);
+
+         String decryptedText = myEncryptor.decryptData(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
+
+         fail("Expected exception not thrown");
+      } catch (Exception e) {
+         assertEquals("Exception: " + e.toString(), "2. source byte array is null", e.getMessage());
       }
    }
 

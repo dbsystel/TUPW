@@ -49,6 +49,7 @@
  *     2020-02-24: V3.0.0: Use any provided bytes as the sources for key derivation, not just
  *                         the contents of a file. fhs
  *     2020-02-27: V3.0.1: Added maximum HMAC key length. fhs
+ *     2020-02-27: V3.1.0: Some hardening against null pointers. fhs
  */
 package dbscryptolib;
 
@@ -72,7 +73,7 @@ import java.util.Base64;
  * Implement encryption by key generated from file and key
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 3.0.1
+ * @version 3.1.0
  */
 public class FileAndKeyEncryption implements AutoCloseable {
 
@@ -279,19 +280,20 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @param sourceBytes Array of source byte arrays
     */
    private void checkSourceBytes(final byte[] ... sourceBytes) {
-      if (sourceBytes != null) {
          int totalLength = 0;
 
-         for (int i = 0; i < sourceBytes.length; i++)
-            totalLength += sourceBytes[i].length;
+         for (int i = 0; i < sourceBytes.length; i++) {
+            if (sourceBytes[i] != null)
+               totalLength += sourceBytes[i].length;
+            else
+               throw new IllegalArgumentException((i+1) + ". source byte array is null");
+         }
 
          if (totalLength < MINIMUM_SOURCE_BYTES_LENGTH)
             throw new IllegalArgumentException("There are less than " + MINIMUM_SOURCE_BYTES_LENGTH + " source bytes");
 
          if (totalLength > MAXIMUM_SOURCE_BYTES_LENGTH)
             throw new IllegalArgumentException("There are more than " + MAXIMUM_SOURCE_BYTES_LENGTH + " source bytes");
-      } else
-         throw new IllegalArgumentException("Source bytes is null");
    }
 
    /**
@@ -721,7 +723,17 @@ public class FileAndKeyEncryption implements AutoCloseable {
    public FileAndKeyEncryption(final byte[] hmacKey, final String keyFilePath) throws IllegalArgumentException, InvalidKeyException, IOException, NoSuchAlgorithmException {
       checkHMACKey(hmacKey);
 
-      final Path keyFile = Paths.get(keyFilePath);
+      Path keyFile;
+
+      try {
+         keyFile = Paths.get(keyFilePath);
+      }
+      catch (NullPointerException e) {
+         throw new IllegalArgumentException("Key file path is null");
+      }
+      catch (Exception e) {
+         throw new IllegalArgumentException("Key file path is invalid: " + e.getMessage());
+      }
 
       checkKeyFileSize(keyFile);
 
