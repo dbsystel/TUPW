@@ -591,7 +591,7 @@ public class TestFileAndKeyEncryption {
    }
 
    /**
-    * Test if a null source byte array after a non-null byte array throws an exception.
+    * Test if a very short source byte array throws an exception.
     */
    @Test
    public void TestShortSourceBytes() {
@@ -607,6 +607,26 @@ public class TestFileAndKeyEncryption {
          final String exceptionMessage = e.toString();
 
          assertTrue("Unexpected exception: " + exceptionMessage, exceptionMessage.contains("not enough information provided"));
+      }
+   }
+
+   /**
+    * Test if a uniform source byte array throws an exception.
+    */
+   @Test
+   public void TestUniformSourceBytes() {
+      try {
+         byte[] aSourceByteArray = new byte[300];
+
+         FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(HMAC_KEY, aSourceByteArray);
+
+         String decryptedText = myEncryptor.decryptData(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
+
+         fail("Expected exception not thrown");
+      } catch (Exception e) {
+         final String exceptionMessage = e.toString();
+
+         assertTrue("Unexpected exception: " + exceptionMessage, exceptionMessage.contains("no information provided"));
       }
    }
 

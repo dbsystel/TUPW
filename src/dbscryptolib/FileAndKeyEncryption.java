@@ -281,8 +281,14 @@ public class FileAndKeyEncryption implements AutoCloseable {
             throw new IllegalArgumentException((i + 1) + ". source byte array is null");
       }
 
-      if (ec.getInformationInBits() < MINIMUM_SOURCE_BITS)
-         throw new IllegalArgumentException("There is not enough information provided in the source bytes. Try to increase the length by " + (((int) Math.round(MINIMUM_SOURCE_BITS / ec.getEntropy()))- totalLength + 1) + " bytes");
+      if (ec.getInformationInBits() < MINIMUM_SOURCE_BITS) {
+         final double entropy = ec.getEntropy();
+
+         if (entropy > 0.0)
+            throw new IllegalArgumentException("There is not enough information provided in the source bytes. Try to increase the length to at least " + (((int) Math.round(MINIMUM_SOURCE_BITS / entropy)) + 1) + " bytes");
+         else
+            throw new IllegalArgumentException("There is no information provided in the source bytes (i.e. there are only identical byte values). Use bytes with varying values.");
+      }
 
       if (totalLength < MINIMUM_SOURCE_BYTES_LENGTH)
          throw new IllegalArgumentException("There are less than " + MINIMUM_SOURCE_BYTES_LENGTH + " source bytes");
