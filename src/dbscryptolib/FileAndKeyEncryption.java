@@ -153,6 +153,11 @@ public class FileAndKeyEncryption implements AutoCloseable {
    private static final int MINIMUM_SOURCE_BITS = 128;
 
    /**
+    * Threshold below which the source bytes are considered to have not enough variations
+    */
+   private static final double ENTROPY_THRESHOLD = 0.0001;
+
+   /**
     * Prefix salt for key modification with a "subject"
     */
    private static final byte[] PREFIX_SALT = {(byte) 84, (byte) 117}; // i.e "Tu"
@@ -284,7 +289,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
       if (ec.getInformationInBits() < MINIMUM_SOURCE_BITS) {
          final double entropy = ec.getEntropy();
 
-         if (entropy > 0.0)
+         if (entropy > ENTROPY_THRESHOLD)
             throw new IllegalArgumentException("There is not enough information provided in the source bytes. Try to increase the length to at least " + (((int) Math.round(MINIMUM_SOURCE_BITS / entropy)) + 1) + " bytes");
          else
             throw new IllegalArgumentException("There is no information provided in the source bytes (i.e. there are only identical byte values). Use bytes with varying values.");
