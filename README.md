@@ -170,7 +170,7 @@ It is not necessary that the HMAC key is stored in the program as a byte array. 
    private static byte[] createHMACKey() {
       final byte[] result = new byte[32];  // This has to be at least 14 bytes long
       // TODO: Do not use this seed constant. Roll your own!!!!
-      final ISimplePseudoRandomNumberGenerator xs128 = new Xoroshiro128plusplus(0x5A7F93DDD402915AL);
+      final Xoroshiro128plusplus xs128 = new Xoroshiro128plusplus(0x5A7F93DDD402915AL);
 
       for(int i=0; i<result.length; i++ )
          result[i] = xs128.nextByte();
