@@ -53,8 +53,8 @@ The encrypted data is stored as four parts separated by '$' characters:
     * 1 =`{IV}{AES-128-CFB-ABytPadding}{HMAC}`
     * 2 =`{IV}{AES-128-CTR-ABytPadding}{HMAC}`
     * 3 =`{IV}{AES-128-CTR-Blinded-Data-and-RandomPadding}{HMAC}`
-    * 4 =`{IV}{AES-128-CBC-Blinded-Data-and-RandomPadding}{HMAC (wrong when subject present)}`
-    * 5 =`{IV}{AES-128-CBC-Blinded-Data-and-RandomPadding}{HMAC}`
+    * 4 =`{IV}{AES-128/256-CBC-Blinded-Data-and-RandomPadding}{HMAC (wrong when subject present)}`
+    * 5 =`{IV}{AES-128/256-CBC-Blinded-Data-and-RandomPadding}{HMAC}`
 2. The IV
 3. The data encrypted with the method specified in the format code
 3. The HMAC of the format code, the IV and the encrypted data
@@ -62,7 +62,7 @@ The encrypted data is stored as four parts separated by '$' characters:
 This format uses the following fields:
 
 * The initialization vector used for encryption
-* The type of encryption ([AES](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard "AES") 128 bit)
+* The type of encryption ([AES](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard "AES") 128 bits or 256 bits)
 * The encryption mode
     * [CBC](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#CBC "CBC")
     * [CFB](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#CFB "CFB")
