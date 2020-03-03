@@ -131,7 +131,7 @@ Here are some examples:
 
 Under Windows just always enclose the data in double quotes. The above example will work correctly if one specifies `"Bla"Bla"`.
 
-Under \*nix always enclose the data in single quotes or use an escape character (\\). The above example will work correctly if one uses `"Bla\\"Bla"`.
+Under \*nix always enclose the data in single quotes or use an escape character (\\). The above example will work correctly if one uses `"Bla\"Bla"`.
 
 ## Class
 
