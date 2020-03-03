@@ -116,6 +116,23 @@ This program just makes it harder to get at the credentials, as the key file, th
 
 It is the responsibility of the user of the program or the library that the same initialization vector (iv) is **never** used twice or more. The iv is the second part of the string after the first '$' character. In practice the pseudo random number generator is very unlikely to emit the same iv more than once. But it is possible! So check the iv and if that one has been used before, run the program once again to get a unique value.
 
+### The special case of double quotes
+
+If the data that is to be encrypted contains special characters it is always a wise idea to put them in quotes (\*nix) or double quotes (Windows).
+
+If the data contains double quotes (") things get really messy as what the encryptor sees depends on the operating system.
+
+Here are some examples:
+
+| OS        | Argument | Data the program "sees" |
+| --------- | -------- | -------------------------- |
+| Windows   | Bla"Bla  | BlaBla                     |
+| \*nix     | Bla""Bla | BlaBla                     |
+
+Under Windows just always enclose the data in double quotes. The above example will work correctly if one specifies `"Bla"Bla"`.
+
+Under \*nix always enclose the data in single quotes or use an escape character (\\). The above example will work correctly if one uses `"Bla\\"Bla"`.
+
 ## Class
 
 The command line program uses a class that can be found in the `dbscryptolib` source path. This class is the interface to the encryption and decryption methods. One way is to use it with a file name like this:
