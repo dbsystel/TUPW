@@ -132,11 +132,11 @@ Here are some examples:
 | \*nix     | 'Bla"Bli' | Bla"Bli                 |
 | \*nix     | "Bla$Bli" | Bla                     |
 
-Under Windows just always enclose the data in double quotes. The above example will work correctly if one specifies `"Bla"Bla"`. *Attention*: Do *not* use quotes under Windows as `'Bla"Bla'` will be transferred to the command line program as `'Bla"Bla'`, i.e. the quotes are preserved.
+Under Windows just always enclose the data in double quotes. The above example will work correctly if one specifies `"Bla"Bli"`. *Attention*: Do *not* use quotes under Windows as `'Bla"Bli'` will be transferred to the command line program as `'Bla"Bli'`, i.e. the quotes are preserved.
 
-Under \*nix always enclose the data in single quotes or use a escape characters (\\). The above example will work correctly if one uses `"Bla\"Bla"`. *Attention*: Do *not* use double quotes if the data contains '$' characters. The shell will consider everything after the '$' sign to be the name of an environment variable which very likely will not exist and therefore be empty.
+Under \*nix always enclose the data in single quotes or use a escape characters (\\). The above example will work correctly if one uses `"Bla\"Bli"`. *Attention*: Do *not* use double quotes if the data contains '$' characters. The shell will consider everything after the '$' sign to be the name of an environment variable which very likely will not exist and therefore be empty.
 
-So, enclosing the data in quotes is a good idea under \*nix but a very bad idea under Windows. Enclosing the data in double quotes is a good idea under Windows but a very bad idea under \*nix.
+So, enclosing the data in quotes is a good idea under \*nix but a bad idea under Windows. Enclosing the data in double quotes is a good idea under Windows but a bad idea under \*nix.
 
 ## Class
 
