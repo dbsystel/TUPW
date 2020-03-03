@@ -516,10 +516,31 @@ public class TestFileAndKeyEncryption {
    }
 
    /**
+    * Test if a file that does not exist is correctly handled.
+    */
+   @Test
+   public void TestFileDoesNotExist() {
+      try {
+         FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(HMAC_KEY, "/does/not/exist.txt");
+
+         String encryptedText = myEncryptor.encryptData(CLEAR_TEXT_V5);
+
+         fail("Expected exception not thrown");
+      } catch (IllegalArgumentException e) {
+         String exceptionMessage = e.getMessage();
+
+         assertTrue("Unexpected exception: " + exceptionMessage, exceptionMessage.contains("does not exist"));
+      } catch (Exception e) {
+         e.printStackTrace();
+         fail("Exception: " + e.toString());
+      }
+   }
+
+   /**
     * Test if invalid file name throws an exception.
     */
    @Test
-   public void TestInvalidFileName() {
+   public void TestFileNameWithInvalidCharacters() {
       try {
          String anInvalidFileName = "|<>&";
 

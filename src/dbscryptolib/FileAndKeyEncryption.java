@@ -51,6 +51,7 @@
  *     2020-02-27: V3.0.1: Added maximum HMAC key length. fhs
  *     2020-02-27: V3.1.0: Some hardening against null pointers. fhs
  *     2020-02-28: V3.2.0: Check entropy of provided source bytes. fhs
+ *     2020-02-28: V3.2.1: Throw IllegalArgumentException when key file does not exist. fhs
  */
 package dbscryptolib;
 
@@ -75,7 +76,7 @@ import java.util.Base64;
  * Implement encryption by key generated from file and key
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 3.2.0
+ * @version 3.2.1
  */
 public class FileAndKeyEncryption implements AutoCloseable {
 
@@ -657,10 +658,16 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * Get the content of the key file
     *
     * @param keyFile Key file to be used
+    * @throws IllegalArgumentException if key file does not exist
     * @throws IOException if there is an error reading the key file
     */
-   private byte[] getContentOfFile(final Path keyFile) throws IOException {
-      final byte[] result = Files.readAllBytes(keyFile);
+   private byte[] getContentOfFile(final Path keyFile) throws IllegalArgumentException, IOException {
+      final byte[] result;
+
+      if (Files.exists(keyFile))
+         result = Files.readAllBytes(keyFile);
+      else
+         throw new IllegalArgumentException("File '" + keyFile.toAbsolutePath() + "' does not exist");
 
       return result;
    }
