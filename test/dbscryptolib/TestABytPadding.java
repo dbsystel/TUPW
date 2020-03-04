@@ -74,7 +74,7 @@ public class TestABytPadding {
       byte[] paddedSourceData = ArbitraryTailPadding.addPadding(unpaddedSourceData, BLOCK_SIZE);
 
       assertTrue("Padded data not longer than unpadded data", paddedSourceData.length > unpaddedSourceData.length);
-      assertTrue("Padding length is not multiple of block size: " + Integer.toString(paddedSourceData.length), (paddedSourceData.length % BLOCK_SIZE) == 0);
+      assertTrue("Padding length is not multiple of block size: " + paddedSourceData.length, (paddedSourceData.length % BLOCK_SIZE) == 0);
       assertTrue("Padding is longer than block size", (paddedSourceData.length - unpaddedSourceData.length) <= BLOCK_SIZE);
       
       byte[] unpaddedPaddedSourceData = ArbitraryTailPadding.removePadding(paddedSourceData);
@@ -91,7 +91,7 @@ public class TestABytPadding {
       byte[] paddedSourceData = ArbitraryTailPadding.addPadding(unpaddedSourceData, BLOCK_SIZE);
 
       assertTrue("Padded data not longer than unpadded data", paddedSourceData.length > unpaddedSourceData.length);
-      assertTrue("Padding length is not multiple of block size: " + Integer.toString(paddedSourceData.length), (paddedSourceData.length % BLOCK_SIZE) == 0);
+      assertTrue("Padding length is not multiple of block size: " + paddedSourceData.length, (paddedSourceData.length % BLOCK_SIZE) == 0);
       assertTrue("Padding is longer than block size", (paddedSourceData.length - unpaddedSourceData.length) <= BLOCK_SIZE);
       
       byte[] unpaddedPaddedSourceData = ArbitraryTailPadding.removePadding(paddedSourceData);
@@ -108,7 +108,7 @@ public class TestABytPadding {
       byte[] paddedSourceData = ArbitraryTailPadding.addPadding(unpaddedSourceData, BLOCK_SIZE);
 
       assertTrue("Padded data not longer than unpadded data", paddedSourceData.length > unpaddedSourceData.length);
-      assertTrue("Padding length is not multiple of block size: " + Integer.toString(paddedSourceData.length), (paddedSourceData.length % BLOCK_SIZE) == 0);
+      assertTrue("Padding length is not multiple of block size: " + paddedSourceData.length, (paddedSourceData.length % BLOCK_SIZE) == 0);
       assertTrue("Padding is longer than block size", (paddedSourceData.length - unpaddedSourceData.length) <= BLOCK_SIZE);
       
       byte[] unpaddedPaddedSourceData = ArbitraryTailPadding.removePadding(paddedSourceData);
@@ -124,7 +124,7 @@ public class TestABytPadding {
       byte[] paddedSourceData = ArbitraryTailPadding.addPadding(unpaddedSourceData, BLOCK_SIZE);
 
       assertTrue("Padded data not longer than unpadded data", paddedSourceData.length > unpaddedSourceData.length);
-      assertTrue("Padding length is not multiple of block size: " + Integer.toString(paddedSourceData.length), (paddedSourceData.length % BLOCK_SIZE) == 0);
+      assertTrue("Padding length is not multiple of block size: " + paddedSourceData.length, (paddedSourceData.length % BLOCK_SIZE) == 0);
       assertTrue("Padding is longer than block size", (paddedSourceData.length - unpaddedSourceData.length) <= BLOCK_SIZE);
       
       byte[] unpaddedPaddedSourceData = ArbitraryTailPadding.removePadding(paddedSourceData);

@@ -112,7 +112,7 @@ public class SimplePseudoRandomNumberGenerator implements ISimplePseudoRandomNum
 
          // Calculate the mask for the smallest power of two that is larger than maxValue
          int mask = -1;
-         mask >>>= Integer.numberOfLeadingZeros((int) maxValue | 1);
+         mask >>>= Integer.numberOfLeadingZeros(maxValue | 1);
 
          // Now get a random number with the mask laid over it and reject all values that are too large
          do {
@@ -148,7 +148,7 @@ public class SimplePseudoRandomNumberGenerator implements ISimplePseudoRandomNum
 
          // Calculate the mask for the smallest power of two that is larger than maxValue
          int mask = -1;
-         mask >>>= Integer.numberOfLeadingZeros((int) maxValue | 1);
+         mask >>>= Integer.numberOfLeadingZeros(maxValue | 1);
 
          // Now get a random number with the mask laid over it and reject all values that are too large
          do {

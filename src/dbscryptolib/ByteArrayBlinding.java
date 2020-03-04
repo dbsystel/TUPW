@@ -63,7 +63,7 @@ public class ByteArrayBlinding {
     * Check the validity of the requested minimum length
     *
     * @param minimumLength Requested minimum length
-    * @throws IllegalArgumentException
+    * @throws IllegalArgumentException if minimum length is too small or too large
     */
    private static void checkMinimumLength(final int minimumLength) throws IllegalArgumentException {
       if (minimumLength < 0)
@@ -110,8 +110,8 @@ public class ByteArrayBlinding {
     * @param sourceBytes   Source bytes to blinding
     * @param minimumLength Minimum length of blinded array
     * @return Blinded byte array
-    * @throws IllegalArgumentException
-    * @throws IOException
+    * @throws IllegalArgumentException  if minimum length is too small or too large
+    * @throws IOException if there is an error during handling of the ByteArrayOutputStream
     */
    public static byte[] buildBlindedByteArray(final byte[] sourceBytes, final int minimumLength) throws IllegalArgumentException, IOException {
       checkMinimumLength(minimumLength);
@@ -176,7 +176,7 @@ public class ByteArrayBlinding {
     *
     * @param sourceBytes Blinded byte array
     * @return Byte array without blinders
-    * @throws IllegalArgumentException
+    * @throws IllegalArgumentException if the source byte array is not correctly formatted
     */
    public static byte[] unBlindByteArray(final byte[] sourceBytes) throws IllegalArgumentException {
       if (sourceBytes.length > INDEX_SOURCE_LENGTH) {

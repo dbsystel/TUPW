@@ -25,6 +25,8 @@
 
 package dbsstatisticslib;
 
+import java.util.Arrays;
+
 /**
  * Class to calculate the entropy of byte arrays
  *
@@ -41,16 +43,14 @@ public class EntropyCalculator {
    /*
     * Instance variables
     */
-   private int[] m_Counter = new int[256];  // Array of how many times a specific byte value was counted
+   private final int[] m_Counter = new int[256];  // Array of how many times a specific byte value was counted
    private int m_ByteCount = 0;             // Number of bytes that have beend added to the statistic
 
    /**
     * Reset the entropy statistics
     */
    public void reset() {
-      for(int i = 0; i < m_Counter.length; i++) {
-         m_Counter[i] = 0;
-      }
+      Arrays.fill(m_Counter, 0);
 
       m_ByteCount = 0;
    }
@@ -110,8 +110,8 @@ public class EntropyCalculator {
 
          double p;
 
-         for (int i = 0; i < m_Counter.length; i++) {
-            p = m_Counter[i] * inverseByteCount;
+         for (int value : m_Counter) {
+            p = value * inverseByteCount;
 
             if (p != 0.0)
                result -= p * Math.log(p);

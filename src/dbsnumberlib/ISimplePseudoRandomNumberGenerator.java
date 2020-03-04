@@ -1,13 +1,13 @@
 package dbsnumberlib;
 
 public interface ISimplePseudoRandomNumberGenerator {
-      public long nextLong();
-      public int nextInt();
-      public short nextShort();
-      public byte nextByte();
+      long nextLong();
+      int nextInt();
+      short nextShort();
+      byte nextByte();
 
-      public long nextLong(long fromInclusive, long toInclusive);
-      public int nextInt(int fromInclusive, int toInclusive);
-      public short nextShort(short fromInclusive, short toInclusive);
-      public byte nextByte(byte fromInclusive, byte toInclusive);
+      long nextLong(long fromInclusive, long toInclusive);
+      int nextInt(int fromInclusive, int toInclusive);
+      short nextShort(short fromInclusive, short toInclusive);
+      byte nextByte(byte fromInclusive, byte toInclusive);
 }

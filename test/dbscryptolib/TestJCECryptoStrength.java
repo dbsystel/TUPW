@@ -65,7 +65,7 @@ public class TestJCECryptoStrength {
    @Test
    public void TestCryptoPolicy() throws NoSuchAlgorithmException {
       int maxKeyLength = Cipher.getMaxAllowedKeyLength("AES");
-      assertTrue("Maximum allowed AES key length is " + Integer.toString(maxKeyLength) + " which is less than the required key length of 256. Please use a JDK where strong encryption is enabled or use a strong encryption jurisdiction policy file",
+      assertTrue("Maximum allowed AES key length is " + maxKeyLength + " which is less than the required key length of 256. Please use a JDK where strong encryption is enabled or use a strong encryption jurisdiction policy file",
                  maxKeyLength >= 256);
    }
 }

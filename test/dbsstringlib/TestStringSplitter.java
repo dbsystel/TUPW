@@ -34,6 +34,7 @@ import static org.junit.Assert.*;
  * @author Frank Schwab, DB Systel GmbH
  * @version 1.0.0
  */
+@SuppressWarnings("ConstantConditions")
 public class TestStringSplitter {
 
    public TestStringSplitter() {
@@ -57,21 +58,21 @@ public class TestStringSplitter {
 
    @Test
    public void TestNormal() {
-      String result[] = StringSplitter.split("ATestString", "S");
+      String[] result = StringSplitter.split("ATestString", "S");
 
       assertEquals("Split result not of length 2", 2, result.length);
    }
 
    @Test
    public void TestNullSearchString() {
-      String result[] = StringSplitter.split(null, "S");
+      String[] result = StringSplitter.split(null, "S");
 
       assertNull("Null search string yields non-null result", result);
    }
 
    @Test
    public void TestFirstElementEmpty() {
-      String result[] = StringSplitter.split("SATestString", "S");
+      String[] result = StringSplitter.split("SATestString", "S");
 
       assertEquals("Split result not of length 3", 3, result.length);
       assertEquals("1. element of split is not empty", 0, result[0].length());
@@ -79,7 +80,7 @@ public class TestStringSplitter {
 
    @Test
    public void TestLastElementEmpty() {
-      String result[] = StringSplitter.split("ATestStringS", "S");
+      String[] result = StringSplitter.split("ATestStringS", "S");
 
       assertEquals("Split result not of length 3", 3, result.length);
       assertEquals("Last element of split is not empty", 0, result[2].length());
@@ -87,7 +88,7 @@ public class TestStringSplitter {
 
    @Test
    public void TestEmptyStringWithNonEmptyDelimiter() {
-      String result[] = StringSplitter.split("", "/");
+      String[] result = StringSplitter.split("", "/");
 
       assertEquals("Empty string is not split into array with 1 element", 1, result.length);
       assertEquals("Empty string is not split into array with 1 empty element", "", result[0]);
@@ -95,7 +96,7 @@ public class TestStringSplitter {
 
    @Test
    public void TestEmptyStringWithEmptyDelimiter() {
-      String result[] = StringSplitter.split("", "");
+      String[] result = StringSplitter.split("", "");
 
       assertEquals("Empty string is not split into array with 0 element", 1, result.length);
       assertEquals("Empty string is not split into array with 1 empty element", "", result[0]);
@@ -103,7 +104,7 @@ public class TestStringSplitter {
 
    @Test
    public void TestEmptyStringWithNullDelimiter() {
-      String result[] = StringSplitter.split("", null);
+      String[] result = StringSplitter.split("", null);
 
       assertEquals("Empty string is not split into array with 1 element", 1, result.length);
       assertEquals("Empty string is not split into array with 1 empty element", "", result[0]);
@@ -111,7 +112,7 @@ public class TestStringSplitter {
 
    @Test
    public void TestNonEmptyStringWithEmptyDelimiter() {
-      String result[] = StringSplitter.split("AnotherTest", "");
+      String[] result = StringSplitter.split("AnotherTest", "");
 
       assertEquals("Non-empty string is not split into array with 1 element", 1, result.length);
       assertNotEquals("Non-empty string is not split into non-empty string", 0, result[0].length());
@@ -120,7 +121,7 @@ public class TestStringSplitter {
 
    @Test
    public void TestNonEmptyStringWithNullDelimiter() {
-      String result[] = StringSplitter.split("AnotherTest", null);
+      String[] result = StringSplitter.split("AnotherTest", null);
 
       assertEquals("Non-empty string is not split into array with 1 element", 1, result.length);
       assertNotEquals("Non-empty string is not split into non-empty string", 0, result[0].length());

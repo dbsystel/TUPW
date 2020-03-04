@@ -121,7 +121,7 @@ public final class ShuffledByteArray implements AutoCloseable {
     */
    private void checkExternalIndex(final int externalIndex) throws ArrayIndexOutOfBoundsException {
       if ((externalIndex < 0) || (externalIndex >= getRealIndex(this.storedArrayLength)))
-         throw new ArrayIndexOutOfBoundsException("Illegal index " + Integer.toString(externalIndex));
+         throw new ArrayIndexOutOfBoundsException("Illegal index " + externalIndex);
    }
 
    /**

@@ -37,6 +37,7 @@ import java.util.Set;
  * @author Frank Schwab
  * @version 1.2.0
  */
+@SuppressWarnings("ConstantConditions")
 public class SecureRandomFactory {
    private static String m_SecureRandomAlgorithmName;
    private static SecureRandom m_Singleton;

@@ -35,6 +35,7 @@ package dbsnumberlib;
  * @author Frank Schwab
  * @version 1.0.0
  */
+@SuppressWarnings("UnusedAssignment")
 public class Xoroshiro128plusplus extends SimplePseudoRandomNumberGenerator {
    /**
     * The state variables

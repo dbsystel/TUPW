@@ -101,7 +101,7 @@ public class TestPRNG {
 
       for(int i = 1; i <= TEST_ITERATIONS; i++) {
          r = m_Xs128.nextInt(TEST_START, TEST_END);
-         checkInt[(int) (r - TEST_START)]++;
+         checkInt[r - TEST_START]++;
       }
 
       for (int i = 0; i < checkInt.length; i++)
@@ -115,7 +115,7 @@ public class TestPRNG {
 
       for(int i = 1; i <= TEST_ITERATIONS; i++) {
          r = m_Xs128.nextShort((short) TEST_START, (short) TEST_END);
-         checkShort[(int) (r - TEST_START)]++;
+         checkShort[r - TEST_START]++;
       }
 
       for (int i = 0; i < checkShort.length; i++)
@@ -129,7 +129,7 @@ public class TestPRNG {
 
       for(int i = 1; i <= TEST_ITERATIONS; i++) {
          r = m_Xs128.nextByte((byte) TEST_START, (byte) TEST_END);
-         checkByte[(int) (r - TEST_START)]++;
+         checkByte[r - TEST_START]++;
       }
 
       for (int i = 0; i < checkByte.length; i++)
@@ -157,7 +157,7 @@ public class TestPRNG {
 
       for(int i = 1; i <= TEST_ITERATIONS; i++) {
          r = m_Sm64.nextInt(TEST_START, TEST_END);
-         checkInt[(int) (r - TEST_START)]++;
+         checkInt[r - TEST_START]++;
       }
 
       for (int i = 0; i < checkInt.length; i++)
@@ -171,7 +171,7 @@ public class TestPRNG {
 
       for(int i = 1; i <= TEST_ITERATIONS; i++) {
          r = m_Sm64.nextShort((short) TEST_START, (short) TEST_END);
-         checkShort[(int) (r - TEST_START)]++;
+         checkShort[r - TEST_START]++;
       }
 
       for (int i = 0; i < checkShort.length; i++)
@@ -185,7 +185,7 @@ public class TestPRNG {
 
       for(int i = 1; i <= TEST_ITERATIONS; i++) {
          r = m_Sm64.nextByte((byte) TEST_START, (byte) TEST_END);
-         checkByte[(int) (r - TEST_START)]++;
+         checkByte[r - TEST_START]++;
       }
 
       for (int i = 0; i < checkByte.length; i++)

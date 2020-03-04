@@ -128,7 +128,7 @@ public class TestPackedUnsignedInteger {
       try {
          byte [] junk = PackedUnsignedInteger.fromInteger(iMinOverflow);
 
-         fail("Exception not thrown on fromInteger = " + Integer.toString(iMinOverflow));
+         fail("Exception not thrown on fromInteger = " + iMinOverflow);
       }
       catch (Exception e) {
          assertEquals("Exception: " + e.toString(), "java.lang.IllegalArgumentException: Integer too large for packed integer", e.toString());

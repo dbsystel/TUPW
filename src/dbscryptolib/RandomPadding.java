@@ -69,14 +69,14 @@ public class RandomPadding {
     * Check block size
     *
     * @param blockSize Block size
-    * @throws java.lang.IllegalArgumentException
+    * @throws java.lang.IllegalArgumentException if block size is too small or too large
     */
    private static void checkBlockSize(final int blockSize) throws IllegalArgumentException {
       if (blockSize <= 0)
          throw new IllegalArgumentException("Block size must be greater than 0");
 
       if (blockSize > MAX_BLOCK_SIZE)
-         throw new IllegalArgumentException("Block size must not be greater than " + Integer.toString(MAX_BLOCK_SIZE));
+         throw new IllegalArgumentException("Block size must not be greater than " + MAX_BLOCK_SIZE);
    }
 
    /**
@@ -109,7 +109,7 @@ public class RandomPadding {
     * @param unpaddedSourceData Data to be padded
     * @param blockSize Block size in bytes
     * @return Data with padding bytes added
-    * @throws java.lang.IllegalArgumentException
+    * @throws java.lang.IllegalArgumentException if the  block size is too small or too large
     */
    public static byte[] addPadding(final byte[] unpaddedSourceData, final int blockSize) throws IllegalArgumentException {
       // Check parameter validity

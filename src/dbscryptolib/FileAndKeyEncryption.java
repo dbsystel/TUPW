@@ -78,6 +78,7 @@ import java.util.Base64;
  * @author Frank Schwab, DB Systel GmbH
  * @version 3.2.1
  */
+@SuppressWarnings("StringBufferReplaceableByString")
 public class FileAndKeyEncryption implements AutoCloseable {
 
    /*
@@ -192,6 +193,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
    /**
     * Helper class to store encryption parameters
     */
+   @SuppressWarnings("InnerClassMayBeStatic")
    private class EncryptionParts {
 
       public byte formatId;
@@ -261,10 +263,10 @@ public class FileAndKeyEncryption implements AutoCloseable {
    private void checkHMACKey(final byte[] aHMACKey) throws IllegalArgumentException {
       if (aHMACKey != null) {
          if (aHMACKey.length < MINIMUM_HMAC_KEY_LENGTH)
-            throw new IllegalArgumentException("HMAC key length is less than " + Integer.toString(MINIMUM_HMAC_KEY_LENGTH));
+            throw new IllegalArgumentException("HMAC key length is less than " + MINIMUM_HMAC_KEY_LENGTH);
 
          if (aHMACKey.length > MAXIMUM_HMAC_KEY_LENGTH)
-            throw new IllegalArgumentException("HMAC key length is larger than " + Integer.toString(MAXIMUM_HMAC_KEY_LENGTH));
+            throw new IllegalArgumentException("HMAC key length is larger than " + MAXIMUM_HMAC_KEY_LENGTH);
       } else
          throw new IllegalArgumentException("HMAC key is null");
    }
@@ -522,7 +524,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
       Base64.Encoder b64Encoder = Base64.getEncoder().withoutPadding();
       StringBuilder myStringBuilder = new StringBuilder(calculateStringBuilderCapacityForEncryptionParts(encryptionParts));
 
-      myStringBuilder.append(Byte.toString(encryptionParts.formatId));
+      myStringBuilder.append(encryptionParts.formatId);
       myStringBuilder.append(PARTS_SEPARATOR);
       myStringBuilder.append(b64Encoder.encodeToString(encryptionParts.iv));
       myStringBuilder.append(PARTS_SEPARATOR);
@@ -638,13 +640,13 @@ public class FileAndKeyEncryption implements AutoCloseable {
     */
    private byte[] getHmacValueOfSourceBytes(final byte[] key, final byte[]... sourceBytes) throws InvalidKeyException, NoSuchAlgorithmException {
       final Mac hmac = getHMACInstance();
-      byte[] result = null;
+      @SuppressWarnings("UnusedAssignment") byte[] result = null;
 
       try (SecureSecretKeySpec hmacKey = new SecureSecretKeySpec(key, HMAC_256_ALGORITHM_NAME)) {
          hmac.init(hmacKey);
 
-         for (int i = 0; i < sourceBytes.length; i++)
-            hmac.update(sourceBytes[i]);
+         for (byte[] sourceByte : sourceBytes)
+            hmac.update(sourceByte);
 
          result = hmac.doFinal();
       } catch (final Exception e) {
@@ -678,10 +680,9 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @param hmacKey     HMAC key to be used
     * @param sourceBytes bytes to be used for key derivation
     * @throws InvalidKeyException      if the key is not valid for the HMAC algorithm (must never happen)
-    * @throws IOException              if there is an error reading the key file
     * @throws NoSuchAlgorithmException if there is no HMAC-256 algorithm (must never happen)
     */
-   private void setKeysFromKeyAndSourceBytes(final byte[] hmacKey, final byte[]... sourceBytes) throws InvalidKeyException, IOException, NoSuchAlgorithmException {
+   private void setKeysFromKeyAndSourceBytes(final byte[] hmacKey, final byte[]... sourceBytes) throws InvalidKeyException, NoSuchAlgorithmException {
       final byte[] hmacOfSourceBytes = getHmacValueOfSourceBytes(hmacKey, sourceBytes);
 
       // 1. half of file HMAC is used as the encryption key of this instance
@@ -714,10 +715,9 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @param sourceBytes Bytes that the key is derived from
     * @throws IllegalArgumentException The HMAC key or the source bytes are not valid
     * @throws InvalidKeyException      if the key is invalid (must never happen)
-    * @throws IOException              if there was an error while reading the key file
     * @throws NoSuchAlgorithmException if the encryption algorithm is invalid (must never happen)
     */
-   public FileAndKeyEncryption(final byte[] hmacKey, final byte[]... sourceBytes) throws IllegalArgumentException, InvalidKeyException, IOException, NoSuchAlgorithmException {
+   public FileAndKeyEncryption(final byte[] hmacKey, final byte[]... sourceBytes) throws IllegalArgumentException, InvalidKeyException, NoSuchAlgorithmException {
       checkHMACKey(hmacKey);
 
       checkSourceBytes(sourceBytes);

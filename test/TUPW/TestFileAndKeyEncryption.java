@@ -44,6 +44,7 @@ import static org.junit.Assert.*;
  * @author Frank Schwab, DB Systel GmbH
  * @version 1.5.0
  */
+@SuppressWarnings("ConstantConditions")
 public class TestFileAndKeyEncryption {
 
    /*
@@ -582,6 +583,7 @@ public class TestFileAndKeyEncryption {
       try {
          byte[] aSourceByteArray = null;
 
+         //noinspection ConstantConditions
          FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(HMAC_KEY, aSourceByteArray);
 
          String decryptedText = myEncryptor.decryptData(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);

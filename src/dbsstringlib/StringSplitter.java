@@ -46,6 +46,7 @@ import java.util.ArrayList;
  * @author Frank Schwab, DB Systel GmbH
  * @version 2.1.0
  */
+@SuppressWarnings("IfStatementWithIdenticalBranches")
 public class StringSplitter {
 
    /**
