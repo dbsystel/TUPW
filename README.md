@@ -233,7 +233,7 @@ One can also use a constant HMAC key and take the external bytes the key is calc
    }
 ```
 
-The class instances then generate the keys from the HMAC and the supplied bytes and store these keys safely in the program's memory. Encryption and decryptionexpect a `String` as input data and return a `String` as output data. So you can not encrypt binary data with it, which makes kind of sense as it is designed to store readable data.
+The class instances then generate the keys from the HMAC and the supplied bytes and store these keys safely in the program's memory. Encryption and decryption expect a `String` as input data and return a `String` as output data. So you can not encrypt binary data with it, which makes kind of sense as it is designed to store readable data.
 
 The classes are meant to be instantiated once and then used throughout the lifetime of the program as needed. They should not be instantiated every time they are used as checking the supplied bytes and calculating the keys is quite expensive. The class stores the calculated key in a secure manner in an instance of the `SecureSecretKeySpec` class which can be found in the `dbscryptolib` source path.
 
