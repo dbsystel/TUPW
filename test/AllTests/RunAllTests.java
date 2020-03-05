@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, DB Systel GmbH
+ * Copyright (c) 2020, DB Systel GmbH
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -21,9 +21,12 @@
  *
  * Changes:
  *     2015-12-27: V1.0.0: Created. fhs
+ *     2020-03-04: V2.0.0: Tests adapted to new class structure. fhs
  */
 package AllTests;
 
+import TUPW.TestFileAndKeyEncryption;
+import TUPW.TestSplitKeyEncryption;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -35,17 +38,18 @@ import org.junit.runners.Suite;
  * Run all test cases.
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.0.0
+ * @version 2.0.0
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses(
-        {TUPW.TestFileAndKeyEncryption.class,
+        {TestSplitKeyEncryption.class,
+         TestFileAndKeyEncryption.class,
          dbscryptolib.TestABytPadding.class,
          dbscryptolib.TestByteArrayBlinding.class,
          dbscryptolib.TestJCECryptoStrength.class,
          dbsnumberlib.TestPackedUnsignedInteger.class,
          dbsnumberlib.TestPRNG.class,
-         dbsstringlib.TestStringSplitter.class,}
+         dbsstringlib.TestStringSplitter.class}
 )
 public class RunAllTests {
 

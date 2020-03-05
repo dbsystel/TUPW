@@ -26,6 +26,7 @@
  *     2020-02-12: V1.3.0: More tests with subject and different versions. fhs
  *     2020-02-27: V1.4.0: Added tests with invalid parameters. fhs
  *     2020-02-28: V1.5.0: Added test with not enough information in source bytes. fhs
+ *     2020-03-04: V1.6.0: Split test cases for "FileAndKeyEncryption" and "SplitKeyEncryption". fhs
  */
 package TUPW;
 
@@ -42,16 +43,15 @@ import static org.junit.Assert.*;
  * Test cases for file and key encryption.
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.5.0
+ * @version 1.7.0
  */
-@SuppressWarnings("ConstantConditions")
 public class TestFileAndKeyEncryption {
 
    /*
     * Private constants
     */
    /**
-    * File name for the nonradom bytes
+    * File name for the non-random bytes
     */
    private static final String NOT_RANDOM_FILE_NAME = "_not_random_file_.bin";
 
@@ -73,66 +73,12 @@ public class TestFileAndKeyEncryption {
    /**
     * Known clear text to encrypt
     */
-   private static final String CLEAR_TEXT_V3 = "This is a clear Text";
    private static final String CLEAR_TEXT_V5 = "This#”s?a§StR4nGé€PàS!Wörd9";
 
    /**
     * Known encrypted text to decrypt
     */
-   private static final String ENCRYPTED_TEXT_V3 = "3$J/LJT9XGjwfmsKsvHzFefQ==$iJIhCFfmzwPVqDwJai30ei5WTpU3/7qhiBS7WbPQCCHJKppD06B2LsRP7tgqh+1g$C9mHKfJi5mdMdIOZWep2GhZl7fNk98c3fBD6j404RXY=";
-   private static final String SUBJECT = "maven_repo_pass";
-   private static final String WRONG_SUBJECT = "maven_repo_paxx";
-   private static final String ENCRYPTED_TEXT_V5 = "5$Qs6C7prscyK5/OiJRsjWtw$bobPzPN6BJI0Od9pMSUWrSXp5hm/U+0ihzrWH30wMhrZGFPGsnNl/Mv3xJLdHdE03PpD1CW99AK2IZKk006hVA$nP3mG9F4eKvYJoFEiOhMguzMbgpo7XR+JkNJnA6qdhQ";
-
-   /**
-    * Known encrypted text to decrypt with invalid HMAC
-    */
-   private static final String ENCRYPTED_TEXT_WITH_INVALID_HMAC = "3$J/LJT9XGjwfmsKsvHzFefQ==$iJIhCFfmzwPVqDwJai30ei5WTpU3/7qhiBS7WbPQCCHJKppD06B2LsRP7tgqh+1g$C9mHKfJi5mdMdIOZWep2GhZl7fNk98c3fBD6j404RXQ=";
-
-   /**
-    * Known encrypted text to decrypt with invalid encryption
-    */
-   private static final String ENCRYPTED_TEXT_WITH_INVALID_ENCRYPTION = "3$J/LJT9XGjwfmsKsvHzFefQ==$iJIhCFfmzwPVqDwJai30ei5WTpU3/7qhiBS7WbPQCCHJKppD06B2LsRP7tgqh+1Q$C9mHKfJi5mdMdIOZWep2GhZl7fNk98c3fBD6j404RXY=";
-
-   /**
-    * Known encrypted text to decrypt with invalid IV
-    */
-   private static final String ENCRYPTED_TEXT_WITH_INVALID_IV = "3$J/LJT9XGjwfmsKsvHzFefz==$iJIhCFfmzwPVqDwJai30ei5WTpU3/7qhiBS7WbPQCCHJKppD06B2LsRP7tgqh+1g$C9mHKfJi5mdMdIOZWep2GhZl7fNk98c3fBD6j404RXY=";
-
-   /**
-    * Known encrypted text to decrypt with unknown format id
-    */
-   private static final String ENCRYPTED_TEXT_WITH_UNKNOWN_FORMAT_ID = "99$J/LJT9XGjwfmsKsvHzFefQ==$iJIhCFfmzwPVqDwJai30ei5WTpU3/7qhiBS7WbPQCCHJKppD06B2LsRP7tgqh+1g$C9mHKfJi5mdMdIOZWep2GhZl7fNk98c3fBD6j404RXY=";
-
-   /**
-    * Known encrypted text to decrypt with invalid format id
-    */
-   private static final String ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID = "Q$J/LJT9XGjwfmsKsvHzFefQ==$iJIhCFfmzwPVqDwJai30ei5WTpU3/7qhiBS7WbPQCCHJKppD06B2LsRP7tgqh+1g$C9mHKfJi5mdMdIOZWep2GhZl7fNk98c3fBD6j404RXY=";
-
-   /**
-    * Known encrypted text to decrypt with missing format id
-    */
-   private static final String ENCRYPTED_TEXT_WITH_MISSING_FORMAT_ID = "J/LJT9XGjwfmsKsvHzFefQ==$iJIhCFfmzwPVqDwJai30ei5WTpU3/7qhiBS7WbPQCCHJKppD06B2LsRP7tgqh+1g$C9mHKfJi5mdMdIOZWep2GhZl7fNk98c3fBD6j404RXY=";
-
-   /**
-    * Known encrypted text to decrypt with empty IV
-    */
-   private static final String ENCRYPTED_TEXT_WITH_EMPTY_IV = "3$$iJIhCFfmzwPVqDwJai30ei5WTpU3/7qhiBS7WbPQCCHJKppD06B2LsRP7tgqh+1g$C9mHKfJi5mdMdIOZWep2GhZl7fNk98c3fBD6j404RXY=";
-
-   /**
-    * Known encrypted text to decrypt with missing IV
-    */
-   private static final String ENCRYPTED_TEXT_WITH_MISSING_IV = "3$iJIhCFfmzwPVqDwJai30ei5WTpU3/7qhiBS7WbPQCCHJKppD06B2LsRP7tgqh+1g$C9mHKfJi5mdMdIOZWep2GhZl7fNk98c3fBD6j404RXY=";
-
-   /**
-    * Checksum error message
-    */
-   private static final String CHECKSUM_ERROR_MESSAGE = "Checksum does not match data";
-
-   /**
-    * Invalid format id error message
-    */
-   private static final String INVALID_FORMAT_ID_ERROR_MESSAGE = "Invalid format id";
+   private static final String SUBJECT = "strangeness+charm";
 
 
    /*
@@ -143,19 +89,8 @@ public class TestFileAndKeyEncryption {
 
    @BeforeClass
    public static void setUpClass() {
-   }
-
-   @AfterClass
-   public static void tearDownClass() {
-   }
-
-   /**
-    * Create nonrandom key file before the test
-    */
-   @Before
-   public void setUp() {
       //
-      // Generate a file with a predictable content, so the tests are reproducible.
+      // Generate a nonrandom key file with a predictable content, so the tests are reproducible.
       //
       byte[] notRandomBytes = new byte[100000];
 
@@ -171,11 +106,8 @@ public class TestFileAndKeyEncryption {
       }
    }
 
-   /**
-    * Delete nonrandom key file after the test
-    */
-   @After
-   public void tearDown() {
+   @AfterClass
+   public static void tearDownClass() {
       Path path = Paths.get(NOT_RANDOM_FILE_NAME);
 
       try {
@@ -183,6 +115,17 @@ public class TestFileAndKeyEncryption {
       } catch (Exception e) {
          System.err.print("Could not delete file '" + NOT_RANDOM_FILE_NAME + ": " + e.toString());
       }
+   }
+
+   @Before
+   public void setUp() {
+   }
+
+   /**
+    * Delete nonrandom key file after the test
+    */
+   @After
+   public void tearDown() {
    }
 
    /**
@@ -205,7 +148,7 @@ public class TestFileAndKeyEncryption {
    }
 
    /**
-    * Test if the encryption of a given text is correctly decrypted.
+    * Test if the encryption of a given text is correctly decrypted with a subject present.
     */
    @Test
    public void TestEncryptionDecryptionWithSubject() {
@@ -220,299 +163,6 @@ public class TestFileAndKeyEncryption {
       } catch (Exception e) {
          e.printStackTrace();
          fail("Exception: " + e.toString());
-      }
-   }
-
-   /**
-    * Test if the encryption of a given text is correctly decrypted.
-    */
-   @Test
-   public void TestEmptyEncryptionDecryption() {
-      try {
-         final String emptyString = "";
-
-         final FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(HMAC_KEY, NOT_RANDOM_FILE_NAME);
-
-         final String encryptedText = myEncryptor.encryptData(emptyString);
-
-         final String decryptedText = myEncryptor.decryptData(encryptedText);
-
-         assertEquals("Decrypted text is not the same as encrypted text", emptyString, decryptedText);
-      } catch (Exception e) {
-         e.printStackTrace();
-         fail("Exception: " + e.toString());
-      }
-   }
-
-   /**
-    * Test if the encryption of a given text is correctly decrypted.
-    */
-   @Test
-   public void TestEmptyEncryptionDecryptionWithSubject() {
-      try {
-         final String emptyString = "";
-
-         final FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(HMAC_KEY, NOT_RANDOM_FILE_NAME);
-
-         final String encryptedText = myEncryptor.encryptData(emptyString, SUBJECT);
-
-         final String decryptedText = myEncryptor.decryptData(encryptedText, SUBJECT);
-
-         assertEquals("Decrypted text is not the same as encrypted text", emptyString, decryptedText);
-      } catch (Exception e) {
-         e.printStackTrace();
-         fail("Exception: " + e.toString());
-      }
-   }
-
-   /**
-    * Test if a given encrypted text is correctly decrypted.
-    */
-   @Test
-   public void TestKnownDecryption() {
-      try {
-         FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(HMAC_KEY, NOT_RANDOM_FILE_NAME);
-
-         String decryptedText = myEncryptor.decryptData(ENCRYPTED_TEXT_V3);
-
-         assertEquals("Decrypted text is not the same as encrypted text", CLEAR_TEXT_V3, decryptedText);
-      } catch (Exception e) {
-         e.printStackTrace();
-         fail("Exception: " + e.toString());
-      }
-   }
-
-   /**
-    * Test if a given encrypted text is correctly decrypted.
-    */
-   @Test
-   public void TestKnownDecryptionWithSubject() {
-      try {
-         FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(HMAC_KEY, NOT_RANDOM_FILE_NAME);
-
-         String decryptedText = myEncryptor.decryptData(ENCRYPTED_TEXT_V5, SUBJECT);
-
-         assertEquals("Decrypted text is not the same as encrypted text", CLEAR_TEXT_V5, decryptedText);
-      } catch (Exception e) {
-         e.printStackTrace();
-         fail("Exception: " + e.toString());
-      }
-   }
-
-   /**
-    * Test if a given encrypted text with an invalid HMAC throws an exception.
-    */
-   @Test
-   public void TestDecryptionWithWrongSubject() {
-      try {
-         FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(HMAC_KEY, NOT_RANDOM_FILE_NAME);
-
-         String decryptedText = myEncryptor.decryptData(ENCRYPTED_TEXT_V5, WRONG_SUBJECT);
-
-         fail("Expected exception not thrown");
-      } catch (Exception e) {
-         assertEquals("Exception: " + e.toString(), CHECKSUM_ERROR_MESSAGE, e.getMessage());
-      }
-   }
-
-   /**
-    * Test if a given encrypted text with an invalid HMAC throws an exception.
-    */
-   @Test
-   public void TestKnownDecryptionWithInvalidHMAC() {
-      try {
-         FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(HMAC_KEY, NOT_RANDOM_FILE_NAME);
-
-         String decryptedText = myEncryptor.decryptData(ENCRYPTED_TEXT_WITH_INVALID_HMAC);
-
-         fail("Expected exception not thrown");
-      } catch (Exception e) {
-         assertEquals("Exception: " + e.toString(), CHECKSUM_ERROR_MESSAGE, e.getMessage());
-      }
-   }
-
-   /**
-    * Test if a given encrypted text with an invalid encryption throws an
-    * exception.
-    */
-   @Test
-   public void TestKnownDecryptionWithInvalidEncryption() {
-      try {
-         FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(HMAC_KEY, NOT_RANDOM_FILE_NAME);
-
-         String decryptedText = myEncryptor.decryptData(ENCRYPTED_TEXT_WITH_INVALID_ENCRYPTION);
-
-         fail("Expected exception not thrown");
-      } catch (Exception e) {
-         assertEquals("Exception: " + e.toString(), CHECKSUM_ERROR_MESSAGE, e.getMessage());
-      }
-   }
-
-   /**
-    * Test if a given encrypted text with an invalid IV throws an exception.
-    */
-   @Test
-   public void TestKnownDecryptionWithInvalidIV() {
-      try {
-         FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(HMAC_KEY, NOT_RANDOM_FILE_NAME);
-
-         String decryptedText = myEncryptor.decryptData(ENCRYPTED_TEXT_WITH_INVALID_IV);
-
-         fail("Expected exception not thrown");
-      } catch (Exception e) {
-         assertEquals("Exception: " + e.toString(), CHECKSUM_ERROR_MESSAGE, e.getMessage());
-      }
-   }
-
-   /**
-    * Test if a given encrypted text with an unknown format id throws an exception.
-    */
-   @Test
-   public void TestKnownDecryptionWithUnknownFormatId() {
-      try {
-         FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(HMAC_KEY, NOT_RANDOM_FILE_NAME);
-
-         String decryptedText = myEncryptor.decryptData(ENCRYPTED_TEXT_WITH_UNKNOWN_FORMAT_ID);
-
-         fail("Expected exception not thrown");
-      } catch (Exception e) {
-         assertEquals("Exception: " + e.toString(), "Unknown format id", e.getMessage());
-      }
-   }
-
-   /**
-    * Test if a given encrypted text with an invalid format id throws an exception.
-    */
-   @Test
-   public void TestKnownDecryptionWithInvalidFormatId() {
-      try {
-         FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(HMAC_KEY, NOT_RANDOM_FILE_NAME);
-
-         String decryptedText = myEncryptor.decryptData(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
-
-         fail("Expected exception not thrown");
-      } catch (Exception e) {
-         assertEquals("Exception: " + e.toString(), INVALID_FORMAT_ID_ERROR_MESSAGE, e.getMessage());
-      }
-   }
-
-   /**
-    * Test if a given encrypted text with a missing format id throws an exception.
-    */
-   @Test
-   public void TestKnownDecryptionWithMissingFormatId() {
-      try {
-         FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(HMAC_KEY, NOT_RANDOM_FILE_NAME);
-
-         String decryptedText = myEncryptor.decryptData(ENCRYPTED_TEXT_WITH_MISSING_FORMAT_ID);
-
-         fail("Expected exception not thrown");
-      } catch (Exception e) {
-         assertEquals("Exception: " + e.toString(), INVALID_FORMAT_ID_ERROR_MESSAGE, e.getMessage());
-      }
-   }
-
-   /**
-    * Test if a given encrypted text with an empty format id throws an exception.
-    */
-   @Test
-   public void TestKnownDecryptionWithEmptyIV() {
-      try {
-         FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(HMAC_KEY, NOT_RANDOM_FILE_NAME);
-
-         String decryptedText = myEncryptor.decryptData(ENCRYPTED_TEXT_WITH_EMPTY_IV);
-
-         fail("Expected exception not thrown");
-      } catch (Exception e) {
-         assertEquals("Exception: " + e.toString(), "Number of '$' separated parts in encrypted text is not 4", e.getMessage());
-      }
-   }
-
-   /**
-    * Test if a given encrypted text with a missing format id throws an exception.
-    */
-   @Test
-   public void TestKnownDecryptionWithMissingIV() {
-      try {
-         FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(HMAC_KEY, NOT_RANDOM_FILE_NAME);
-
-         String decryptedText = myEncryptor.decryptData(ENCRYPTED_TEXT_WITH_MISSING_IV);
-
-         fail("Expected exception not thrown");
-      } catch (Exception e) {
-         assertEquals("Exception: " + e.toString(), "Number of '$' separated parts in encrypted text is not 4", e.getMessage());
-      }
-   }
-
-   /**
-    * Test if an empty HMAC throws an exception.
-    */
-   @Test
-   public void TestKnownDecryptionWithEmptyHMAC() {
-      try {
-         byte[] emptyHMAC = new byte[0];
-
-         FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(emptyHMAC, NOT_RANDOM_FILE_NAME);
-
-         String decryptedText = myEncryptor.decryptData(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
-
-         fail("Expected exception not thrown");
-      } catch (Exception e) {
-         assertEquals("Exception: " + e.toString(), "HMAC key length is less than 14", e.getMessage());
-      }
-   }
-
-   /**
-    * Test if a too short HMAC throws an exception.
-    */
-   @Test
-   public void TestKnownDecryptionWithShortHMAC() {
-      try {
-         byte[] shortHMAC = new byte[10];
-
-         FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(shortHMAC, NOT_RANDOM_FILE_NAME);
-
-         String decryptedText = myEncryptor.decryptData(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
-
-         fail("Expected exception not thrown");
-      } catch (Exception e) {
-         assertEquals("Exception: " + e.toString(), "HMAC key length is less than 14", e.getMessage());
-      }
-   }
-
-   /**
-    * Test if a too large HMAC throws an exception.
-    */
-   @Test
-   public void TestKnownDecryptionWithTooLargeHMAC() {
-      try {
-         byte[] largeHMAC = new byte[70];
-
-         FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(largeHMAC, NOT_RANDOM_FILE_NAME);
-
-         String decryptedText = myEncryptor.decryptData(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
-
-         fail("Expected exception not thrown");
-      } catch (Exception e) {
-         assertEquals("Exception: " + e.toString(), "HMAC key length is larger than 32", e.getMessage());
-      }
-   }
-
-   /**
-    * Test if null HMAC key throws an exception.
-    */
-   @Test
-   public void TestNullHMACKey() {
-      try {
-         byte[] aHMACKey = null;
-
-         FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(aHMACKey, NOT_RANDOM_FILE_NAME);
-
-         String decryptedText = myEncryptor.decryptData(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
-
-         fail("Expected exception not thrown");
-      } catch (Exception e) {
-         assertEquals("Exception: " + e.toString(), "HMAC key is null", e.getMessage());
       }
    }
 
@@ -547,7 +197,7 @@ public class TestFileAndKeyEncryption {
 
          FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(HMAC_KEY, anInvalidFileName);
 
-         String decryptedText = myEncryptor.decryptData(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
+         String decryptedText = myEncryptor.decryptData(NOT_RANDOM_FILE_NAME);
 
          fail("Expected exception not thrown");
       } catch (Exception e) {
@@ -567,89 +217,11 @@ public class TestFileAndKeyEncryption {
 
          FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(HMAC_KEY, aFileName);
 
-         String decryptedText = myEncryptor.decryptData(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
+         String decryptedText = myEncryptor.decryptData(NOT_RANDOM_FILE_NAME);
 
          fail("Expected exception not thrown");
       } catch (Exception e) {
          assertEquals("Exception: " + e.toString(), "Key file path is null", e.getMessage());
-      }
-   }
-
-   /**
-    * Test if one null source byte array throws an exception.
-    */
-   @Test
-   public void TestOneNullByteArray() {
-      try {
-         byte[] aSourceByteArray = null;
-
-         //noinspection ConstantConditions
-         FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(HMAC_KEY, aSourceByteArray);
-
-         String decryptedText = myEncryptor.decryptData(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
-
-         fail("Expected exception not thrown");
-      } catch (Exception e) {
-         assertEquals("Exception: " + e.toString(), "1. source byte array is null", e.getMessage());
-      }
-   }
-
-   /**
-    * Test if a null source byte array after a non-null byte array throws an exception.
-    */
-   @Test
-   public void TestAnotherNullByteArray() {
-      try {
-         byte[] aSourceByteArray = {(byte) 0xaa, (byte) 0xbb, (byte) 0xcc};
-         byte[] anotherSourceByteArray = null;
-
-         FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(HMAC_KEY, aSourceByteArray, anotherSourceByteArray);
-
-         String decryptedText = myEncryptor.decryptData(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
-
-         fail("Expected exception not thrown");
-      } catch (Exception e) {
-         assertEquals("Exception: " + e.toString(), "2. source byte array is null", e.getMessage());
-      }
-   }
-
-   /**
-    * Test if a very short source byte array throws an exception.
-    */
-   @Test
-   public void TestShortSourceBytes() {
-      try {
-         byte[] aSourceByteArray = {(byte) 0xaa, (byte) 0xbb, (byte) 0xcc};
-
-         FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(HMAC_KEY, aSourceByteArray);
-
-         String decryptedText = myEncryptor.decryptData(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
-
-         fail("Expected exception not thrown");
-      } catch (Exception e) {
-         final String exceptionMessage = e.toString();
-
-         assertTrue("Unexpected exception: " + exceptionMessage, exceptionMessage.contains("not enough information provided"));
-      }
-   }
-
-   /**
-    * Test if a uniform source byte array throws an exception.
-    */
-   @Test
-   public void TestUniformSourceBytes() {
-      try {
-         byte[] aSourceByteArray = new byte[300];
-
-         FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(HMAC_KEY, aSourceByteArray);
-
-         String decryptedText = myEncryptor.decryptData(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
-
-         fail("Expected exception not thrown");
-      } catch (Exception e) {
-         final String exceptionMessage = e.toString();
-
-         assertTrue("Unexpected exception: " + exceptionMessage, exceptionMessage.contains("no information provided"));
       }
    }
 

@@ -101,7 +101,7 @@ public class TUPW {
          final byte[] CALCULATED_HMAC_KEY = createHMACKey();
 
          // There are many other ways to create a HMAC key. Use you imagination.
-         try (FileAndKeyEncryption MyEncryptor = new FileAndKeyEncryption(HMAC_KEY, args[1])) {
+         try (FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(HMAC_KEY, args[1])) {
             String subject = "";
             int itemIndex = 2;
 
@@ -111,9 +111,9 @@ public class TUPW {
             }
 
             if (args[0].substring(0, 1).toLowerCase().equals("e")) {
-               System.out.println(MyEncryptor.encryptData(getInputFromWhereEver(args[itemIndex]), subject));
+               System.out.println(myEncryptor.encryptData(getInputFromWhereEver(args[itemIndex]), subject));
             } else {
-               System.out.println(MyEncryptor.decryptData(getInputFromWhereEver(args[itemIndex]), subject));
+               System.out.println(myEncryptor.decryptData(getInputFromWhereEver(args[itemIndex]), subject));
             }
 
             System.exit(0);
