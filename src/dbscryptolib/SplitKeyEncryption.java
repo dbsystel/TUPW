@@ -636,7 +636,7 @@ public class SplitKeyEncryption implements AutoCloseable {
     */
    private byte[] getHmacValueOfSourceBytes(final byte[] key, final byte[]... sourceBytes) throws InvalidKeyException, NoSuchAlgorithmException {
       final Mac hmac = getHMACInstance();
-      byte[] result = null;
+      byte[] result;
 
       try (SecureSecretKeySpec hmacKey = new SecureSecretKeySpec(key, HMAC_256_ALGORITHM_NAME)) {
          hmac.init(hmacKey);

@@ -47,7 +47,6 @@ import dbsnumberlib.Xoroshiro128plusplus;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 
 /**
  * Example program to calculate the encryption of user and password for
@@ -101,7 +100,7 @@ public class TUPW {
          final byte[] CALCULATED_HMAC_KEY = createHMACKey();
 
          // There are many other ways to create a HMAC key. Use you imagination.
-         try (FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(HMAC_KEY, args[1])) {
+         try (FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(CALCULATED_HMAC_KEY, args[1])) {
             String subject = "";
             int itemIndex = 2;
 
@@ -151,7 +150,7 @@ public class TUPW {
       // Get input from System.in, if third argument is "-", or from the 
       // third command line argument, if it is something else
       if (anArgument.equals("-")) {
-         result = getInputStreamAsString(System.in);
+         result = getSystemInAsString();
       } else {
          result = anArgument;
       }
@@ -160,19 +159,18 @@ public class TUPW {
    }
 
    /**
-    * Convert an <code>InputStream</code> to a <code>String</code>
+    * Convert System.in input stream to a <code>String</code>
     *
-    * @param inputStream InputStream to convert
-    * @return Content of InputStream as String
+    * @return Content of InputStream System.in as String
     * @throws IllegalArgumentException if the input stream is too large
     * @throws IOException if there was an I/O error while reading the input bytes
     */
-   static String getInputStreamAsString(final InputStream inputStream) throws IllegalArgumentException, IOException {
+   static String getSystemInAsString() throws IllegalArgumentException, IOException {
       final ByteArrayOutputStream result = new ByteArrayOutputStream();
       final byte[] buffer = new byte[READ_BLOCK_SIZE];
       int length;
 
-      while ((length = inputStream.read(buffer)) != -1) {
+      while ((length = System.in.read(buffer)) != -1) {
          result.write(buffer, 0, length);
 
          if (result.size() > MAX_INPUT_BYTES) 

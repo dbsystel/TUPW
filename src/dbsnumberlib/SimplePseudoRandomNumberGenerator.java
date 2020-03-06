@@ -1,6 +1,6 @@
 package dbsnumberlib;
 
-public class SimplePseudoRandomNumberGenerator implements ISimplePseudoRandomNumberGenerator {
+public class SimplePseudoRandomNumberGenerator {
    public long nextLong() {
       throw new UnsupportedOperationException();
    }  // This method *must* be overridden
