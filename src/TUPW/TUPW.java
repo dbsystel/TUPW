@@ -39,6 +39,7 @@
  *     2019-03-07: V4.0.0: Add a "subject" to the command line that will change the encryption key. fhs
  *     2019-03-07: V4.0.1: Strengthen test for invalid blinding data. fhs
  *     2019-03-07: V4.1.0: Correct handling of keys with subject parameter. fhs
+ *     2020-03-06: V4.1.1: Simply read from System.in. fhs
  */
 package TUPW;
 
@@ -58,7 +59,7 @@ import java.io.IOException;
  *    2: Not enough arguments
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 4.1.0
+ * @version 4.1.1
  */
 public class TUPW {
    private static final int MAX_INPUT_BYTES = 50000000;
@@ -100,7 +101,7 @@ public class TUPW {
          final byte[] CALCULATED_HMAC_KEY = createHMACKey();
 
          // There are many other ways to create a HMAC key. Use you imagination.
-         try (FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(CALCULATED_HMAC_KEY, args[1])) {
+         try (FileAndKeyEncryption myEncryptor = new FileAndKeyEncryption(HMAC_KEY, args[1])) {
             String subject = "";
             int itemIndex = 2;
 

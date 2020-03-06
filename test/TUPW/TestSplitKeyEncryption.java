@@ -66,6 +66,11 @@ public class TestSplitKeyEncryption {
    private static final byte[] COMPUTED_HMAC_KEY = new byte[32];
 
    /**
+    * Default character set for string to byte conversion
+    */
+   private static final String GET_BYTES_CHARACTER_SET = "UTF-8";
+
+   /**
     * Some key elements.
     *
     * <p>For the sake of repeatable tests the source bytes are constants in this test file.
@@ -166,10 +171,6 @@ public class TestSplitKeyEncryption {
       for (int i = 0; i < SOURCE_BYTES_4.length; i++)
          SOURCE_BYTES_4[i] = xs128.nextByte();
 
-      /*
-        Default character set for string to byte conversion
-       */
-      String GET_BYTES_CHARACTER_SET = "UTF-8";
       SOURCE_BYTES_1 = SOURCE_TEXT_1.getBytes(GET_BYTES_CHARACTER_SET);
       SOURCE_BYTES_2 = SOURCE_TEXT_3.getBytes(GET_BYTES_CHARACTER_SET);
       SOURCE_BYTES_3 = SOURCE_TEXT_2.getBytes(GET_BYTES_CHARACTER_SET);
