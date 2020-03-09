@@ -21,6 +21,7 @@
  *
  * Changes:
  *     2020-03-04: V1.0.0: Created. fhs
+ *     2020-03-09: V1.0.1: Test 0 length source byte array. fhs
  */
 package TUPW;
 
@@ -36,7 +37,7 @@ import static org.junit.Assert.*;
  * Test cases for file and key encryption.
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.6.0
+ * @version 1.6.1
  */
 public class TestSplitKeyEncryption {
 
@@ -157,6 +158,9 @@ public class TestSplitKeyEncryption {
    public TestSplitKeyEncryption() {
    }
 
+   /**
+    * Create nonrandom key file before the test
+    */
    @BeforeClass
    public static void setUpClass() throws UnsupportedEncodingException {
       /*
@@ -179,20 +183,17 @@ public class TestSplitKeyEncryption {
          NON_RANDOM_SOURCE_BYTES[i] = (byte) (0xff - (i & 0xff));
    }
 
+   /**
+    * Delete nonrandom key file after the test
+    */
    @AfterClass
    public static void tearDownClass() {
    }
 
-   /**
-    * Create nonrandom key file before the test
-    */
    @Before
    public void setUp() {
    }
 
-   /**
-    * Delete nonrandom key file after the test
-    */
    @After
    public void tearDown() {
    }
@@ -563,6 +564,25 @@ public class TestSplitKeyEncryption {
          fail("Expected exception not thrown");
       } catch (Exception e) {
          assertEquals("Exception: " + e.toString(), "2. source byte array is null", e.getMessage());
+      }
+   }
+
+   /**
+    * Test if a null source byte array after a non-null byte array throws an exception.
+    */
+   @Test
+   public void TestZeroLengthByteArray() {
+      try {
+         byte[] aSourceByteArray = {(byte) 0xaa, (byte) 0xbb, (byte) 0xcc};
+         byte[] anotherSourceByteArray = {};
+
+         SplitKeyEncryption myEncryptor = new SplitKeyEncryption(COMPUTED_HMAC_KEY, aSourceByteArray, anotherSourceByteArray);
+
+         String decryptedText = myEncryptor.decryptData(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
+
+         fail("Expected exception not thrown");
+      } catch (Exception e) {
+         assertEquals("Exception: " + e.toString(), "2. source byte array has 0 length", e.getMessage());
       }
    }
 

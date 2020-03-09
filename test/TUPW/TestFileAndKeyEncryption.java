@@ -87,6 +87,9 @@ public class TestFileAndKeyEncryption {
    public TestFileAndKeyEncryption() {
    }
 
+   /**
+    * Create nonrandom key file before the test
+    */
    @BeforeClass
    public static void setUpClass() {
       //
@@ -106,6 +109,9 @@ public class TestFileAndKeyEncryption {
       }
    }
 
+   /**
+    * Delete nonrandom key file after the test
+    */
    @AfterClass
    public static void tearDownClass() {
       Path path = Paths.get(NOT_RANDOM_FILE_NAME);
@@ -121,9 +127,6 @@ public class TestFileAndKeyEncryption {
    public void setUp() {
    }
 
-   /**
-    * Delete nonrandom key file after the test
-    */
    @After
    public void tearDown() {
    }

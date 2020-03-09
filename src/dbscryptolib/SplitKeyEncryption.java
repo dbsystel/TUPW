@@ -53,6 +53,7 @@
  *     2020-02-28: V3.2.0: Check entropy of provided source bytes. fhs
  *     2020-02-28: V3.2.1: Throw IllegalArgumentException when key file does not exist. fhs
  *     2020-02-28: V4.0.0: Rename class to "SplitKeyEncryption". fhs
+ *     2020-03-09: V4.0.1: Add check for zero source byte length. fhs
  */
 package dbscryptolib;
 
@@ -74,7 +75,7 @@ import java.util.Base64;
  * Implement encryption by key generated from several source bytes and a key
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 4.0.0
+ * @version 4.0.1
  */
 
 public class SplitKeyEncryption implements AutoCloseable {
@@ -278,10 +279,17 @@ public class SplitKeyEncryption implements AutoCloseable {
 
       EntropyCalculator ec = new EntropyCalculator();
 
+      int sourceLength;
+
       for (int i = 0; i < sourceBytes.length; i++)
          if (sourceBytes[i] != null) {
-            ec.addBytes(sourceBytes[i]);
-            totalLength += sourceBytes[i].length;
+             sourceLength = sourceBytes[i].length;
+
+             if (sourceLength > 0) {
+                 ec.addBytes(sourceBytes[i]);
+                 totalLength += sourceLength;
+             } else
+                 throw new IllegalArgumentException((i + 1) + ". source byte array has 0 length");
          } else
             throw new IllegalArgumentException((i + 1) + ". source byte array is null");
 
