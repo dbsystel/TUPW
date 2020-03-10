@@ -313,7 +313,7 @@ public class TestSplitKeyEncryption {
    }
 
    /**
-    * Test if a given encrypted text with an invalid HMAC throws an exception.
+    * Test if a given encrypted text with the wrong subject throws an exception.
     */
    @Test
    public void TestDecryptionWithWrongSubject() {
