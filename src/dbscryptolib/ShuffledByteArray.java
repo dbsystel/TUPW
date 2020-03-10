@@ -44,17 +44,33 @@ public final class ShuffledByteArray implements AutoCloseable {
    /*
     * Instance variables
     */
+
+   /**
+    * Byte array to store the data in
+    */
    private byte[] byteArray;
 
+   /**
+    * Index array into {@code byteArray}
+    */
    private int[] indexArray;
    private int indexOffset;
    private int indexFactor;
    private int indexStart;
 
+   /**
+    * Length of data in {@code byteArray} in obfuscated form
+    */
    private int storedArrayLength;
 
+   /**
+    * Hash code of data in {@code byteArray}
+    */
    private int hashCode;
 
+   /**
+    * Is data in {@code byteArray} valid?
+    */
    private boolean isValid;
 
    /*

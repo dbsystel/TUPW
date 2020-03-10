@@ -47,6 +47,7 @@ import org.junit.runners.Suite;
          dbscryptolib.TestABytPadding.class,
          dbscryptolib.TestByteArrayBlinding.class,
          dbscryptolib.TestJCECryptoStrength.class,
+         dbscryptolib.TestSecureSecretKeySpec.class,
          dbsnumberlib.TestPackedUnsignedInteger.class,
          dbsnumberlib.TestPRNG.class,
          dbsstringlib.TestStringSplitter.class}

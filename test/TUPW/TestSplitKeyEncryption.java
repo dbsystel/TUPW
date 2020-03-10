@@ -30,6 +30,7 @@ import dbsnumberlib.Xoroshiro128plusplus;
 import org.junit.*;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 
 import static org.junit.Assert.*;
 
@@ -592,7 +593,7 @@ public class TestSplitKeyEncryption {
    @Test
    public void TestShortSourceBytes() {
       try {
-         byte[] aSourceByteArray = {(byte) 0xaa, (byte) 0xbb, (byte) 0xcc};
+         byte[] aSourceByteArray = {(byte) 0xAA, (byte) 0xBB, (byte) 0xCC};
 
          SplitKeyEncryption myEncryptor = new SplitKeyEncryption(COMPUTED_HMAC_KEY, aSourceByteArray);
 
@@ -613,6 +614,8 @@ public class TestSplitKeyEncryption {
    public void TestUniformSourceBytes() {
       try {
          byte[] aSourceByteArray = new byte[300];
+
+         Arrays.fill(aSourceByteArray, (byte) 0xAA);
 
          SplitKeyEncryption myEncryptor = new SplitKeyEncryption(COMPUTED_HMAC_KEY, aSourceByteArray);
 
