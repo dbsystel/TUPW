@@ -69,7 +69,7 @@ public class TestSecureSecretKeySpec {
    @Test
    public void TestNullKeyAndAlgorithm() {
       try {
-         SecureSecretKeySpec spec = new SecureSecretKeySpec(null, null);
+         final SecureSecretKeySpec spec = new SecureSecretKeySpec(null, null);
 
          fail(EXPECTED_EXCEPTION);
       }
@@ -85,7 +85,7 @@ public class TestSecureSecretKeySpec {
    @Test
    public void TestNullKey() {
       try {
-         SecureSecretKeySpec spec = new SecureSecretKeySpec(null, ALGORITHM_NAME);
+         final SecureSecretKeySpec spec = new SecureSecretKeySpec(null, ALGORITHM_NAME);
 
          fail(EXPECTED_EXCEPTION);
       }
@@ -101,7 +101,7 @@ public class TestSecureSecretKeySpec {
    @Test
    public void TestNullAlgorithm() {
       try {
-         SecureSecretKeySpec spec = new SecureSecretKeySpec(new byte[1], null);
+         final SecureSecretKeySpec spec = new SecureSecretKeySpec(new byte[1], null);
 
          fail(EXPECTED_EXCEPTION);
       }
@@ -117,7 +117,7 @@ public class TestSecureSecretKeySpec {
    @Test
    public void TestEmptyAlgorithm() {
       try {
-         SecureSecretKeySpec spec = new SecureSecretKeySpec(new byte[1], "");
+         final SecureSecretKeySpec spec = new SecureSecretKeySpec(new byte[1], "");
 
          fail(EXPECTED_EXCEPTION);
       }
@@ -136,7 +136,7 @@ public class TestSecureSecretKeySpec {
 
       Arrays.fill(key, (byte) 0x55);
 
-      SecureSecretKeySpec spec = new SecureSecretKeySpec(key, ALGORITHM_NAME);
+      final SecureSecretKeySpec spec = new SecureSecretKeySpec(key, ALGORITHM_NAME);
 
       assertArrayEquals("Key was not correctly retrieved", key, spec.getEncoded());
       assertEquals("Algorithm name not correctly retrieved", ALGORITHM_NAME, spec.getAlgorithm());
@@ -149,7 +149,7 @@ public class TestSecureSecretKeySpec {
 
       Arrays.fill(key, (byte) 0x55);
 
-      SecureSecretKeySpec spec = new SecureSecretKeySpec(key, ALGORITHM_NAME);
+      final SecureSecretKeySpec spec = new SecureSecretKeySpec(key, ALGORITHM_NAME);
 
       spec.close();
       assertTrue("SecureSecretKeySpec still valid after close", spec.isDestroyed());
@@ -176,27 +176,27 @@ public class TestSecureSecretKeySpec {
 
       Arrays.fill(key, (byte) 0x55);
 
-      SecureSecretKeySpec spec1 = new SecureSecretKeySpec(key, ALGORITHM_NAME);
-      SecureSecretKeySpec spec2 = new SecureSecretKeySpec(key, ALGORITHM_NAME);
-      SecureSecretKeySpec spec3 = new SecureSecretKeySpec(new byte[1], ALGORITHM_NAME);
-      SecureSecretKeySpec spec4 = new SecureSecretKeySpec(key, OTHER_ALGORITHM_NAME);
+      final SecureSecretKeySpec spec1 = new SecureSecretKeySpec(key, ALGORITHM_NAME);
+      final SecureSecretKeySpec spec2 = new SecureSecretKeySpec(key, ALGORITHM_NAME);
+      final SecureSecretKeySpec spec3 = new SecureSecretKeySpec(new byte[1], ALGORITHM_NAME);
+      final SecureSecretKeySpec spec4 = new SecureSecretKeySpec(key, OTHER_ALGORITHM_NAME);
 
       assertTrue("SecureSecretsKeySpecs are not equal when they should be", spec1.equals(spec2));
+      assertEquals("SecureSecretsKeySpecs do not have identical hash codes", spec1.hashCode(), spec2.hashCode());
       assertFalse("SecureSecretsKeySpecs are equal when they should not be (different keys)", spec1.equals(spec3));
       assertFalse("SecureSecretsKeySpecs are equal when they should not be (different algorithms)", spec1.equals(spec4));
    }
 
    @Test
-
    public void TestCompatibleEquals() {
       final byte[] key = new byte[32];
 
       Arrays.fill(key, (byte) 0x55);
 
-      SecureSecretKeySpec spec1 = new SecureSecretKeySpec(key, ALGORITHM_NAME);
-      SecretKeySpec spec2 = new SecretKeySpec(key, ALGORITHM_NAME);
-      SecretKeySpec spec3 = new SecretKeySpec(new byte[1], ALGORITHM_NAME);
-      SecretKeySpec spec4 = new SecretKeySpec(key, OTHER_ALGORITHM_NAME);
+      final SecureSecretKeySpec spec1 = new SecureSecretKeySpec(key, ALGORITHM_NAME);
+      final SecretKeySpec spec2 = new SecretKeySpec(key, ALGORITHM_NAME);
+      final SecretKeySpec spec3 = new SecretKeySpec(new byte[1], ALGORITHM_NAME);
+      final SecretKeySpec spec4 = new SecretKeySpec(key, OTHER_ALGORITHM_NAME);
 
       assertTrue("SecureSecretsKeySpecs are not equal when they should be", spec1.equals(spec2));
       assertFalse("SecureSecretsKeySpecs are equal when they should not be (different keys)", spec1.equals(spec3));

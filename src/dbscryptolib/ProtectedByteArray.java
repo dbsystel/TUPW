@@ -126,6 +126,17 @@ public final class ProtectedByteArray implements AutoCloseable {
          throw new IllegalArgumentException("arrayToProtect too short for offset and length");
    }
 
+   /**
+    * Checks whether the protected byte array is in a valid state
+    *
+    * @throws IllegalStateException if the shuffled array has already been
+    * destroyed
+    */
+   private void checkState() throws IllegalStateException {
+      if (!this.protectedArray.isValid())
+         throw new IllegalStateException("ProtectedByteArray has already been destroyed");
+   }
+
    /*
     * Methods for obfuscation and deobfuscation
     */
@@ -164,8 +175,9 @@ public final class ProtectedByteArray implements AutoCloseable {
     * Xors the obfuscated array to get the clear data
     *
     * @return Byte array of clear data
+    * @throws IllegalStateException if protectedArray has alreqady been destroyed
     */
-   private byte[] getDeObfuscatedArray() {
+   private byte[] getDeObfuscatedArray() throws IllegalStateException {
       final byte[] result = new byte[this.protectedArray.length()];
 
       // Need to cast a byte xor to a byte as Java does not define an
@@ -185,10 +197,11 @@ public final class ProtectedByteArray implements AutoCloseable {
     * Returns the data of the byte array in the clear.
     *
     * @return the data in the byte array.
-    * @throws IllegalStateException if the protected array has already been
-    *                               destroyed.
+    * @throws IllegalStateException if the protected array has already been destroyed.
     */
    public byte[] getData() throws IllegalStateException {
+      checkState();
+
       return getDeObfuscatedArray();
    }
 
@@ -201,6 +214,8 @@ public final class ProtectedByteArray implements AutoCloseable {
     */
    @Override
    public int hashCode() throws IllegalStateException {
+      checkState();
+
       return this.protectedArray.hashCode();
    }
 
@@ -210,11 +225,12 @@ public final class ProtectedByteArray implements AutoCloseable {
     *
     * @param obj The object to compare.
     * @return true if byte arrays of both object are equal, otherwise false.
-    * @throws IllegalStateException if the protected array has already been
-    *                               destroyed.
+    * @throws IllegalStateException if the protected array has already been  destroyed.
     */
    @Override
    public boolean equals(final Object obj) throws IllegalStateException {
+      checkState();
+
       if (obj == null)
          return false;
 
@@ -231,6 +247,18 @@ public final class ProtectedByteArray implements AutoCloseable {
       Arrays.fill(otherClearKey, (byte) 0);
 
       return result;
+   }
+
+   /**
+    * Gets the array length
+    *
+    * @return Real length of stored array
+    * @throws IllegalStateException if the protected array has already been destroyed
+    */
+   public int length() throws IllegalStateException {
+      checkState();
+
+      return this.protectedArray.length();
    }
 
    /**
