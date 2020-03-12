@@ -44,7 +44,7 @@ public class EntropyCalculator {
     * Instance variables
     */
    private final int[] m_Counter = new int[256];  // Array of how many times a specific byte value was counted
-   private int m_ByteCount = 0;             // Number of bytes that have beend added to the statistic
+   private int m_ByteCount = 0;             // Number of bytes that have been added to the statistic
 
    /**
     * Reset the entropy statistics
@@ -56,7 +56,7 @@ public class EntropyCalculator {
    }
 
    /**
-    * Add bytes of byte a array to entropy calculation starting from a specified index and
+    * Add bytes of a byte array to the entropy calculation starting from a specified index and
     * ending at another specified index
     *
     * <p>Here we use the strange and counterintuitive Java habit to specify the last index
@@ -79,7 +79,7 @@ public class EntropyCalculator {
    }
 
    /**
-    * Add bytes of byte a array to entropy calculation starting from a specified index
+    * Add bytes of a byte array to entropy calculation starting from a specified index
     *
     * @param aByteArray Byte array to add to the calculation
     * @param fromIndex Start index (inclusive)

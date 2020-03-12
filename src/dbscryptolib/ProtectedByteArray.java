@@ -176,7 +176,7 @@ public final class ProtectedByteArray implements AutoCloseable {
     * Xors the obfuscated array to get the clear data
     *
     * @return Byte array of clear data
-    * @throws IllegalStateException if protectedArray has alreqady been destroyed
+    * @throws IllegalStateException if protectedArray has already been destroyed
     */
    private byte[] getDeObfuscatedArray() throws IllegalStateException {
       final byte[] result = new byte[this.protectedArray.length()];
