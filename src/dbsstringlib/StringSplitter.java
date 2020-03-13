@@ -61,7 +61,11 @@ public class StringSplitter {
     * @param searchStringLength Length of the {@code searchString}
     * @param separatorLength    length of the {@code separator}
     */
-   private static void splitIntoSubstrings(String searchString, String separator, ArrayList<String> substrings, int searchStringLength, int separatorLength) {
+   private static void splitIntoSubstrings(String searchString,
+                                           String separator,
+                                           ArrayList<String> substrings,
+                                           int searchStringLength,
+                                           int separatorLength) {
       int startSearchIndex = 0;
       int separatorIndex = 0;
 

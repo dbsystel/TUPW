@@ -36,6 +36,7 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * Implement encryption by key generated from a file and a key
@@ -60,7 +61,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     *
     * @param keyFile Key file to be used
     * @throws IllegalArgumentException if key file does not exist
-    * @throws IOException if there is an error reading the key file
+    * @throws IOException              if there is an error reading the key file
     */
    private byte[] getContentOfFile(final Path keyFile) throws IllegalArgumentException, IOException {
       final byte[] result;
@@ -82,14 +83,20 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws InvalidKeyException      if the key is invalid (must never happen)
     * @throws IOException              if there was an error while reading the key file
     * @throws NoSuchAlgorithmException if the encryption algorithm is invalid (must never happen)
+    * @throws NullPointerException     if {@code hmacKey} or {@code keyFilePath} is {@code null}
     */
-   public FileAndKeyEncryption(final byte[] hmacKey, final String keyFilePath) throws IllegalArgumentException, InvalidKeyException, IOException, NoSuchAlgorithmException {
+   public FileAndKeyEncryption(final byte[] hmacKey, final String keyFilePath) throws IllegalArgumentException,
+            InvalidKeyException,
+            IOException,
+            NullPointerException,
+            NoSuchAlgorithmException {
+      Objects.requireNonNull(hmacKey, "HMAC key is null");
+      Objects.requireNonNull(keyFilePath, "Key file path is null");
+
       Path keyFile;
 
       try {
          keyFile = Paths.get(keyFilePath);
-      } catch (NullPointerException e) {
-         throw new IllegalArgumentException("Key file path is null");
       } catch (Exception e) {
          throw new IllegalArgumentException("Key file path is invalid: " + e.getMessage());
       }
@@ -112,11 +119,22 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws IllegalBlockSizeException          if the block size is invalid (must never happen)
     * @throws InvalidAlgorithmParameterException if an encryption parameter is invalid (must never happen)
     * @throws InvalidKeyException                if the key is invalid (must never happen)
+    * @throws IOException                        if there is an error building the blinded array
     * @throws NoSuchAlgorithmException           if the encryption algorithm is invalid (must never happen)
     * @throws NoSuchPaddingException             if the padding algorithm is invalid (must never happen)
+    * @throws NullPointerException               if {@code stringToEncrypt} or {@code subject} is {@code null}
     * @throws UnsupportedEncodingException       if there is no UTF-8 encoding (must never happen)
     */
-   public String encryptData(final String stringToEncrypt, final String subject) throws BadPaddingException, IllegalArgumentException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
+   public String encryptData(final String stringToEncrypt, final String subject) throws BadPaddingException,
+            IllegalArgumentException,
+            IllegalBlockSizeException,
+            InvalidAlgorithmParameterException,
+            InvalidKeyException,
+            IOException,
+            NoSuchAlgorithmException,
+            NoSuchPaddingException,
+            NullPointerException,
+            UnsupportedEncodingException {
       return m_SplitKeyEncryption.encryptData(stringToEncrypt, subject);
    }
 
@@ -130,16 +148,27 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws IllegalBlockSizeException          if the block size is invalid (must never happen)
     * @throws InvalidAlgorithmParameterException if an encryption parameter is invalid (must never happen)
     * @throws InvalidKeyException                if the key is invalid (must never happen)
+    * @throws IOException                        if there is an error building the blinded array
     * @throws NoSuchAlgorithmException           if the encryption algorithm is invalid (must never happen)
     * @throws NoSuchPaddingException             if the padding algorithm is invalid (must never happen)
+    * @throws NullPointerException               if {@code stringToEncrypt}is {@code null}
     * @throws UnsupportedEncodingException       if there is no UTF-8 encoding (must never happen)
     */
-   public String encryptData(final String stringToEncrypt) throws BadPaddingException, IllegalArgumentException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
+   public String encryptData(final String stringToEncrypt) throws BadPaddingException,
+            IllegalArgumentException,
+            IllegalBlockSizeException,
+            InvalidAlgorithmParameterException,
+            InvalidKeyException,
+            IOException,
+            NoSuchAlgorithmException,
+            NoSuchPaddingException,
+            NullPointerException,
+            UnsupportedEncodingException {
       return encryptData(stringToEncrypt, "");
    }
 
    /**
-    * Decrypt an encrypted string
+    * Decrypt an encrypted string under a subject
     *
     * @param stringToDecrypt String to decrypt
     * @param subject         The subject of this decryption
@@ -150,12 +179,21 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws IllegalBlockSizeException          if the block size is invalid (must never happen)
     * @throws InvalidAlgorithmParameterException if an encryption parameter is invalid (must never happen)
     * @throws InvalidKeyException                if the key is invalid (must never happen)
-    * @throws IOException
     * @throws NoSuchAlgorithmException           if the encryption algorithm is invalid (must never happen)
     * @throws NoSuchPaddingException             if the padding algorithm is invalid (must never happen)
+    * @throws NullPointerException               if {@code stringToDecrypt} or {@code subject} is {@code null}
     * @throws UnsupportedEncodingException       if there is no UTF-8 encoding (must never happen)
     */
-   public String decryptData(final String stringToDecrypt, final String subject) throws BadPaddingException, DataIntegrityException, IllegalArgumentException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
+   public String decryptData(final String stringToDecrypt, final String subject) throws BadPaddingException,
+            DataIntegrityException,
+            IllegalArgumentException,
+            IllegalBlockSizeException,
+            InvalidAlgorithmParameterException,
+            InvalidKeyException,
+            NoSuchAlgorithmException,
+            NoSuchPaddingException,
+            NullPointerException,
+            UnsupportedEncodingException {
       return m_SplitKeyEncryption.decryptData(stringToDecrypt, subject);
    }
 
@@ -170,12 +208,21 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws IllegalBlockSizeException          if the block size is invalid (must never happen)
     * @throws InvalidAlgorithmParameterException if an encryption parameter is invalid (must never happen)
     * @throws InvalidKeyException                if the key is invalid (must never happen)
-    * @throws IOException
     * @throws NoSuchAlgorithmException           if the encryption algorithm is invalid (must never happen)
     * @throws NoSuchPaddingException             if the padding algorithm is invalid (must never happen)
+    * @throws NullPointerException               if {@code stringToDecrypt}is {@code null}
     * @throws UnsupportedEncodingException       if there is no UTF-8 encoding (must never happen)
     */
-   public String decryptData(final String stringToDecrypt) throws BadPaddingException, DataIntegrityException, IllegalArgumentException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
+   public String decryptData(final String stringToDecrypt) throws BadPaddingException,
+            DataIntegrityException,
+            IllegalArgumentException,
+            IllegalBlockSizeException,
+            InvalidAlgorithmParameterException,
+            InvalidKeyException,
+            NoSuchAlgorithmException,
+            NoSuchPaddingException,
+            NullPointerException,
+            UnsupportedEncodingException {
       return decryptData(stringToDecrypt, "");
    }
 

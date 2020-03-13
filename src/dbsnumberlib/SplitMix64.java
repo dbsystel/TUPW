@@ -18,15 +18,21 @@
  *
  * It is a very fast generator passing BigCrush, and it can be useful if
  * for some reason you absolutely want 64 bits of state.
+ *
+ * Changes:
+ *     2020-02-27: V1.0.0: Created. fhs
+ *     2020-03-13: V1.1.0: Check for null. fhs
  */
 
 package dbsnumberlib;
+
+import java.util.Objects;
 
 /**
  * Splitmix64 pseudo-random number generator
  *
  * @author Frank Schwab
- * @version 1.0.0
+ * @version 1.1.0
  */
 public class SplitMix64 extends SimplePseudoRandomNumberGenerator {
    /**
@@ -47,9 +53,14 @@ public class SplitMix64 extends SimplePseudoRandomNumberGenerator {
     * Creates a new instance.
     *
     * @param seed Initial seed.
+    * @throws NullPointerException if {@code seed} is null
     */
-   public SplitMix64(final Long seed) {
-      this(seed.longValue());
+   public SplitMix64(final Long seed) throws NullPointerException {
+      Objects.requireNonNull(seed, "Seed is null");
+
+      // In a real object oriented language one would place "this(seed.longValue());"
+      // here. But this is Java, so it is not possible to do this.
+      m_State = seed.longValue();
    }
 
    /**
@@ -81,14 +92,22 @@ public class SplitMix64 extends SimplePseudoRandomNumberGenerator {
    }
 
    @Override
-   public long nextLong(long fromInclusive, long toInclusive) { return super.nextLong(fromInclusive, toInclusive); }
+   public long nextLong(long fromInclusive, long toInclusive) {
+      return super.nextLong(fromInclusive, toInclusive);
+   }
 
    @Override
-   public int nextInt(int fromInclusive, int toInclusive) { return super.nextInt(fromInclusive, toInclusive); }
+   public int nextInt(int fromInclusive, int toInclusive) {
+      return super.nextInt(fromInclusive, toInclusive);
+   }
 
    @Override
-   public short nextShort(short fromInclusive, short toInclusive) { return super.nextShort(fromInclusive, toInclusive); }
+   public short nextShort(short fromInclusive, short toInclusive) {
+      return super.nextShort(fromInclusive, toInclusive);
+   }
 
    @Override
-   public byte nextByte(byte fromInclusive, byte toInclusive) { return super.nextByte(fromInclusive, toInclusive); }
+   public byte nextByte(byte fromInclusive, byte toInclusive) {
+      return super.nextByte(fromInclusive, toInclusive);
+   }
 }

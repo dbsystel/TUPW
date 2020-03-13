@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, DB Systel GmbH
+ * Copyright (c) 2020, DB Systel GmbH
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -24,6 +24,7 @@
  *     2019-08-06: V1.0.2: Use SecureRandomFactory. fhs
  *     2019-08-23: V1.0.3: Use SecureRandom singleton. fhs
  *     2020-02-11: V1.1.0: Strengthen blinding length tests. fhs
+ *     2020-03-13: V1.2.0: Added checks for null. fhs
  */
 package dbscryptolib;
 
@@ -33,12 +34,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * Implements blinding for byte arrays
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.1.0
+ * @version 1.2.0
  */
 public class ByteArrayBlinding {
 
@@ -50,9 +52,9 @@ public class ByteArrayBlinding {
    private final static String ERROR_MESSAGE_INVALID_ARRAY = "Invalid blinded byte array";
    private final static String ERROR_MESSAGE_INVALID_MIN_LENGTH = "Invalid minimum length";
 
-   private final static int INDEX_PREFIX_LENGTH  = 0;
+   private final static int INDEX_PREFIX_LENGTH = 0;
    private final static int INDEX_POSTFIX_LENGTH = 1;
-   private final static int INDEX_SOURCE_LENGTH  = 2;
+   private final static int INDEX_SOURCE_LENGTH = 2;
 
    private final static int MAX_NORMAL_SINGLE_BLINDING_LENGTH = 15;   // This needs to be a power of 2 minus 1
 
@@ -110,10 +112,11 @@ public class ByteArrayBlinding {
     * @param sourceBytes   Source bytes to blinding
     * @param minimumLength Minimum length of blinded array
     * @return Blinded byte array
-    * @throws IllegalArgumentException  if minimum length is too small or too large
-    * @throws IOException if there is an error during handling of the ByteArrayOutputStream
+    * @throws IllegalArgumentException if minimum length is too small or too large
+    * @throws IOException              if there is an error during handling of the ByteArrayOutputStream
     */
-   public static byte[] buildBlindedByteArray(final byte[] sourceBytes, final int minimumLength) throws IllegalArgumentException, IOException {
+   public static byte[] buildBlindedByteArray(final byte[] sourceBytes, final int minimumLength) throws IllegalArgumentException,
+            IOException {
       checkMinimumLength(minimumLength);
 
       final int[] blindingLength = new int[2];
@@ -177,12 +180,15 @@ public class ByteArrayBlinding {
     * @param sourceBytes Blinded byte array
     * @return Byte array without blinders
     * @throws IllegalArgumentException if the source byte array is not correctly formatted
+    * @throws NullPointerException     if {@code sourceBytes} is {@code null}
     */
-   public static byte[] unBlindByteArray(final byte[] sourceBytes) throws IllegalArgumentException {
+   public static byte[] unBlindByteArray(final byte[] sourceBytes) throws IllegalArgumentException, NullPointerException {
+      Objects.requireNonNull(sourceBytes, "Source bytes is null");
+
       if (sourceBytes.length > INDEX_SOURCE_LENGTH) {
          final int packedNumberLength = PackedUnsignedInteger.getExpectedLength(sourceBytes[INDEX_SOURCE_LENGTH]);
 
-         if(sourceBytes[INDEX_PREFIX_LENGTH] >= 0) {
+         if (sourceBytes[INDEX_PREFIX_LENGTH] >= 0) {
             final int prefixBlindingLength = sourceBytes[INDEX_PREFIX_LENGTH] + 2 + packedNumberLength;
 
             if (sourceBytes[INDEX_POSTFIX_LENGTH] >= 0) {

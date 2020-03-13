@@ -54,6 +54,7 @@
  *     2020-02-28: V3.2.1: Throw IllegalArgumentException when key file does not exist. fhs
  *     2020-02-28: V4.0.0: Rename class to "SplitKeyEncryption". fhs
  *     2020-03-09: V4.0.1: Add check for zero source byte length. fhs
+ *     2020-03-13: V4.1.0: Use NUllPointerException instead of IllegalArgumentException for null pointers. fhs
  */
 package dbscryptolib;
 
@@ -70,12 +71,13 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Objects;
 
 /**
  * Implement encryption by key generated from several source bytes and a key
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 4.0.1
+ * @version 4.1.0
  */
 
 public class SplitKeyEncryption implements AutoCloseable {
@@ -122,11 +124,11 @@ public class SplitKeyEncryption implements AutoCloseable {
     * </p>
     */
    private static final String[] ENCRYPTION_SPECIFICATION = {"Invalid",
-           AES_ALGORITHM_NAME + "/CFB/NoPadding",
-           AES_ALGORITHM_NAME + "/CTR/NoPadding",
-           AES_ALGORITHM_NAME + "/CTR/NoPadding",
-           AES_ALGORITHM_NAME + "/CBC/NoPadding",
-           AES_ALGORITHM_NAME + "/CBC/NoPadding"};
+            AES_ALGORITHM_NAME + "/CFB/NoPadding",
+            AES_ALGORITHM_NAME + "/CTR/NoPadding",
+            AES_ALGORITHM_NAME + "/CTR/NoPadding",
+            AES_ALGORITHM_NAME + "/CBC/NoPadding",
+            AES_ALGORITHM_NAME + "/CBC/NoPadding"};
 
    /**
     * String encoding to be used for encrypted data strings
@@ -256,42 +258,45 @@ public class SplitKeyEncryption implements AutoCloseable {
     * Check HMAC key size
     *
     * @param aHMACKey Key for HMAC calculation
-    * @throws java.lang.IllegalArgumentException if the HMAC key does not have the correct length
+    * @throws IllegalArgumentException if the HMAC key does not have the correct length
+    * @throws NullPointerException     if {@code hmacKey} is {@code null}
     */
-   private void checkHMACKey(final byte[] aHMACKey) throws IllegalArgumentException {
-      if (aHMACKey != null) {
-         if (aHMACKey.length < MINIMUM_HMAC_KEY_LENGTH)
-            throw new IllegalArgumentException("HMAC key length is less than " + MINIMUM_HMAC_KEY_LENGTH);
+   private void checkHMACKey(final byte[] aHMACKey) throws IllegalArgumentException, NullPointerException {
+      Objects.requireNonNull(aHMACKey, "HMAC key is null");
 
-         if (aHMACKey.length > MAXIMUM_HMAC_KEY_LENGTH)
-            throw new IllegalArgumentException("HMAC key length is larger than " + MAXIMUM_HMAC_KEY_LENGTH);
-      } else
-         throw new IllegalArgumentException("HMAC key is null");
+      if (aHMACKey.length < MINIMUM_HMAC_KEY_LENGTH)
+         throw new IllegalArgumentException("HMAC key length is less than " + MINIMUM_HMAC_KEY_LENGTH);
+
+      if (aHMACKey.length > MAXIMUM_HMAC_KEY_LENGTH)
+         throw new IllegalArgumentException("HMAC key length is larger than " + MAXIMUM_HMAC_KEY_LENGTH);
    }
 
    /**
     * Check length of supplied source bytes
     *
     * @param sourceBytes Array of source byte arrays
+    * @throws IllegalArgumentException if any sourceByte array has 0 length or the source bytes are too few or too many
+    *                                  or there no or not enough information in the source bytes
+    * @throws NullPointerException     if any sourceByte array is {@code null}
     */
-   private void checkSourceBytes(final byte[]... sourceBytes) {
+   private void checkSourceBytes(final byte[]... sourceBytes) throws IllegalArgumentException, NullPointerException {
       int totalLength = 0;
 
       EntropyCalculator ec = new EntropyCalculator();
 
       int sourceLength;
 
-      for (int i = 0; i < sourceBytes.length; i++)
-         if (sourceBytes[i] != null) {
-             sourceLength = sourceBytes[i].length;
+      for (int i = 0; i < sourceBytes.length; i++) {
+         Objects.requireNonNull(sourceBytes[i], (i + 1) + ". source byte array is null");
 
-             if (sourceLength > 0) {
-                 ec.addBytes(sourceBytes[i]);
-                 totalLength += sourceLength;
-             } else
-                 throw new IllegalArgumentException((i + 1) + ". source byte array has 0 length");
+         sourceLength = sourceBytes[i].length;
+
+         if (sourceLength > 0) {
+            ec.addBytes(sourceBytes[i]);
+            totalLength += sourceLength;
          } else
-            throw new IllegalArgumentException((i + 1) + ". source byte array is null");
+            throw new IllegalArgumentException((i + 1) + ". source byte array has 0 length");
+      }
 
       if (ec.getInformationInBits() < MINIMUM_SOURCE_BITS) {
          final double entropy = ec.getEntropy();
@@ -467,13 +472,13 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @param encryptionParts The encryption parts of the data
     * @param subjectBytes    The subject for this decryption
     * @return Decrypted data as string
-    * @throws java.io.UnsupportedEncodingException             if there is no UTF-8 encoding (must never happen)
-    * @throws java.security.InvalidAlgorithmParameterException if there was an invalid parameter for the encrpytion algorithm
-    * @throws java.security.InvalidKeyException                if the key is not valid for the encryption algorithm (must never happen)
-    * @throws java.security.NoSuchAlgorithmException           if there is no AES encryption (must never happen)
-    * @throws javax.crypto.BadPaddingException                 if unpadding does not work (must never happen)
-    * @throws javax.crypto.IllegalBlockSizeException           if the block size is not valid for the encryption algorithm (must never happen)
-    * @throws javax.crypto.NoSuchPaddingException              if there is no NoPadding padding 8must never happen)
+    * @throws UnsupportedEncodingException       if there is no UTF-8 encoding (must never happen)
+    * @throws InvalidAlgorithmParameterException if there was an invalid parameter for the encrpytion algorithm
+    * @throws InvalidKeyException                if the key is not valid for the encryption algorithm (must never happen)
+    * @throws NoSuchAlgorithmException           if there is no AES encryption (must never happen)
+    * @throws BadPaddingException                if unpadding does not work (must never happen)
+    * @throws IllegalBlockSizeException          if the block size is not valid for the encryption algorithm (must never happen)
+    * @throws NoSuchPaddingException             if there is no NoPadding padding (must never happen)
     */
    private String rawDataDecryption(final EncryptionParts encryptionParts, final byte[] subjectBytes) throws BadPaddingException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
       // "encryptionParts.formatId" has been checked in "decryptData" and does not need to be checked here
@@ -582,17 +587,25 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @param sourceString Some string that will be encrypted
     * @param subjectBytes The subject of this encryption as a byte array
     * @return Encrypted data and iv as EncryptionParts object
-    * @throws java.io.IOException
-    * @throws java.io.UnsupportedEncodingException             if there is nu "UTF-8" character encoding (must never happen)
-    * @throws java.lang.IllegalArgumentException
-    * @throws java.security.InvalidAlgorithmParameterException if an invalid encryption parameter was specified (must never happen)
-    * @throws java.security.InvalidKeyException                if an invalid encryption key was specified (must never happen)
-    * @throws java.security.NoSuchAlgorithmException           if an invalid encryption algorithm was specified (must never happen)
-    * @throws javax.crypto.BadPaddingException                 if invalid padding data was specified (must never happen)
-    * @throws javax.crypto.IllegalBlockSizeException           if an invalid block size was specified (must never happen)
-    * @throws javax.crypto.NoSuchPaddingException              if an invalid padding was specified (must never happen)
+    * @throws IOException                        if there is an error building the blinded array
+    * @throws UnsupportedEncodingException       if there is nu "UTF-8" character encoding (must never happen)
+    * @throws IllegalArgumentException
+    * @throws InvalidAlgorithmParameterException if an invalid encryption parameter was specified (must never happen)
+    * @throws InvalidKeyException                if an invalid encryption key was specified (must never happen)
+    * @throws NoSuchAlgorithmException           if an invalid encryption algorithm was specified (must never happen)
+    * @throws BadPaddingException                if invalid padding data was specified (must never happen)
+    * @throws IllegalBlockSizeException          if an invalid block size was specified (must never happen)
+    * @throws NoSuchPaddingException             if an invalid padding was specified (must never happen)
     */
-   private EncryptionParts rawDataEncryption(final String sourceString, final byte[] subjectBytes) throws BadPaddingException, IllegalArgumentException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
+   private EncryptionParts rawDataEncryption(final String sourceString, final byte[] subjectBytes) throws BadPaddingException,
+            IllegalArgumentException,
+            IllegalBlockSizeException,
+            InvalidAlgorithmParameterException,
+            InvalidKeyException,
+            IOException,
+            NoSuchAlgorithmException,
+            NoSuchPaddingException,
+            UnsupportedEncodingException {
       EncryptionParts result = new EncryptionParts();
 
       // Set format id
@@ -642,7 +655,8 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @throws InvalidKeyException      if the key is not valid for the HMAC algorithm (must never happen)
     * @throws NoSuchAlgorithmException if there is no HMAC-256 algorithm (must never happen)
     */
-   private byte[] getHmacValueOfSourceBytes(final byte[] key, final byte[]... sourceBytes) throws InvalidKeyException, NoSuchAlgorithmException {
+   private byte[] getHmacValueOfSourceBytes(final byte[] key, final byte[]... sourceBytes) throws InvalidKeyException,
+            NoSuchAlgorithmException {
       final Mac hmac = getHMACInstance();
       byte[] result;
 
@@ -668,7 +682,8 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @throws InvalidKeyException      if the key is not valid for the HMAC algorithm (must never happen)
     * @throws NoSuchAlgorithmException if there is no HMAC-256 algorithm (must never happen)
     */
-   private void setKeysFromKeyAndSourceBytes(final byte[] hmacKey, final byte[]... sourceBytes) throws InvalidKeyException, NoSuchAlgorithmException {
+   private void setKeysFromKeyAndSourceBytes(final byte[] hmacKey, final byte[]... sourceBytes) throws InvalidKeyException,
+            NoSuchAlgorithmException {
       final byte[] hmacOfSourceBytes = getHmacValueOfSourceBytes(hmacKey, sourceBytes);
 
       // 1. half of file HMAC is used as the encryption key of this instance
@@ -702,8 +717,12 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @throws IllegalArgumentException The HMAC key or the source bytes are not valid
     * @throws InvalidKeyException      if the key is invalid (must never happen)
     * @throws NoSuchAlgorithmException if the encryption algorithm is invalid (must never happen)
+    * @throws NullPointerException     if {@code hmacKey} or any source byte array is {@code null}
     */
-   public SplitKeyEncryption(final byte[] hmacKey, final byte[]... sourceBytes) throws IllegalArgumentException, InvalidKeyException, NoSuchAlgorithmException {
+   public SplitKeyEncryption(final byte[] hmacKey, final byte[]... sourceBytes) throws IllegalArgumentException,
+            InvalidKeyException,
+            NoSuchAlgorithmException,
+            NullPointerException {
       checkHMACKey(hmacKey);
 
       checkSourceBytes(sourceBytes);
@@ -722,11 +741,25 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @throws IllegalBlockSizeException          if the block size is invalid (must never happen)
     * @throws InvalidAlgorithmParameterException if an encryption parameter is invalid (must never happen)
     * @throws InvalidKeyException                if the key is invalid (must never happen)
+    * @throws IOException                        if there is an error building the blinded array
     * @throws NoSuchAlgorithmException           if the encryption algorithm is invalid (must never happen)
     * @throws NoSuchPaddingException             if the padding algorithm is invalid (must never happen)
+    * @throws NullPointerException               if {@code stringToEncrypt} or {@code subject} is {@code null}
     * @throws UnsupportedEncodingException       if there is no UTF-8 encoding (must never happen)
     */
-   public String encryptData(final String stringToEncrypt, final String subject) throws BadPaddingException, IllegalArgumentException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
+   public String encryptData(final String stringToEncrypt, final String subject) throws BadPaddingException,
+            IllegalArgumentException,
+            IllegalBlockSizeException,
+            InvalidAlgorithmParameterException,
+            InvalidKeyException,
+            IOException,
+            NoSuchAlgorithmException,
+            NoSuchPaddingException,
+            NullPointerException,
+            UnsupportedEncodingException {
+      Objects.requireNonNull(stringToEncrypt, "String to encrypt is null");
+      Objects.requireNonNull(subject, "Subject is null");
+
       final byte[] subjectBytes = subject.getBytes(STRING_ENCODING_FOR_DATA);
 
       EncryptionParts encryptionParts = rawDataEncryption(stringToEncrypt, subjectBytes);
@@ -750,16 +783,27 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @throws IllegalBlockSizeException          if the block size is invalid (must never happen)
     * @throws InvalidAlgorithmParameterException if an encryption parameter is invalid (must never happen)
     * @throws InvalidKeyException                if the key is invalid (must never happen)
+    * @throws IOException                        if there is an error building the blinded array
     * @throws NoSuchAlgorithmException           if the encryption algorithm is invalid (must never happen)
     * @throws NoSuchPaddingException             if the padding algorithm is invalid (must never happen)
+    * @throws NullPointerException               if {@code stringToEncrypt}is {@code null}
     * @throws UnsupportedEncodingException       if there is no UTF-8 encoding (must never happen)
     */
-   public String encryptData(final String stringToEncrypt) throws BadPaddingException, IllegalArgumentException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
+   public String encryptData(final String stringToEncrypt) throws BadPaddingException,
+            IllegalArgumentException,
+            IllegalBlockSizeException,
+            InvalidAlgorithmParameterException,
+            InvalidKeyException,
+            IOException,
+            NoSuchAlgorithmException,
+            NoSuchPaddingException,
+            NullPointerException,
+            UnsupportedEncodingException {
       return encryptData(stringToEncrypt, "");
    }
 
    /**
-    * Decrypt an encrypted string
+    * Decrypt an encrypted string under a subject
     *
     * @param stringToDecrypt String to decrypt
     * @param subject         The subject of this decryption
@@ -770,12 +814,24 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @throws IllegalBlockSizeException          if the block size is invalid (must never happen)
     * @throws InvalidAlgorithmParameterException if an encryption parameter is invalid (must never happen)
     * @throws InvalidKeyException                if the key is invalid (must never happen)
-    * @throws IOException
     * @throws NoSuchAlgorithmException           if the encryption algorithm is invalid (must never happen)
     * @throws NoSuchPaddingException             if the padding algorithm is invalid (must never happen)
+    * @throws NullPointerException               if {@code stringToDecrypt} or {@code subject} is {@code null}
     * @throws UnsupportedEncodingException       if there is no UTF-8 encoding (must never happen)
     */
-   public String decryptData(final String stringToDecrypt, final String subject) throws BadPaddingException, DataIntegrityException, IllegalArgumentException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
+   public String decryptData(final String stringToDecrypt, final String subject) throws BadPaddingException,
+            DataIntegrityException,
+            IllegalArgumentException,
+            IllegalBlockSizeException,
+            InvalidAlgorithmParameterException,
+            InvalidKeyException,
+            NoSuchAlgorithmException,
+            NoSuchPaddingException,
+            NullPointerException,
+            UnsupportedEncodingException {
+      Objects.requireNonNull(stringToDecrypt, "String to decrypt is null");
+      Objects.requireNonNull(subject, "Subject is null");
+
       final byte[] subjectBytes = subject.getBytes(STRING_ENCODING_FOR_DATA);
 
       final EncryptionParts encryptionParts = getPartsFromPrintableString(stringToDecrypt);
@@ -800,12 +856,21 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @throws IllegalBlockSizeException          if the block size is invalid (must never happen)
     * @throws InvalidAlgorithmParameterException if an encryption parameter is invalid (must never happen)
     * @throws InvalidKeyException                if the key is invalid (must never happen)
-    * @throws IOException
     * @throws NoSuchAlgorithmException           if the encryption algorithm is invalid (must never happen)
     * @throws NoSuchPaddingException             if the padding algorithm is invalid (must never happen)
+    * @throws NullPointerException               if {@code stringToDecrypt}is {@code null}
     * @throws UnsupportedEncodingException       if there is no UTF-8 encoding (must never happen)
     */
-   public String decryptData(final String stringToDecrypt) throws BadPaddingException, DataIntegrityException, IllegalArgumentException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException {
+   public String decryptData(final String stringToDecrypt) throws BadPaddingException,
+            DataIntegrityException,
+            IllegalArgumentException,
+            IllegalBlockSizeException,
+            InvalidAlgorithmParameterException,
+            InvalidKeyException,
+            NoSuchAlgorithmException,
+            NoSuchPaddingException,
+            NullPointerException,
+            UnsupportedEncodingException {
       return decryptData(stringToDecrypt, "");
    }
 

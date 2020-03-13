@@ -21,11 +21,13 @@
  *
  * Changes:
  *     2020-02-28: V1.0.0: Created. fhs
+ *     2020-03-13: V1.1.0: Handle null arguments. fhs
  */
 
 package dbsstatisticslib;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * Class to calculate the entropy of byte arrays
@@ -63,13 +65,16 @@ public class EntropyCalculator {
     * as the one that should <b>not</b> be included.</p>
     *
     * @param aByteArray Byte array to add to the calculation
-    * @param fromIndex Start index (inclusive)
-    * @param toIndex End index (exclusive)
+    * @param fromIndex  Start index (inclusive)
+    * @param toIndex    End index (exclusive)
+    * @throws NullPointerException if {@code aByteArray} is null
     */
-   public void addBytes(final byte[] aByteArray, final int fromIndex, final int toIndex) {
+   public void addBytes(final byte[] aByteArray, final int fromIndex, final int toIndex) throws NullPointerException {
+      Objects.requireNonNull(aByteArray, "Byte array is null");
+
       byte aByte;
 
-      for(int i = fromIndex; i < toIndex; i++) {
+      for (int i = fromIndex; i < toIndex; i++) {
          aByte = aByteArray[i];
 
          m_Counter[aByte & 0xff]++;
@@ -82,9 +87,10 @@ public class EntropyCalculator {
     * Add bytes of a byte array to entropy calculation starting from a specified index
     *
     * @param aByteArray Byte array to add to the calculation
-    * @param fromIndex Start index (inclusive)
+    * @param fromIndex  Start index (inclusive)
+    * @throws NullPointerException if {@code aByteArray} is null
     */
-   public void addBytes(final byte[] aByteArray, final int fromIndex) {
+   public void addBytes(final byte[] aByteArray, final int fromIndex) throws NullPointerException {
       addBytes(aByteArray, fromIndex, aByteArray.length);
    }
 
@@ -92,8 +98,9 @@ public class EntropyCalculator {
     * Add all bytes of a byte array to the entropy calculation
     *
     * @param aByteArray Byte array to add to the calculation
+    * @throws NullPointerException if {@code aByteArray} is null
     */
-   public void addBytes(final byte[] aByteArray) {
+   public void addBytes(final byte[] aByteArray) throws NullPointerException {
       addBytes(aByteArray, 0, aByteArray.length);
    }
 
@@ -105,7 +112,7 @@ public class EntropyCalculator {
    public double getEntropy() {
       double result = 0.0;
 
-      if (m_ByteCount > 0 ) {
+      if (m_ByteCount > 0) {
          final double inverseByteCount = 1.0 / m_ByteCount;
 
          double p;
@@ -128,8 +135,9 @@ public class EntropyCalculator {
     * maximum possible entropy the actual entropy value is.</p>
     *
     * @return Relative entropy
+    * @throws UnsupportedOperationException if there are not enough bytes sampled
     */
-   public double getRelativeEntropy() {
+   public double getRelativeEntropy() throws UnsupportedOperationException {
       if (m_ByteCount > 1)
          return getEntropy() / Math.log(m_ByteCount) * LOG_2;
       else

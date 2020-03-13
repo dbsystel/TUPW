@@ -25,15 +25,21 @@
  * The state must be seeded so that it is not everywhere zero. If you have
  * a 64-bit seed, we suggest to seed a splitmix64 generator and use its
  * output to fill s.
+ *
+ * Changes:
+ *     2020-02-27: V1.0.0: Created. fhs
+ *     2020-03-13: V1.1.0: Check for null. fhs
  */
 
 package dbsnumberlib;
+
+import java.util.Objects;
 
 /**
  * Xoroshiro128plusplus pseudo-random number generator
  *
  * @author Frank Schwab
- * @version 1.0.0
+ * @version 1.1.0
  */
 @SuppressWarnings("UnusedAssignment")
 public class Xoroshiro128plusplus extends SimplePseudoRandomNumberGenerator {
@@ -49,21 +55,42 @@ public class Xoroshiro128plusplus extends SimplePseudoRandomNumberGenerator {
     * @param seed Initial seed
     */
    public Xoroshiro128plusplus(final long seed) {
-      SplitMix64 sm64 = new SplitMix64(seed);
-
-      m_State0 = sm64.nextLong();
-      m_State1 = sm64.nextLong();
+      initializeState(seed);
    }
 
    /**
     * Constructor for Xoroshiro128plusplus with seed
     *
     * @param seed Initial seed
+    * @throws NullPointerException if {@code seed} is null
     */
-   public Xoroshiro128plusplus(final Long seed) {
-      this(seed.longValue());
+   public Xoroshiro128plusplus(final Long seed) throws NullPointerException {
+      Objects.requireNonNull(seed, "Seed is null");
+
+      // In a real object oriented language one would place "this(seed.longValue());"
+      // here. But this is Java, so it is not possible to do this.
+      initializeState(seed.longValue());
    }
 
+   /**
+    * Unnecessary constructor method to initialize the state
+    */
+   private void initializeState(final long seed) {
+      SplitMix64 sm64 = new SplitMix64(seed);
+
+      m_State0 = sm64.nextLong();
+      m_State1 = sm64.nextLong();
+   }
+
+   /*
+    * Public methods
+    */
+
+   /**
+    * Get next {@code long} pseudo-random number
+    *
+    * @return next pseudo-random long value
+    */
    @Override
    public long nextLong() {
       final long s0 = m_State0;
@@ -81,7 +108,9 @@ public class Xoroshiro128plusplus extends SimplePseudoRandomNumberGenerator {
    }
 
    @Override
-   public int nextInt() { return super.nextInt(); }
+   public int nextInt() {
+      return super.nextInt();
+   }
 
    @Override
    public short nextShort() {
@@ -94,14 +123,22 @@ public class Xoroshiro128plusplus extends SimplePseudoRandomNumberGenerator {
    }
 
    @Override
-   public long nextLong(long fromInclusive, long toInclusive) { return super.nextLong(fromInclusive, toInclusive); }
+   public long nextLong(long fromInclusive, long toInclusive) {
+      return super.nextLong(fromInclusive, toInclusive);
+   }
 
    @Override
-   public int nextInt(int fromInclusive, int toInclusive) { return super.nextInt(fromInclusive, toInclusive); }
+   public int nextInt(int fromInclusive, int toInclusive) {
+      return super.nextInt(fromInclusive, toInclusive);
+   }
 
    @Override
-   public short nextShort(short fromInclusive, short toInclusive) { return super.nextShort(fromInclusive, toInclusive); }
+   public short nextShort(short fromInclusive, short toInclusive) {
+      return super.nextShort(fromInclusive, toInclusive);
+   }
 
    @Override
-   public byte nextByte(byte fromInclusive, byte toInclusive) { return super.nextByte(fromInclusive, toInclusive); }
+   public byte nextByte(byte fromInclusive, byte toInclusive) {
+      return super.nextByte(fromInclusive, toInclusive);
+   }
 }
