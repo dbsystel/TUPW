@@ -73,11 +73,12 @@ public class EntropyCalculator {
       Objects.requireNonNull(aByteArray, "Byte array is null");
 
       byte aByte;
+      int  counterIndex;
 
       for (int i = fromIndex; i < toIndex; i++) {
-         aByte = aByteArray[i];
+         counterIndex = aByteArray[i] & 0xff; // Explicitly calculate the index ...
 
-         m_Counter[aByte & 0xff]++;
+         m_Counter[counterIndex]++;   // ... as the compiler converts this to "m_Counter[counterIndex] = m_Counter[counterIndex] + 1"
       }
 
       m_ByteCount += toIndex - fromIndex;

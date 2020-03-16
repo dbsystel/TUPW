@@ -24,6 +24,7 @@
  *     2019-08-06: V1.0.2: Use SecureRandomFactory. fhs
  *     2019-08-23: V1.0.3: Use SecureRandom singleton. fhs
  *     2020-03-13: V1.1.0: Added checks for null. fhs
+ *     2020-03-16: V1.1.1: Added text to UnsupportedOperationException. fhs
  */
 package dbscryptolib;
 
@@ -38,7 +39,7 @@ import java.util.Objects;
  * It can only be used to pad data where the length is known.</p>
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.1.0
+ * @version 1.1.1
  */
 public class RandomPadding {
 
@@ -148,6 +149,6 @@ public class RandomPadding {
     * @throws UnsupportedOperationException Random padding can not be removed
     */
    public static byte[] removePadding(final byte[] paddedSourceData) throws UnsupportedOperationException {
-      throw new UnsupportedOperationException();
+      throw new UnsupportedOperationException("Random padding can not be removed");
    }
 }

@@ -83,6 +83,8 @@ public class TUPW {
    }
 
    public static void main(final String[] args) {
+      int exitCode = 0;
+
       if (args.length >= 3) {
          // There are many ways to specify the HMAC key.
          // One way is simply to use a static HMAC key which is only known to the program.
@@ -115,11 +117,9 @@ public class TUPW {
             } else {
                System.out.println(myEncryptor.decryptData(getInputFromWhereEver(args[itemIndex]), subject));
             }
-
-            System.exit(0);
          } catch (final Exception e) {
             e.printStackTrace();
-            System.exit(1);
+            exitCode = 1;
          }
       } else {
          System.err.println("Not enough arguments.");
@@ -131,8 +131,10 @@ public class TUPW {
          System.err.println("If {clearItem}, or {encryptedItem} is '-' input is read from stdin.");
          System.err.println("This makes it possible to use the program in a pipe.");
          
-         System.exit(2);
+         exitCode = 2;
       }
+
+      System.exit(exitCode);
    }
 
    /**

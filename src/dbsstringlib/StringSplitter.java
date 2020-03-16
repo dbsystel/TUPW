@@ -26,6 +26,7 @@
  *                         is at the beginning of the search string.
  *                         Clarified handling. fhs
  *     2018-12-06: V2.1.0: Refactored class. fhs
+ *     2020-03-16: V2.1.1: Added some finals. fhs
  */
 package dbsstringlib;
 
@@ -44,7 +45,7 @@ import java.util.ArrayList;
  * </p>
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 2.1.0
+ * @version 2.1.1
  */
 @SuppressWarnings("IfStatementWithIdenticalBranches")
 public class StringSplitter {
@@ -61,11 +62,11 @@ public class StringSplitter {
     * @param searchStringLength Length of the {@code searchString}
     * @param separatorLength    length of the {@code separator}
     */
-   private static void splitIntoSubstrings(String searchString,
-                                           String separator,
-                                           ArrayList<String> substrings,
-                                           int searchStringLength,
-                                           int separatorLength) {
+   private static void splitIntoSubstrings(final String searchString,
+                                           final String separator,
+                                           final ArrayList<String> substrings,
+                                           final int searchStringLength,
+                                           final int separatorLength) {
       int startSearchIndex = 0;
       int separatorIndex = 0;
 
