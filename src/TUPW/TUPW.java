@@ -1,25 +1,25 @@
 /*
  * Copyright (c) 2020, DB Systel GmbH
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
- * 
+ *
  * 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
- * 
+ *
  * 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,
  * BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
  * SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
  * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * Author: Frank Schwab, DB Systel GmbH
  *
- * Changes: 
+ * Changes:
  *     2017-03-30: V1.0.0: Created. fhs
  *     2017-04-12: V1.0.1: Moved secure random number generator to class constant. fhs
  *     2017-05-23: V1.0.2: Corrected spelling of "aesCipher". fhs
@@ -52,11 +52,11 @@ import java.io.IOException;
 /**
  * Example program to calculate the encryption of user and password for
  * technical users. To be called from the command line.
- *
+ * <p>
  * Returns with the following exit codes:
- *    0: Data converted
- *    1: Error during conversion
- *    2: Not enough arguments
+ * 0: Data converted
+ * 1: Error during conversion
+ * 2: Not enough arguments
  *
  * @author Frank Schwab, DB Systel GmbH
  * @version 4.1.1
@@ -76,7 +76,7 @@ public class TUPW {
       // TODO: Do not use this seed constant. Roll your own!!!!
       final Xoroshiro128plusplus xs128 = new Xoroshiro128plusplus(0x5A7F93DDD402915AL);
 
-      for(int i=0; i<result.length; i++ )
+      for (int i = 0; i < result.length; i++)
          result[i] = xs128.nextByte();
 
       return result;
@@ -90,13 +90,13 @@ public class TUPW {
          // One way is simply to use a static HMAC key which is only known to the program.
          // TODO: Do not use this constant byte array. Roll your own!!!!
          final byte[] HMAC_KEY = {(byte) 0x53, (byte) 0x67, (byte) 0xC3, (byte) 0x59,
-                 (byte) 0x4B, (byte) 0x46, (byte) 0x0F, (byte) 0xFA,
-                 (byte) 0x15, (byte) 0x21, (byte) 0x13, (byte) 0x6C,
-                 (byte) 0x7F, (byte) 0xDD, (byte) 0x33, (byte) 0x57,
-                 (byte) 0x26, (byte) 0xF3, (byte) 0x10, (byte) 0xA0,
-                 (byte) 0xE9, (byte) 0x16, (byte) 0xA4, (byte) 0x2E,
-                 (byte) 0x9E, (byte) 0x15, (byte) 0x8E, (byte) 0xF4,
-                 (byte) 0x03, (byte) 0x04, (byte) 0xAA, (byte) 0x2C};
+                  (byte) 0x4B, (byte) 0x46, (byte) 0x0F, (byte) 0xFA,
+                  (byte) 0x15, (byte) 0x21, (byte) 0x13, (byte) 0x6C,
+                  (byte) 0x7F, (byte) 0xDD, (byte) 0x33, (byte) 0x57,
+                  (byte) 0x26, (byte) 0xF3, (byte) 0x10, (byte) 0xA0,
+                  (byte) 0xE9, (byte) 0x16, (byte) 0xA4, (byte) 0x2E,
+                  (byte) 0x9E, (byte) 0x15, (byte) 0x8E, (byte) 0xF4,
+                  (byte) 0x03, (byte) 0x04, (byte) 0xAA, (byte) 0x2C};
 
          // Another way is to calculate the HMAC key in a deterministic way
          // TODO: Do not use both HMAC keys. Choose one of them. You may keep the constant HMAC_KEY as a decoy.
@@ -130,7 +130,7 @@ public class TUPW {
          System.err.println();
          System.err.println("If {clearItem}, or {encryptedItem} is '-' input is read from stdin.");
          System.err.println("This makes it possible to use the program in a pipe.");
-         
+
          exitCode = 2;
       }
 
@@ -142,10 +142,10 @@ public class TUPW {
     * is "-"
     *
     * @param anArgument The command line argument that is either the data,
-    * or "-"
+    *                   or "-"
     * @return Data to process
     * @throws IllegalArgumentException if input stream is toot large
-    * @throws IOException if there was an I/O error when reading the input bytes
+    * @throws IOException              if there was an I/O error when reading the input bytes
     */
    static String getInputFromWhereEver(final String anArgument) throws IllegalArgumentException, IOException {
       String result;
@@ -166,7 +166,7 @@ public class TUPW {
     *
     * @return Content of InputStream System.in as String
     * @throws IllegalArgumentException if the input stream is too large
-    * @throws IOException if there was an I/O error while reading the input bytes
+    * @throws IOException              if there was an I/O error while reading the input bytes
     */
    static String getSystemInAsString() throws IllegalArgumentException, IOException {
       final ByteArrayOutputStream result = new ByteArrayOutputStream();
@@ -176,8 +176,8 @@ public class TUPW {
       while ((length = System.in.read(buffer)) != -1) {
          result.write(buffer, 0, length);
 
-         if (result.size() > MAX_INPUT_BYTES) 
-            throw new IllegalArgumentException("Input from input stream is larger than " + String.format("%,d",  MAX_INPUT_BYTES) + " bytes");
+         if (result.size() > MAX_INPUT_BYTES)
+            throw new IllegalArgumentException("Input from input stream is larger than " + String.format("%,d", MAX_INPUT_BYTES) + " bytes");
       }
 
       // Convert to String with Java file encoding
