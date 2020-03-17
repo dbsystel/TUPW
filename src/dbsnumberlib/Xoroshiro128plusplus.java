@@ -106,39 +106,4 @@ public class Xoroshiro128plusplus extends SimplePseudoRandomNumberGenerator {
 
       return result;
    }
-
-   @Override
-   public int nextInt() {
-      return super.nextInt();
-   }
-
-   @Override
-   public short nextShort() {
-      return super.nextShort();
-   }
-
-   @Override
-   public byte nextByte() {
-      return super.nextByte();
-   }
-
-   @Override
-   public long nextLong(long fromInclusive, long toInclusive) {
-      return super.nextLong(fromInclusive, toInclusive);
-   }
-
-   @Override
-   public int nextInt(int fromInclusive, int toInclusive) {
-      return super.nextInt(fromInclusive, toInclusive);
-   }
-
-   @Override
-   public short nextShort(short fromInclusive, short toInclusive) {
-      return super.nextShort(fromInclusive, toInclusive);
-   }
-
-   @Override
-   public byte nextByte(byte fromInclusive, byte toInclusive) {
-      return super.nextByte(fromInclusive, toInclusive);
-   }
 }

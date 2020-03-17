@@ -52,11 +52,13 @@ import java.io.IOException;
 /**
  * Example program to calculate the encryption of user and password for
  * technical users. To be called from the command line.
+ *
  * <p>
  * Returns with the following exit codes:
  * 0: Data converted
  * 1: Error during conversion
  * 2: Not enough arguments
+ * </p>
  *
  * @author Frank Schwab, DB Systel GmbH
  * @version 4.1.1

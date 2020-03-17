@@ -75,39 +75,4 @@ public class SplitMix64 extends SimplePseudoRandomNumberGenerator {
       z = (z ^ (z >>> 27)) * 0x94d049bb133111ebL;
       return z ^ (z >>> 31);
    }
-
-   @Override
-   public int nextInt() {
-      return super.nextInt();
-   }
-
-   @Override
-   public short nextShort() {
-      return super.nextShort();
-   }
-
-   @Override
-   public byte nextByte() {
-      return super.nextByte();
-   }
-
-   @Override
-   public long nextLong(long fromInclusive, long toInclusive) {
-      return super.nextLong(fromInclusive, toInclusive);
-   }
-
-   @Override
-   public int nextInt(int fromInclusive, int toInclusive) {
-      return super.nextInt(fromInclusive, toInclusive);
-   }
-
-   @Override
-   public short nextShort(short fromInclusive, short toInclusive) {
-      return super.nextShort(fromInclusive, toInclusive);
-   }
-
-   @Override
-   public byte nextByte(byte fromInclusive, byte toInclusive) {
-      return super.nextByte(fromInclusive, toInclusive);
-   }
 }
