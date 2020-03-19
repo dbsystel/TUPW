@@ -86,7 +86,7 @@ public class SplitKeyEncryption implements AutoCloseable {
     * Private constants
     */
 
-   private static String NULL_SUBJECT_ERROR_MESSAGE = "Subject is null";
+   private static final String NULL_SUBJECT_ERROR_MESSAGE = "Subject is null";
 
    /**
     * Boundaries for valid format ids
