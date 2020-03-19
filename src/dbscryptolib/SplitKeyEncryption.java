@@ -276,7 +276,7 @@ public class SplitKeyEncryption implements AutoCloseable {
     *
     * @param sourceBytes Array of source byte arrays
     * @throws IllegalArgumentException if any sourceByte array has 0 length or the source bytes are too few or too many
-    *                                  or there no or not enough information in the source bytes
+    *                                  or there is no or not enough information in the source bytes
     * @throws NullPointerException     if any sourceByte array is {@code null}
     */
    private void checkSourceBytes(final byte[]... sourceBytes) throws IllegalArgumentException, NullPointerException {
