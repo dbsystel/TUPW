@@ -25,13 +25,12 @@
  *     2019-08-23: V1.0.3: Use SecureRandom singleton. fhs
  *     2020-02-11: V1.1.0: Strengthen blinding length tests. fhs
  *     2020-03-13: V1.2.0: Added checks for null. fhs
+ *     2020.03.19: V1.3.0: Removed ByteArrayOutputStream. fhs
  */
 package dbscryptolib;
 
 import dbsnumberlib.PackedUnsignedInteger;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Objects;
@@ -40,7 +39,7 @@ import java.util.Objects;
  * Implements blinding for byte arrays
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.2.0
+ * @version 1.3.0
  */
 public class ByteArrayBlinding {
 
@@ -113,10 +112,8 @@ public class ByteArrayBlinding {
     * @param minimumLength Minimum length of blinded array
     * @return Blinded byte array
     * @throws IllegalArgumentException if minimum length is too small or too large
-    * @throws IOException              if there is an error during handling of the ByteArrayOutputStream
     */
-   public static byte[] buildBlindedByteArray(final byte[] sourceBytes, final int minimumLength) throws IllegalArgumentException,
-            IOException {
+   public static byte[] buildBlindedByteArray(final byte[] sourceBytes, final int minimumLength) throws IllegalArgumentException {
       checkMinimumLength(minimumLength);
 
       final int[] blindingLength = new int[2];
@@ -139,37 +136,26 @@ public class ByteArrayBlinding {
 
       final int resultLength = 2 + packedSourceLength.length + prefixBlinding.length + sourceBytes.length + postfixBlinding.length;
 
-      ByteArrayOutputStream resultStream = new ByteArrayOutputStream(resultLength);
+      final byte[] result = new byte[resultLength];
 
-      resultStream.write(blindingLength[INDEX_PREFIX_LENGTH]);
-      resultStream.write(blindingLength[INDEX_POSTFIX_LENGTH]);
-      resultStream.write(packedSourceLength);
-      resultStream.write(prefixBlinding);
-      resultStream.write(sourceBytes);
-      resultStream.write(postfixBlinding);
+      result[0] = (byte) blindingLength[INDEX_PREFIX_LENGTH];
+      result[1] = (byte) blindingLength[INDEX_POSTFIX_LENGTH];
 
-      Arrays.fill(prefixBlinding, (byte) 0);
-      Arrays.fill(postfixBlinding, (byte) 0);
+      int resultIndex = 2;
 
-      final byte[] result = resultStream.toByteArray();
-
-      /*
-       Now clear the byte stream
-       */
-      resultStream.reset();
-
-      resultStream.write(0);
-      resultStream.write(0);
-
+      System.arraycopy(packedSourceLength, 0, result, resultIndex, packedSourceLength.length);
+      resultIndex += packedSourceLength.length;
       Arrays.fill(packedSourceLength, (byte) 0);
-      resultStream.write(packedSourceLength);
 
-      resultStream.write(prefixBlinding);
+      System.arraycopy(prefixBlinding, 0, result, resultIndex, prefixBlinding.length);
+      resultIndex += prefixBlinding.length;
+      Arrays.fill(prefixBlinding, (byte) 0);
 
-      byte[] filler = new byte[sourceBytes.length];
-      resultStream.write(filler);
+      System.arraycopy(sourceBytes, 0, result, resultIndex, sourceBytes.length);
+      resultIndex += sourceBytes.length;
 
-      resultStream.write(postfixBlinding);
+      System.arraycopy(postfixBlinding, 0, result, resultIndex, postfixBlinding.length);
+      Arrays.fill(postfixBlinding, (byte) 0);
 
       return result;
    }
