@@ -56,6 +56,7 @@
  *     2020-03-09: V4.0.1: Add check for zero source byte length. fhs
  *     2020-03-13: V4.1.0: Use NUllPointerException instead of IllegalArgumentException for null pointers. fhs
  *     2020-03-19: V4.2.0: Consolidated crypto parameter exceptions. fhs
+ *     2020-03-20: V4.3.0: Use a nested exception, instead of a suppressed exception. fhs
  */
 package dbscryptolib;
 
@@ -77,7 +78,7 @@ import java.util.Objects;
  * Implement encryption by key generated from several source bytes and a key
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 4.2.0
+ * @version 4.3.0
  */
 
 public class SplitKeyEncryption implements AutoCloseable {
@@ -760,8 +761,8 @@ public class SplitKeyEncryption implements AutoCloseable {
 
          result = makePrintableStringFromEncryptionParts(encryptionParts);
       } catch (BadPaddingException|IllegalBlockSizeException|InvalidAlgorithmParameterException|InvalidKeyException|NoSuchAlgorithmException|NoSuchPaddingException e) {
-         InvalidCryptoParameterException newException = new InvalidCryptoParameterException("Invalid cryptographic parameter: " + e.toString());
-         newException.addSuppressed(e);
+         InvalidCryptoParameterException newException = new InvalidCryptoParameterException("Invalid cryptographic parameter: " + e.toString(), e);
+
          throw newException;
       } finally{
          if (encryptionParts != null)
@@ -821,8 +822,8 @@ public class SplitKeyEncryption implements AutoCloseable {
 
          result = rawDataDecryption(encryptionParts, subjectBytes);
       } catch (BadPaddingException|IllegalBlockSizeException|InvalidAlgorithmParameterException|InvalidKeyException|NoSuchAlgorithmException|NoSuchPaddingException e) {
-         InvalidCryptoParameterException newException = new InvalidCryptoParameterException("Invalid cryptographic parameter: " + e.toString());
-         newException.addSuppressed(e);
+         InvalidCryptoParameterException newException = new InvalidCryptoParameterException("Invalid cryptographic parameter: " + e.toString(), e);
+
          throw newException;
       } finally {
          if (encryptionParts != null)
@@ -857,6 +858,7 @@ public class SplitKeyEncryption implements AutoCloseable {
 
    /**
     * Secure deletion of keys
+    *
     * <p>
     * This method is idempotent and never throws an exception.
     * </p>
