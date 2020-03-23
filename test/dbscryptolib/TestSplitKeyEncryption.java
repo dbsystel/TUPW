@@ -23,7 +23,7 @@
  *     2020-03-04: V1.0.0: Created. fhs
  *     2020-03-09: V1.0.1: Test 0 length source byte array. fhs
  */
-package TUPW;
+package dbscryptolib;
 
 import dbscryptolib.SplitKeyEncryption;
 import dbsnumberlib.Xoroshiro128plusplus;

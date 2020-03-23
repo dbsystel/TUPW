@@ -28,7 +28,7 @@
  *     2020-02-28: V1.5.0: Added test with not enough information in source bytes. fhs
  *     2020-03-04: V1.6.0: Split test cases for "FileAndKeyEncryption" and "SplitKeyEncryption". fhs
  */
-package TUPW;
+package dbscryptolib;
 
 import dbscryptolib.FileAndKeyEncryption;
 import org.junit.*;
