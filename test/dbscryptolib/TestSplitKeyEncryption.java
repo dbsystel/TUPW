@@ -629,4 +629,30 @@ public class TestSplitKeyEncryption {
       }
    }
 
+   /**
+    * Test if a nearly uniform source byte array throws an exception.
+    */
+   @Test
+   public void TestNearlyUniformSourceBytes() {
+      try {
+         byte[] aSourceByteArray = new byte[100];
+
+         for(int i = 0; i < aSourceByteArray.length; i++) {
+            if ((i & 1) != 0)
+               aSourceByteArray[i] = (byte) 0x55;
+            else
+               aSourceByteArray[i] = (byte) 0xAA;
+         }
+
+         SplitKeyEncryption myEncryptor = new SplitKeyEncryption(COMPUTED_HMAC_KEY, aSourceByteArray);
+
+         String decryptedText = myEncryptor.decryptData(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
+
+         fail("Expected exception not thrown");
+      } catch (Exception e) {
+         final String exceptionMessage = e.toString();
+
+         assertTrue("Unexpected exception: " + exceptionMessage, exceptionMessage.contains("at least 129"));
+      }
+   }
 }
