@@ -29,6 +29,7 @@
  * Changes:
  *     2020-02-27: V1.0.0: Created. fhs
  *     2020-03-13: V1.1.0: Check for null. fhs
+ *     2020-03-23: V1.2.0: Restructured source code according to DBS programming guidelines. fhs
  */
 
 package dbsnumberlib;
@@ -39,15 +40,23 @@ import java.util.Objects;
  * Xoroshiro128plusplus pseudo-random number generator
  *
  * @author Frank Schwab
- * @version 1.1.0
+ * @version 1.2.0
  */
-@SuppressWarnings("UnusedAssignment")
 public class Xoroshiro128plusplus extends SimplePseudoRandomNumberGenerator {
+   //******************************************************************
+   // Instance variables
+   //******************************************************************
+
    /**
     * The state variables
     */
    long m_State0 = -1L;
    long m_State1 = 1L;
+
+
+   //******************************************************************
+   // Constructors
+   //******************************************************************
 
    /**
     * Constructor for Xoroshiro128plusplus with seed
@@ -72,19 +81,9 @@ public class Xoroshiro128plusplus extends SimplePseudoRandomNumberGenerator {
       initializeState(seed.longValue());
    }
 
-   /**
-    * Unnecessary constructor method to initialize the state
-    */
-   private void initializeState(final long seed) {
-      SplitMix64 sm64 = new SplitMix64(seed);
-
-      m_State0 = sm64.nextLong();
-      m_State1 = sm64.nextLong();
-   }
-
-   /*
-    * Public methods
-    */
+   //******************************************************************
+   // Public methods
+   //******************************************************************
 
    /**
     * Get next {@code long} pseudo-random number
@@ -105,5 +104,20 @@ public class Xoroshiro128plusplus extends SimplePseudoRandomNumberGenerator {
       m_State1 = (s1 << 28 | s1 >>> 36);
 
       return result;
+   }
+
+
+   //******************************************************************
+   // Private methods
+   //******************************************************************
+
+   /**
+    * Unnecessary constructor method to initialize the state
+    */
+   private void initializeState(final long seed) {
+      SplitMix64 sm64 = new SplitMix64(seed);
+
+      m_State0 = sm64.nextLong();
+      m_State1 = sm64.nextLong();
    }
 }

@@ -25,6 +25,7 @@
  *     2018-12-11: V1.1.1: Clarify exceptions and comments. fhs
  *     2019-03-07: V1.2.0: Added "toString" method. fhs
  *     2020-03-13: V1.3.0: Added checks for null. fhs
+ *     2020-03-23: V1.4.0: Restructured source code according to DBS programming guidelines. fhs
  */
 package dbsnumberlib;
 
@@ -35,14 +36,22 @@ import java.util.Objects;
  * Converts integers from and to an unsigned packed byte array
  *
  * @author FrankSchwab
- * @version 1.2.0
+ * @version 1.4.0
  */
 public class PackedUnsignedInteger {
+   //******************************************************************
+   // Private constants
+   //******************************************************************
 
    private final static int START_TWO_BYTE_VALUE = 0x40;
    private final static int START_THREE_BYTE_VALUE = 0x4000;
    private final static int START_FOUR_BYTE_VALUE = 0x400000;
    private final static int START_TOO_LARGE_VALUE = 0x40000000;
+
+
+   //******************************************************************
+   // Public methods
+   //******************************************************************
 
    /**
     * Convert an integer into a packed decimal byte array

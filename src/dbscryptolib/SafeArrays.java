@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, DB Systel GmbH
+ * Copyright (c) 2020, DB Systel GmbH
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -23,6 +23,7 @@
  *     2018-06-13: V1.0.0: Created. fhs
  *     2018-06-18: V1.0.1: A few more comments and a small optimization. fhs
  *     2018-08-15: V1.0.2: Added a few "finals". fhs
+ *     2020-03-23: V1.1.0: Restructured source code according to DBS programming guidelines. fhs
  */
 package dbscryptolib;
 
@@ -32,17 +33,20 @@ import java.util.Objects;
  * Implement cryptographically safe array operations
  *
  * @author FrankSchwab, DB Systel GmbH
- * @version 1.0.2
+ * @version 1.1.0
  */
 public final class SafeArrays {
+   //******************************************************************
+   // Public methods
+   //******************************************************************
 
    /**
     * Constant time byte array compare.
-    * <p>
-    * This method takes a constant time to compare two byte arrays, i.e. it will
+    *
+    * <p>This method takes a constant time to compare two byte arrays, i.e. it will
     * take the same time to run if the arrays are equal and if they are not
     * equal. This makes it impossible to attack a cryptographic operation by
-    * measuring the time it takes to complete a compare operation.
+    * measuring the time it takes to complete a compare operation.</p>
     *
     * @param a First byte array to compare
     * @param b Second byte array to compare

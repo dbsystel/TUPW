@@ -22,6 +22,7 @@
  * Changes:
  *     2020-03-04: V1.0.0: Created. fhs
  *     2020-03-19: V1.1.0: Consolidated crypto parameter exceptions. fhs
+ *     2020-03-23: V1.2.0: Restructured source code according to DBS programming guidelines. fhs
  */
 package dbscryptolib;
 
@@ -42,34 +43,20 @@ import java.util.Objects;
  * for the special case of a file as the source for the key input.</p>
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.1.0
+ * @version 1.2.0
  */
 
 public class FileAndKeyEncryption implements AutoCloseable {
-
-   /*
-    * Instance variable
-    */
+   //******************************************************************
+   // Instance variables
+   //******************************************************************
 
    private SplitKeyEncryption m_SplitKeyEncryption;
 
-   /**
-    * Get the content of the key file
-    *
-    * @param keyFile Key file to be used
-    * @throws IllegalArgumentException if key file does not exist
-    * @throws IOException              if there is an error reading the key file
-    */
-   private byte[] getContentOfFile(final Path keyFile) throws IllegalArgumentException, IOException {
-      final byte[] result;
 
-      if (Files.exists(keyFile))
-         result = Files.readAllBytes(keyFile);
-      else
-         throw new IllegalArgumentException("File '" + keyFile.toAbsolutePath() + "' does not exist");
-
-      return result;
-   }
+   //******************************************************************
+   // Constructor
+   //******************************************************************
 
    /**
     * Constructor for this instance
@@ -104,6 +91,11 @@ public class FileAndKeyEncryption implements AutoCloseable {
 
       Arrays.fill(keyFileBytes, (byte) 0);
    }
+
+
+   //******************************************************************
+   // Public methods
+   //******************************************************************
 
    /**
     * Encrypt a string under a subject
@@ -185,12 +177,34 @@ public class FileAndKeyEncryption implements AutoCloseable {
 
    /**
     * Secure deletion of keys
-    * <p>
-    * This method is idempotent and never throws an exception.
-    * </p>
+    *
+    * <p>This method is idempotent and never throws an exception.</p>
     */
    @Override
    public void close() {
       this.m_SplitKeyEncryption.close();
+   }
+
+
+   //******************************************************************
+   // Private methods
+   //******************************************************************
+
+   /**
+    * Get the content of the key file
+    *
+    * @param keyFile Key file to be used
+    * @throws IllegalArgumentException if key file does not exist
+    * @throws IOException              if there is an error reading the key file
+    */
+   private byte[] getContentOfFile(final Path keyFile) throws IllegalArgumentException, IOException {
+      final byte[] result;
+
+      if (Files.exists(keyFile))
+         result = Files.readAllBytes(keyFile);
+      else
+         throw new IllegalArgumentException("File '" + keyFile.toAbsolutePath() + "' does not exist");
+
+      return result;
    }
 }

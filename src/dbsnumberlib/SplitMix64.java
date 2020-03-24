@@ -22,6 +22,7 @@
  * Changes:
  *     2020-02-27: V1.0.0: Created. fhs
  *     2020-03-13: V1.1.0: Check for null. fhs
+ *     2020-03-23: V1.2.0: Restructured source code according to DBS programming guidelines. fhs
  */
 
 package dbsnumberlib;
@@ -32,13 +33,22 @@ import java.util.Objects;
  * Splitmix64 pseudo-random number generator
  *
  * @author Frank Schwab
- * @version 1.1.0
+ * @version 1.2.0
  */
 public class SplitMix64 extends SimplePseudoRandomNumberGenerator {
+   //******************************************************************
+   // Instance variables
+   //******************************************************************
+
    /**
     * State
     */
    private long m_State;
+
+
+   //******************************************************************
+   // Constructors
+   //******************************************************************
 
    /**
     * Creates a new instance.
@@ -63,10 +73,15 @@ public class SplitMix64 extends SimplePseudoRandomNumberGenerator {
       m_State = seed.longValue();
    }
 
+
+   //******************************************************************
+   // Public methods
+   //******************************************************************
+
    /**
-    * Get next pseudo-random long value
+    * Get next pseudo-random {@ode long} value
     *
-    * @return Pseudo-random long
+    * @return Pseudo-random {@ode long}
     */
    @Override
    public long nextLong() {

@@ -25,6 +25,7 @@
  *     2019-08-23: V1.0.3: Use SecureRandom singleton. fhs
  *     2020-03-13: V1.1.0: Added checks for null. fhs
  *     2020-03-16: V1.1.1: Added text to UnsupportedOperationException. fhs
+ *     2020-03-23: V1.2.0: Restructured source code according to DBS programming guidelines. fhs
  */
 package dbscryptolib;
 
@@ -39,72 +40,35 @@ import java.util.Objects;
  * It can only be used to pad data where the length is known.</p>
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.1.1
+ * @version 1.2.0
  */
 public class RandomPadding {
-
-   /*
-    * Private constants
-    */
+   //******************************************************************
+   // Private constants
+   //******************************************************************
 
    /**
     * Maximum block size (64 KiB)
     */
    private static final int MAX_BLOCK_SIZE = 64 * 1024;
 
-   /*
-    * Private variables
-    */
+
+   //******************************************************************
+   // Private variables
+   //******************************************************************
 
    /**
     * Instance of secure random number generator
-    * <p>
-    * This is placed here so the expensive instantiation of the SecureRandom
-    * class is done only once.
+    *
+    * <p>This is placed here so the expensive instantiation of the SecureRandom
+    * class is done only once.</p>
     */
    private static final SecureRandom SECURE_PRNG = SecureRandomFactory.getSensibleSingleton();
 
-   /*
-    * Private methods
-    */
 
-   /**
-    * Check block size
-    *
-    * @param blockSize Block size
-    * @throws java.lang.IllegalArgumentException if block size is too small or too large
-    */
-   private static void checkBlockSize(final int blockSize) throws IllegalArgumentException {
-      if (blockSize <= 0)
-         throw new IllegalArgumentException("Block size must be greater than 0");
-
-      if (blockSize > MAX_BLOCK_SIZE)
-         throw new IllegalArgumentException("Block size must not be greater than " + MAX_BLOCK_SIZE);
-   }
-
-   /**
-    * Calculate the padding length
-    * <p>
-    * If the unpadded data already have a length that is a multiple of blockSize
-    * no padding bytes are added.
-    *
-    * @param unpaddedLength Length of the unpadded data
-    * @param blockSize      Block size of which the padding size has to be a multiple
-    * @return Padding length that brings the total length to a multiple of
-    * {@code blockSize}
-    */
-   private static int getPaddingLength(final int unpaddedLength, final int blockSize) {
-      int result = (blockSize - (unpaddedLength % blockSize));
-
-      if (result >= blockSize)
-         result = 0;
-
-      return result;
-   }
-
-   /*
-    * Public methods
-    */
+   //******************************************************************
+   // Public methods
+   //******************************************************************
 
    /**
     * Add padding bytes to source data
@@ -150,5 +114,43 @@ public class RandomPadding {
     */
    public static byte[] removePadding(final byte[] paddedSourceData) throws UnsupportedOperationException {
       throw new UnsupportedOperationException("Random padding can not be removed");
+   }
+
+
+   //******************************************************************
+   // Private methods
+   //******************************************************************
+
+   /**
+    * Check block size
+    *
+    * @param blockSize Block size
+    * @throws java.lang.IllegalArgumentException if block size is too small or too large
+    */
+   private static void checkBlockSize(final int blockSize) throws IllegalArgumentException {
+      if (blockSize <= 0)
+         throw new IllegalArgumentException("Block size must be greater than 0");
+
+      if (blockSize > MAX_BLOCK_SIZE)
+         throw new IllegalArgumentException("Block size must not be greater than " + MAX_BLOCK_SIZE);
+   }
+
+   /**
+    * Calculate the padding length
+    * <p>If the unpadded data already have a length that is a multiple of blockSize
+    * no padding bytes are added.</p>
+    *
+    * @param unpaddedLength Length of the unpadded data
+    * @param blockSize      Block size of which the padding size has to be a multiple
+    * @return Padding length that brings the total length to a multiple of
+    * {@code blockSize}
+    */
+   private static int getPaddingLength(final int unpaddedLength, final int blockSize) {
+      int result = (blockSize - (unpaddedLength % blockSize));
+
+      if (result >= blockSize)
+         result = 0;
+
+      return result;
    }
 }

@@ -27,6 +27,7 @@
  *     2020-03-13: V1.2.0: Added checks for null. fhs
  *     2020-03-19: V1.3.0: Removed ByteArrayOutputStream. fhs
  *     2020-03-20: V1.4.0: Refactored blinded bytes build process. fhs
+ *     2020-03-23: V1.5.0: Restructured source code according to DBS programming guidelines. fhs
  */
 package dbscryptolib;
 
@@ -40,18 +41,27 @@ import java.util.Objects;
  * Implements blinding for byte arrays
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.4.0
+ * @version 1.5.0
  */
 public class ByteArrayBlinding {
+   //******************************************************************
+   // Private constants
+   //******************************************************************
 
    /**
     * Class level secure pseudo random number generator
     */
    private final static SecureRandom SECURE_PRNG = SecureRandomFactory.getSensibleSingleton();
 
+   /*
+    * Constants for error messages
+    */
    private final static String ERROR_MESSAGE_INVALID_ARRAY = "Invalid blinded byte array";
    private final static String ERROR_MESSAGE_INVALID_MIN_LENGTH = "Invalid minimum length";
 
+   /*
+    * Constants for indexing and lengths
+    */
    private final static int INDEX_LENGTHS_PREFIX_LENGTH = 0;
    private final static int INDEX_LENGTHS_POSTFIX_LENGTH = 1;
    private final static int LENGTHS_LENGTH = 2;
@@ -63,11 +73,92 @@ public class ByteArrayBlinding {
    private final static int MAX_NORMAL_SINGLE_BLINDING_LENGTH = 15;   // This needs to be a power of 2 minus 1
 
    private final static int MAX_MINIMUM_LENGTH = 256;
-//   private final static int MAX_SINGLE_LENGTH = (MAX_MINIMUM_LENGTH >>> 1) - 1;
 
-   /*
-    * Private methods
+
+   //******************************************************************
+   // Public methods
+   //******************************************************************
+
+   /**
+    * Add blinders to a byte array
+    *
+    * <p>Note: There may be no blinding, at all! I.e. the "blinded" array is the same, as the source array
+    * This behaviour is intentional. So an attacker will not known, whether there was blinding, or not.</p>
+    *
+    * @param sourceBytes   Source bytes to blinding
+    * @param minimumLength Minimum length of blinded array
+    * @return Blinded byte array
+    * @throws IllegalArgumentException if minimum length is too small or too large
     */
+   public static byte[] buildBlindedByteArray(final byte[] sourceBytes, final int minimumLength) throws IllegalArgumentException {
+      checkMinimumLength(minimumLength);
+
+      final byte[] packedSourceLength = PackedUnsignedInteger.fromInteger(sourceBytes.length);
+
+      final int[] blindingLength = getBalancedBlindingLengths(packedSourceLength.length, sourceBytes.length, minimumLength);
+
+      final byte[] prefixBlinding = createBlinding(blindingLength[INDEX_LENGTHS_PREFIX_LENGTH]);
+      final byte[] postfixBlinding = createBlinding(blindingLength[INDEX_LENGTHS_POSTFIX_LENGTH]);
+
+      final int resultLength = 2 + packedSourceLength.length + prefixBlinding.length + sourceBytes.length + postfixBlinding.length;
+
+      final byte[] result = new byte[resultLength];
+
+      result[0] = (byte) prefixBlinding.length;
+      result[1] = (byte) postfixBlinding.length;
+
+      int resultIndex = 2;
+
+      resultIndex += copyByteArrayAndZapSource(packedSourceLength, result, resultIndex);
+
+      resultIndex += copyByteArrayAndZapSource(prefixBlinding, result, resultIndex);
+
+      resultIndex += copyByteArray(sourceBytes, result, resultIndex);
+
+      copyByteArrayAndZapSource(postfixBlinding, result, resultIndex);
+
+      return result;
+   }
+
+   /**
+    * Remove blinders from a byte array
+    *
+    * @param sourceBytes Blinded byte array
+    * @return Byte array without blinders
+    * @throws IllegalArgumentException if the source byte array is not correctly formatted
+    * @throws NullPointerException     if {@code sourceBytes} is {@code null}
+    */
+   public static byte[] unBlindByteArray(final byte[] sourceBytes) throws IllegalArgumentException, NullPointerException {
+      Objects.requireNonNull(sourceBytes, "Source bytes is null");
+
+      if (sourceBytes.length > LENGTHS_LENGTH) {
+         final int packedNumberLength = PackedUnsignedInteger.getExpectedLength(sourceBytes[INDEX_SOURCE_PACKED_LENGTH]);
+
+         if (sourceBytes[INDEX_SOURCE_PREFIX_LENGTH] >= 0) {
+            // No. of bytes to skip is the blinding prefix length plus the two length bytes plus the source length
+            final int prefixBlindingLength = sourceBytes[INDEX_SOURCE_PREFIX_LENGTH] + 2 + packedNumberLength;
+
+            if (sourceBytes[INDEX_SOURCE_POSTFIX_LENGTH] >= 0) {
+               final int postfixBlindingLength = sourceBytes[INDEX_SOURCE_POSTFIX_LENGTH];
+
+               final int totalBlindingsLength = prefixBlindingLength + postfixBlindingLength;
+               final int dataLength = PackedUnsignedInteger.toIntegerFromArray(sourceBytes, INDEX_SOURCE_PACKED_LENGTH);
+
+               // The largest number in the following addition can only be just over 1073741823
+               // This can never overflow into negative values
+               if ((totalBlindingsLength + dataLength) <= sourceBytes.length)
+                  return Arrays.copyOfRange(sourceBytes, prefixBlindingLength, dataLength + prefixBlindingLength);
+            }
+         }
+      }
+
+      throw new IllegalArgumentException(ERROR_MESSAGE_INVALID_ARRAY);
+   }
+
+
+   //******************************************************************
+   // Private methods
+   //******************************************************************
 
    /**
     * Check the validity of the requested minimum length
@@ -184,85 +275,5 @@ public class ByteArrayBlinding {
       SECURE_PRNG.nextBytes(result);
 
       return result;
-   }
-
-   /*
-    * Public methods
-    */
-
-   /**
-    * Add blinders to a byte array
-    *
-    * <p>Note: There may be no blinding, at all! I.e. the "blinded" array is the same, as the source array
-    * This behaviour is intentional. So an attacker will not known, whether there was blinding, or not.</p>
-    *
-    * @param sourceBytes   Source bytes to blinding
-    * @param minimumLength Minimum length of blinded array
-    * @return Blinded byte array
-    * @throws IllegalArgumentException if minimum length is too small or too large
-    */
-   public static byte[] buildBlindedByteArray(final byte[] sourceBytes, final int minimumLength) throws IllegalArgumentException {
-      checkMinimumLength(minimumLength);
-
-      final byte[] packedSourceLength = PackedUnsignedInteger.fromInteger(sourceBytes.length);
-
-      final int[] blindingLength = getBalancedBlindingLengths(packedSourceLength.length, sourceBytes.length, minimumLength);
-
-      final byte[] prefixBlinding = createBlinding(blindingLength[INDEX_LENGTHS_PREFIX_LENGTH]);
-      final byte[] postfixBlinding = createBlinding(blindingLength[INDEX_LENGTHS_POSTFIX_LENGTH]);
-
-      final int resultLength = 2 + packedSourceLength.length + prefixBlinding.length + sourceBytes.length + postfixBlinding.length;
-
-      final byte[] result = new byte[resultLength];
-
-      result[0] = (byte) prefixBlinding.length;
-      result[1] = (byte) postfixBlinding.length;
-
-      int resultIndex = 2;
-
-      resultIndex += copyByteArrayAndZapSource(packedSourceLength, result, resultIndex);
-
-      resultIndex += copyByteArrayAndZapSource(prefixBlinding, result, resultIndex);
-
-      resultIndex += copyByteArray(sourceBytes, result, resultIndex);
-
-      copyByteArrayAndZapSource(postfixBlinding, result, resultIndex);
-
-      return result;
-   }
-
-   /**
-    * Remove blinders from a byte array
-    *
-    * @param sourceBytes Blinded byte array
-    * @return Byte array without blinders
-    * @throws IllegalArgumentException if the source byte array is not correctly formatted
-    * @throws NullPointerException     if {@code sourceBytes} is {@code null}
-    */
-   public static byte[] unBlindByteArray(final byte[] sourceBytes) throws IllegalArgumentException, NullPointerException {
-      Objects.requireNonNull(sourceBytes, "Source bytes is null");
-
-      if (sourceBytes.length > LENGTHS_LENGTH) {
-         final int packedNumberLength = PackedUnsignedInteger.getExpectedLength(sourceBytes[INDEX_SOURCE_PACKED_LENGTH]);
-
-         if (sourceBytes[INDEX_SOURCE_PREFIX_LENGTH] >= 0) {
-            // No. of bytes to skip is the blinding prefix length plus the two length bytes plus the source length
-            final int prefixBlindingLength = sourceBytes[INDEX_SOURCE_PREFIX_LENGTH] + 2 + packedNumberLength;
-
-            if (sourceBytes[INDEX_SOURCE_POSTFIX_LENGTH] >= 0) {
-               final int postfixBlindingLength = sourceBytes[INDEX_SOURCE_POSTFIX_LENGTH];
-
-               final int totalBlindingsLength = prefixBlindingLength + postfixBlindingLength;
-               final int dataLength = PackedUnsignedInteger.toIntegerFromArray(sourceBytes, INDEX_SOURCE_PACKED_LENGTH);
-
-               // The largest number in the following addition can only be just over 1073741823
-               // This can never overflow into negative values
-               if ((totalBlindingsLength + dataLength) <= sourceBytes.length)
-                  return Arrays.copyOfRange(sourceBytes, prefixBlindingLength, dataLength + prefixBlindingLength);
-            }
-         }
-      }
-
-      throw new IllegalArgumentException(ERROR_MESSAGE_INVALID_ARRAY);
    }
 }

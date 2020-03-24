@@ -28,6 +28,7 @@
  *     2019-08-06: V2.0.4: Use SecureRandomFactory. fhs
  *     2019-08-23: V2.0.5: Use SecureRandom singleton. fhs
  *     2020-03-13: V2.1.0: Added checks for null. fhs
+ *     2020-03-23: V2.2.0: Restructured source code according to DBS programming guidelines. fhs
  */
 package dbscryptolib;
 
@@ -39,34 +40,79 @@ import java.util.Objects;
  * Implements arbitrary tail padding for block ciphers
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 2.1.0
+ * @version 2.2.0
  */
 public class ArbitraryTailPadding {
-
-   /*
-    * Private constants
-    */
+   //******************************************************************
+   // Private constants
+   //******************************************************************
 
    /**
     * Maximum block size (64 KiB)
     */
    private static final int MAX_BLOCK_SIZE = 64 * 1024;
 
-   /*
-    * Private variables
-    */
-
    /**
     * Instance of secure random number generator
-    * <p>
-    * This is placed here so the expensive instantiation of the SecureRandom
-    * class is done only once.
+    *
+    * <p>This is placed here so the expensive instantiation of the SecureRandom
+    * class is done only once.</p>
     */
    private static final SecureRandom SECURE_PRNG = SecureRandomFactory.getSensibleSingleton();
 
-   /*
-    * Private methods
+
+   //******************************************************************
+   // Public methods
+   //******************************************************************
+
+   /**
+    * Add padding bytes to source data
+    *
+    * @param unpaddedSourceData Data to be padded
+    * @param blockSize          Block size in bytes
+    * @return Data with padding bytes added
+    * @throws IllegalArgumentException if block size is too small or too large
+    * @throws NullPointerException     if {@code unpaddedSourceData} is {@code null}
     */
+   public static byte[] addPadding(final byte[] unpaddedSourceData, final int blockSize) throws IllegalArgumentException, NullPointerException {
+      Objects.requireNonNull(unpaddedSourceData, "Unpadded source data is null");
+
+      // Check parameter validity
+      checkBlockSize(blockSize);
+
+      // Get pad byte value
+      final byte padByte = getPaddingByteValue(unpaddedSourceData);
+
+      // Get padding size
+      final int paddingLength = getPaddingLength(unpaddedSourceData.length, blockSize);
+
+      // Create padded byte array
+      final byte[] result = Arrays.copyOf(unpaddedSourceData, unpaddedSourceData.length + paddingLength);
+
+      // Add padding bytes
+      Arrays.fill(result, unpaddedSourceData.length, result.length, padByte);
+
+      return result;
+   }
+
+   /**
+    * Remove padding bytes from source data
+    *
+    * @param paddedSourceData Data with padding bytes
+    * @return Data without padding bytes
+    * @throws NullPointerException if {@code paddedSourceData} is {@code null}
+    */
+   public static byte[] removePadding(final byte[] paddedSourceData) throws NullPointerException {
+      Objects.requireNonNull(paddedSourceData, "Padded source data is null");
+
+      // Return unpadded data
+      return Arrays.copyOf(paddedSourceData, getUnpaddedDataLength(paddedSourceData));
+   }
+
+
+   //******************************************************************
+   // Private methods
+   //******************************************************************
 
    /**
     * Check block size
@@ -144,53 +190,5 @@ public class ArbitraryTailPadding {
       }
 
       return result;
-   }
-
-   /*
-    * Public methods
-    */
-
-   /**
-    * Add padding bytes to source data
-    *
-    * @param unpaddedSourceData Data to be padded
-    * @param blockSize          Block size in bytes
-    * @return Data with padding bytes added
-    * @throws IllegalArgumentException if block size is too small or too large
-    * @throws NullPointerException     if {@code unpaddedSourceData} is {@code null}
-    */
-   public static byte[] addPadding(final byte[] unpaddedSourceData, final int blockSize) throws IllegalArgumentException, NullPointerException {
-      Objects.requireNonNull(unpaddedSourceData, "Unpadded source data is null");
-
-      // Check parameter validity
-      checkBlockSize(blockSize);
-
-      // Get pad byte value
-      final byte padByte = getPaddingByteValue(unpaddedSourceData);
-
-      // Get padding size
-      final int paddingLength = getPaddingLength(unpaddedSourceData.length, blockSize);
-
-      // Create padded byte array
-      final byte[] result = Arrays.copyOf(unpaddedSourceData, unpaddedSourceData.length + paddingLength);
-
-      // Add padding bytes
-      Arrays.fill(result, unpaddedSourceData.length, result.length, padByte);
-
-      return result;
-   }
-
-   /**
-    * Remove padding bytes from source data
-    *
-    * @param paddedSourceData Data with padding bytes
-    * @return Data without padding bytes
-    * @throws NullPointerException if {@code paddedSourceData} is {@code null}
-    */
-   public static byte[] removePadding(final byte[] paddedSourceData) throws NullPointerException {
-      Objects.requireNonNull(paddedSourceData, "Padded source data is null");
-
-      // Return unpadded data
-      return Arrays.copyOf(paddedSourceData, getUnpaddedDataLength(paddedSourceData));
    }
 }

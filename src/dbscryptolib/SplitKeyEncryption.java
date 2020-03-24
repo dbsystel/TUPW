@@ -57,6 +57,7 @@
  *     2020-03-13: V4.1.0: Use NUllPointerException instead of IllegalArgumentException for null pointers. fhs
  *     2020-03-19: V4.2.0: Consolidated crypto parameter exceptions. fhs
  *     2020-03-20: V4.3.0: Use a nested exception, instead of a suppressed exception. fhs
+ *     2020-03-23: V4.4.0: Restructured source code according to DBS programming guidelines. fhs
  */
 package dbscryptolib;
 
@@ -78,15 +79,17 @@ import java.util.Objects;
  * Implement encryption by key generated from several source bytes and a key
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 4.3.0
+ * @version 4.4.0
  */
 
 public class SplitKeyEncryption implements AutoCloseable {
+   //******************************************************************
+   // Private constants
+   //******************************************************************
 
    /*
-    * Private constants
+    * Constants for error messages
     */
-
    private static final String NULL_SUBJECT_ERROR_MESSAGE = "Subject is null";
 
    /**
@@ -101,12 +104,12 @@ public class SplitKeyEncryption implements AutoCloseable {
    private static final String HMAC_256_ALGORITHM_NAME = "HmacSHA256";
 
    /**
-    * Miniumum length of key for HMAC algorithm
+    * Minimum length of key for HMAC algorithm
     */
    private static final int MINIMUM_HMAC_KEY_LENGTH = 14;
 
    /**
-    * Maxiumum length of key for HMAC algorithm
+    * Maximum length of key for HMAC algorithm
     *
     * <p>The HMAC key must not be larger than the block size of the underlying hash algorithm.
     * Here this is 32 bytes (256 bits). If the hash block size changes this constant
@@ -122,9 +125,7 @@ public class SplitKeyEncryption implements AutoCloseable {
    /**
     * Encryption specification with algorithm, mode and padding
     *
-    * <p>
-    * The index of the string in the array corresponds to the format id
-    * </p>
+    * <p>The index of the string in the array corresponds to the format id.</p>
     */
    private static final String[] ENCRYPTION_SPECIFICATION = {"Invalid",
             AES_ALGORITHM_NAME + "/CFB/NoPadding",
@@ -173,24 +174,21 @@ public class SplitKeyEncryption implements AutoCloseable {
     */
    private static final byte[] POSTFIX_SALT = {(byte) 112, (byte) 87}; // i.e. "pW"
 
-
    /**
     * Instance of HMAC calculator
-    * <p>
-    * This is placed here so the expensive instantiation of the Mac class is
-    * done only once.
-    * <p>
-    * Unfortunately it can not be made final as the constructor of this class
-    * may throw an exception.
+    *
+    * <p>This is placed here so the expensive instantiation of the Mac class is
+    * done only once.</p>
+    * <p>Unfortunately it can not be made final as the constructor of this class
+    * may throw an exception.</p>
     */
    private Mac HMAC_INSTANCE;
 
    /**
     * Instance of SecureRandom pseudo random number generator (PRNG)
-    * <p>
-    * This is placed here so the expensive instantiation of the SecureRandom class is
-    * done only once.
-    * <p>
+    *
+    * <p>This is placed here so the expensive instantiation of the SecureRandom class is
+    * done only once.</p>
     */
    private SecureRandom SECURE_RANDOM_INSTANCE;
 
@@ -218,15 +216,188 @@ public class SplitKeyEncryption implements AutoCloseable {
       }
    }
 
-   /*
-    * Instance variables
-    */
+
+   //******************************************************************
+   // Instance variables
+   //******************************************************************
+
    private ProtectedByteArray m_EncryptionKey;
    private ProtectedByteArray m_HMACKey;
 
-   /*
-    * Private methods
+
+   //******************************************************************
+   // Constructor
+   //******************************************************************
+
+   /**
+    * Constructor for this instance
+    *
+    * <p><b>Attention:</b> The caller is responsible for clearing the source byte arrays
+    * with {@code Arrays.fill()} after they have been used here.</p>
+    *
+    * @param hmacKey     Key for the HMAC of the file
+    * @param sourceBytes Bytes that the key is derived from
+    * @throws IllegalArgumentException The HMAC key or the source bytes are not valid
+    * @throws InvalidKeyException      if the key is invalid (must never happen)
+    * @throws NoSuchAlgorithmException if the encryption algorithm is invalid (must never happen)
+    * @throws NullPointerException     if {@code hmacKey} or any source byte array is {@code null}
     */
+   public SplitKeyEncryption(final byte[] hmacKey, final byte[]... sourceBytes) throws IllegalArgumentException,
+            InvalidKeyException,
+            NoSuchAlgorithmException,
+            NullPointerException {
+      checkHMACKey(hmacKey);
+
+      checkSourceBytes(sourceBytes);
+
+      setKeysFromKeyAndSourceBytes(hmacKey, sourceBytes);
+   }
+
+
+   //******************************************************************
+   // Public methods
+   //******************************************************************
+
+   /**
+    * Encrypt a string under a subject
+    *
+    * @param stringToEncrypt String to encrypt
+    * @param subject         The subject of this encryption
+    * @return Printable form of the encrypted string
+    * @throws IllegalArgumentException
+    * @throws InvalidCryptoParameterException    if a parameter of a cryptographic method is invalid (must never happen)
+    * @throws NullPointerException               if {@code stringToEncrypt} or {@code subject} is {@code null}
+    * @throws UnsupportedEncodingException       if there is no UTF-8 encoding (must never happen)
+    */
+   public String encryptData(final String stringToEncrypt, final String subject) throws IllegalArgumentException,
+            InvalidCryptoParameterException,
+            NullPointerException,
+            UnsupportedEncodingException {
+      Objects.requireNonNull(stringToEncrypt, "String to encrypt is null");
+      Objects.requireNonNull(subject, NULL_SUBJECT_ERROR_MESSAGE);
+
+      final byte[] subjectBytes = subject.getBytes(STRING_ENCODING_FOR_DATA);
+
+      String result;
+      EncryptionParts encryptionParts = null;
+
+      try {
+         encryptionParts = rawDataEncryption(stringToEncrypt, subjectBytes);
+
+         encryptionParts.checksum = getChecksumForEncryptionParts(encryptionParts, subjectBytes);
+
+         result = makePrintableStringFromEncryptionParts(encryptionParts);
+      } catch (BadPaddingException|IllegalBlockSizeException|InvalidAlgorithmParameterException|InvalidKeyException|NoSuchAlgorithmException|NoSuchPaddingException e) {
+         InvalidCryptoParameterException newException = new InvalidCryptoParameterException("Invalid cryptographic parameter: " + e.toString(), e);
+
+         throw newException;
+      } finally{
+         if (encryptionParts != null)
+            encryptionParts.zap();
+      }
+
+      return result;
+   }
+
+   /**
+    * Encrypt a string
+    *
+    * @param stringToEncrypt String to encrypt
+    * @return Printable form of the encrypted string
+    * @throws BadPaddingException                if there was a bad padding (must never happen)
+    * @throws IllegalArgumentException
+    * @throws InvalidCryptoParameterException    if a parameter of a cryptographic method is invalid (must never happen)
+    * @throws NullPointerException               if {@code stringToEncrypt} is {@code null}
+    * @throws UnsupportedEncodingException       if there is no UTF-8 encoding (must never happen)
+    */
+   public String encryptData(final String stringToEncrypt) throws IllegalArgumentException,
+            InvalidCryptoParameterException,
+            NullPointerException,
+            UnsupportedEncodingException {
+      return encryptData(stringToEncrypt, "");
+   }
+
+   /**
+    * Decrypt an encrypted string under a subject
+    *
+    * @param stringToDecrypt String to decrypt
+    * @param subject         The subject of this decryption
+    * @return Decrypted string
+    * @throws DataIntegrityException             if the checksum does not match the data
+    * @throws IllegalArgumentException           if the given string does not adhere to the format specification
+    * @throws InvalidCryptoParameterException    if a parameter of a cryptographic method is invalid (must never happen)
+    * @throws NullPointerException               if {@code stringToDecrypt} or {@code subject} is {@code null}
+    * @throws UnsupportedEncodingException       if there is no UTF-8 encoding (must never happen)
+    */
+   public String decryptData(final String stringToDecrypt, final String subject) throws DataIntegrityException,
+            IllegalArgumentException,
+            InvalidCryptoParameterException,
+            NullPointerException,
+            UnsupportedEncodingException {
+      Objects.requireNonNull(stringToDecrypt, "String to decrypt is null");
+      Objects.requireNonNull(subject, NULL_SUBJECT_ERROR_MESSAGE);
+
+      final byte[] subjectBytes = subject.getBytes(STRING_ENCODING_FOR_DATA);
+
+      String result;
+      EncryptionParts encryptionParts = null;
+
+      try {
+         encryptionParts = getPartsFromPrintableString(stringToDecrypt);
+
+         checkChecksumForEncryptionParts(encryptionParts, subjectBytes);
+
+         result = rawDataDecryption(encryptionParts, subjectBytes);
+      } catch (BadPaddingException|IllegalBlockSizeException|InvalidAlgorithmParameterException|InvalidKeyException|NoSuchAlgorithmException|NoSuchPaddingException e) {
+         InvalidCryptoParameterException newException = new InvalidCryptoParameterException("Invalid cryptographic parameter: " + e.toString(), e);
+
+         throw newException;
+      } finally {
+         if (encryptionParts != null)
+            encryptionParts.zap();
+      }
+
+      return result;
+   }
+
+   /**
+    * Decrypt an encrypted string
+    *
+    * @param stringToDecrypt String to decrypt
+    * @return Decrypted string
+    * @throws DataIntegrityException             if the checksum does not match the data
+    * @throws IllegalArgumentException           if the given string does not adhere to the format specification
+    * @throws InvalidCryptoParameterException    if a parameter of a cryptographic method is invalid (must never happen)
+    * @throws NullPointerException               if {@code stringToDecrypt} is {@code null}
+    * @throws UnsupportedEncodingException       if there is no UTF-8 encoding (must never happen)
+    */
+   public String decryptData(final String stringToDecrypt) throws DataIntegrityException,
+            IllegalArgumentException,
+            InvalidCryptoParameterException,
+            NullPointerException,
+            UnsupportedEncodingException {
+      return decryptData(stringToDecrypt, "");
+   }
+
+   /*
+    * Method for AutoCloseable interface
+    */
+
+   /**
+    * Secure deletion of keys
+    *
+    * <p>This method is idempotent and never throws an exception.</p>
+    */
+   @Override
+   public void close() {
+      this.m_EncryptionKey.close();
+      this.m_HMACKey.close();
+   }
+
+
+   //******************************************************************
+   // Private methods
+   //******************************************************************
 
    /**
     * Get instance of HMAC
@@ -510,11 +681,10 @@ public class SplitKeyEncryption implements AutoCloseable {
 
    /**
     * Calculate capacity of StringBuilder for encryption parts
-    * <p>
-    * The size of the final string is 4 + SumOf(ceil(ArrayLength * 4 / 3)).
-    * <p>
+    *
+    * <p>The size of the final string is 4 + SumOf(ceil(ArrayLength * 4 / 3)).
     * This is a complicated expression which is overestimated by the easier
-    * expression 4 + SumOfArrayLengths * 3 / 2
+    * expression 4 + SumOfArrayLengths * 3 / 2</p>
     *
     * @param encryptionParts Encryption parts to calculate the capacity for
     * @return Slightly overestimated capacity of the StringBuilder for the
@@ -700,172 +870,5 @@ public class SplitKeyEncryption implements AutoCloseable {
 
       this.m_HMACKey = new ProtectedByteArray(keyPart);
       Arrays.fill(keyPart, (byte) 0);
-   }
-
-
-   /*
-    * Public methods
-    */
-
-   /**
-    * Constructor for this instance
-    *
-    * <p><b>Attention:</b> The caller is responsible for clearing the source byte arrays
-    * with {@code Arrays.fill()} after they have been used here.</p>
-    *
-    * @param hmacKey     Key for the HMAC of the file
-    * @param sourceBytes Bytes that the key is derived from
-    * @throws IllegalArgumentException The HMAC key or the source bytes are not valid
-    * @throws InvalidKeyException      if the key is invalid (must never happen)
-    * @throws NoSuchAlgorithmException if the encryption algorithm is invalid (must never happen)
-    * @throws NullPointerException     if {@code hmacKey} or any source byte array is {@code null}
-    */
-   public SplitKeyEncryption(final byte[] hmacKey, final byte[]... sourceBytes) throws IllegalArgumentException,
-            InvalidKeyException,
-            NoSuchAlgorithmException,
-            NullPointerException {
-      checkHMACKey(hmacKey);
-
-      checkSourceBytes(sourceBytes);
-
-      setKeysFromKeyAndSourceBytes(hmacKey, sourceBytes);
-   }
-
-   /**
-    * Encrypt a string under a subject
-    *
-    * @param stringToEncrypt String to encrypt
-    * @param subject         The subject of this encryption
-    * @return Printable form of the encrypted string
-    * @throws IllegalArgumentException
-    * @throws InvalidCryptoParameterException    if a parameter of a cryptographic method is invalid (must never happen)
-    * @throws NullPointerException               if {@code stringToEncrypt} or {@code subject} is {@code null}
-    * @throws UnsupportedEncodingException       if there is no UTF-8 encoding (must never happen)
-    */
-   public String encryptData(final String stringToEncrypt, final String subject) throws IllegalArgumentException,
-            InvalidCryptoParameterException,
-            NullPointerException,
-            UnsupportedEncodingException {
-      Objects.requireNonNull(stringToEncrypt, "String to encrypt is null");
-      Objects.requireNonNull(subject, NULL_SUBJECT_ERROR_MESSAGE);
-
-      final byte[] subjectBytes = subject.getBytes(STRING_ENCODING_FOR_DATA);
-
-      String result;
-      EncryptionParts encryptionParts = null;
-
-      try {
-         encryptionParts = rawDataEncryption(stringToEncrypt, subjectBytes);
-
-         encryptionParts.checksum = getChecksumForEncryptionParts(encryptionParts, subjectBytes);
-
-         result = makePrintableStringFromEncryptionParts(encryptionParts);
-      } catch (BadPaddingException|IllegalBlockSizeException|InvalidAlgorithmParameterException|InvalidKeyException|NoSuchAlgorithmException|NoSuchPaddingException e) {
-         InvalidCryptoParameterException newException = new InvalidCryptoParameterException("Invalid cryptographic parameter: " + e.toString(), e);
-
-         throw newException;
-      } finally{
-         if (encryptionParts != null)
-            encryptionParts.zap();
-      }
-
-      return result;
-   }
-
-   /**
-    * Encrypt a string
-    *
-    * @param stringToEncrypt String to encrypt
-    * @return Printable form of the encrypted string
-    * @throws BadPaddingException                if there was a bad padding (must never happen)
-    * @throws IllegalArgumentException
-    * @throws InvalidCryptoParameterException    if a parameter of a cryptographic method is invalid (must never happen)
-    * @throws NullPointerException               if {@code stringToEncrypt} is {@code null}
-    * @throws UnsupportedEncodingException       if there is no UTF-8 encoding (must never happen)
-    */
-   public String encryptData(final String stringToEncrypt) throws IllegalArgumentException,
-            InvalidCryptoParameterException,
-            NullPointerException,
-            UnsupportedEncodingException {
-      return encryptData(stringToEncrypt, "");
-   }
-
-   /**
-    * Decrypt an encrypted string under a subject
-    *
-    * @param stringToDecrypt String to decrypt
-    * @param subject         The subject of this decryption
-    * @return Decrypted string
-    * @throws DataIntegrityException             if the checksum does not match the data
-    * @throws IllegalArgumentException           if the given string does not adhere to the format specification
-    * @throws InvalidCryptoParameterException    if a parameter of a cryptographic method is invalid (must never happen)
-    * @throws NullPointerException               if {@code stringToDecrypt} or {@code subject} is {@code null}
-    * @throws UnsupportedEncodingException       if there is no UTF-8 encoding (must never happen)
-    */
-   public String decryptData(final String stringToDecrypt, final String subject) throws DataIntegrityException,
-            IllegalArgumentException,
-            InvalidCryptoParameterException,
-            NullPointerException,
-            UnsupportedEncodingException {
-      Objects.requireNonNull(stringToDecrypt, "String to decrypt is null");
-      Objects.requireNonNull(subject, NULL_SUBJECT_ERROR_MESSAGE);
-
-      final byte[] subjectBytes = subject.getBytes(STRING_ENCODING_FOR_DATA);
-
-      String result;
-      EncryptionParts encryptionParts = null;
-
-      try {
-         encryptionParts = getPartsFromPrintableString(stringToDecrypt);
-
-         checkChecksumForEncryptionParts(encryptionParts, subjectBytes);
-
-         result = rawDataDecryption(encryptionParts, subjectBytes);
-      } catch (BadPaddingException|IllegalBlockSizeException|InvalidAlgorithmParameterException|InvalidKeyException|NoSuchAlgorithmException|NoSuchPaddingException e) {
-         InvalidCryptoParameterException newException = new InvalidCryptoParameterException("Invalid cryptographic parameter: " + e.toString(), e);
-
-         throw newException;
-      } finally {
-         if (encryptionParts != null)
-            encryptionParts.zap();
-      }
-
-      return result;
-   }
-
-   /**
-    * Decrypt an encrypted string
-    *
-    * @param stringToDecrypt String to decrypt
-    * @return Decrypted string
-    * @throws DataIntegrityException             if the checksum does not match the data
-    * @throws IllegalArgumentException           if the given string does not adhere to the format specification
-    * @throws InvalidCryptoParameterException    if a parameter of a cryptographic method is invalid (must never happen)
-    * @throws NullPointerException               if {@code stringToDecrypt} is {@code null}
-    * @throws UnsupportedEncodingException       if there is no UTF-8 encoding (must never happen)
-    */
-   public String decryptData(final String stringToDecrypt) throws DataIntegrityException,
-            IllegalArgumentException,
-            InvalidCryptoParameterException,
-            NullPointerException,
-            UnsupportedEncodingException {
-      return decryptData(stringToDecrypt, "");
-   }
-
-   /*
-    * Method for AutoCloseable interface
-    */
-
-   /**
-    * Secure deletion of keys
-    *
-    * <p>
-    * This method is idempotent and never throws an exception.
-    * </p>
-    */
-   @Override
-   public void close() {
-      this.m_EncryptionKey.close();
-      this.m_HMACKey.close();
    }
 }

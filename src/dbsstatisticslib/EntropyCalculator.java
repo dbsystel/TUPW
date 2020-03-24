@@ -22,6 +22,7 @@
  * Changes:
  *     2020-02-28: V1.0.0: Created. fhs
  *     2020-03-13: V1.1.0: Handle null arguments. fhs
+ *     2020-03-23: V1.2.0: Restructured source code according to DBS programming guidelines. fhs
  */
 
 package dbsstatisticslib;
@@ -33,21 +34,25 @@ import java.util.Objects;
  * Class to calculate the entropy of byte arrays
  *
  * @author Frank Schwab
- * @version 1.0.0
+ * @version 1.2.0
  */
 public class EntropyCalculator {
-
-   /*
-    * Constants
-    */
+   //******************************************************************
+   // Private constants
+   //******************************************************************
    private final double LOG_2 = Math.log(2);
 
-   /*
-    * Instance variables
-    */
+
+   //******************************************************************
+   // Instance variables
+   //******************************************************************
    private final int[] m_Counter = new int[256];  // Array of how many times a specific byte value was counted
    private int m_ByteCount = 0;             // Number of bytes that have been added to the statistic
 
+
+   //******************************************************************
+   // Public methods
+   //******************************************************************
    /**
     * Reset the entropy statistics
     */

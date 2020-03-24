@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, DB Systel GmbH
+ * Copyright (c) 2020, DB Systel GmbH
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -27,6 +27,7 @@
  *                         Clarified handling. fhs
  *     2018-12-06: V2.1.0: Refactored class. fhs
  *     2020-03-16: V2.1.1: Added some finals. fhs
+ *     2020-03-23: V2.2.0: Restructured source code according to DBS programming guidelines. fhs
  */
 package dbsstringlib;
 
@@ -34,21 +35,68 @@ import java.util.ArrayList;
 
 /**
  * Class to split a string at specified separator
- * <p>
- * This class is a modified version of Apache Commons
- * StringUtil.splitByWholeSeparatorWorker.
- * </p>
- * <p>
+ *
+ * <p>This class is a modified version of Apache Commons {@code StringUtil.splitByWholeSeparatorWorker}.
+
  * I wrote it because I absolutely do not like inefficiency in programming and I
  * do not want to load a full RegEx machinery just to split a string at a simple
- * character like Java's String.split method does.
- * </p>
+ * character like Java's String.split method does.</p>
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 2.1.1
+ * @version 2.2.0
  */
-@SuppressWarnings("IfStatementWithIdenticalBranches")
 public class StringSplitter {
+   //******************************************************************
+   // Public methods
+   //******************************************************************
+
+   /**
+    * Splits the provided string into an array of strings with {@code separator}
+    * separating the parts.
+    *
+    * <p>
+    * This implementation treats consecutive occurrences of the separator as one separator.
+    * <ul>
+    * <li>If {@code separator} is not found in the {@code searchString} an array
+    * with one element that contains the whole {@code searchString} is returned.</li>
+    * <li>A {@code null} {@code searchsString} returns {@code null}</li>
+    * <li>A {@code null} or empty {@code separator} returns an array with one element
+    * that contains the whole {@code searchString}</li>
+    * </ul></p>
+    *
+    * @param searchString The String to parse, may be {@code null}
+    * @param separator    String containing the String to be used as a separator
+    * @return An array of parsed Strings, {@code null} if null String input
+    */
+   public static String[] split(final String searchString, final String separator) {
+      if (searchString == null)
+         return null;
+
+      final ArrayList<String> substrings = new ArrayList<>();
+
+      final int searchStringLength = searchString.length();
+
+      if (searchStringLength == 0)
+         substrings.add(searchString);  // Just return the search string if it is empty
+      else if (separator == null)
+         substrings.add(searchString);  // Just return the search string if the separator is null
+      else {
+         final int separatorLength = separator.length();
+
+         if (separatorLength == 0)
+            substrings.add(searchString);  // Just return the search string if the separator is empty
+         else
+            splitIntoSubstrings(searchString, separator, substrings, searchStringLength, separatorLength);  // Now do the real work
+      }
+
+      // toArray needs a type model which should be empty as it is never used for anything else than casting
+      return substrings.toArray(new String[0]);
+   }
+
+
+   //******************************************************************
+   // Private methods
+   //******************************************************************
 
    /**
     * Do the real work of splitting a string at the specified separator
@@ -97,47 +145,5 @@ public class StringSplitter {
             separatorIndex = searchStringLength;
          }
       }
-   }
-
-   /**
-    * Splits the provided string into an array of strings with {@code separator}
-    * separating the parts.
-    * <p>
-    * This implementation treats consecutive occurrences of the separator as one separator.
-    * <ul>
-    * <li>If {@code separator} is not found in the {@code searchString} an array
-    * with one element that contains the whole {@code searchString} is returned.</li>
-    * <li>A {@code null} {@code searchsString} returns {@code null}</li>
-    * <li>A {@code null} or empty {@code separator} returns an array with one element
-    * that contains the whole {@code searchString}</li>
-    * </ul></p>
-    *
-    * @param searchString The String to parse, may be {@code null}
-    * @param separator    String containing the String to be used as a separator
-    * @return An array of parsed Strings, {@code null} if null String input
-    */
-   public static String[] split(final String searchString, final String separator) {
-      if (searchString == null)
-         return null;
-
-      final ArrayList<String> substrings = new ArrayList<>();
-
-      final int searchStringLength = searchString.length();
-
-      if (searchStringLength == 0)
-         substrings.add(searchString);  // Just return the search string if it is empty
-      else if (separator == null)
-         substrings.add(searchString);  // Just return the search string if the separator is null
-      else {
-         final int separatorLength = separator.length();
-
-         if (separatorLength == 0)
-            substrings.add(searchString);  // Just return the search string if the separator is empty
-         else
-            splitIntoSubstrings(searchString, separator, substrings, searchStringLength, separatorLength);  // Now do the real work
-      }
-
-      // toArray needs a type model which should be empty as it is never used for anything else than casting
-      return substrings.toArray(new String[0]);
    }
 }
