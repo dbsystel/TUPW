@@ -275,4 +275,4 @@ Frank Schwab ([Mail](mailto:frank.schwab@deutschebahn.com "Mail"))
 
 ## License
 
-TUPW is released under the 3-clause BSD license. See "LICENSE" for details.
+TUPW is released under the Apache license, V2.0. See "LICENSE" for details.
