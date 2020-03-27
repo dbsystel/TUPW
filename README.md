@@ -179,32 +179,35 @@ The "SplitKeyEncryption" class is used like in the following example:
    }
 
    ...
-   
+
    // Calculate the HMAC_KEY in a deterministic way
    final byte[] CALCULATED_HMAC_KEY = createHMACKey();    
 
    ...
+
    Get some reproducible content from outside the program, like environment variables, configuration variables, file contents, data from RPC calls, etc.
    Examples are
       System.getenv("SOME_ENV_VARIABLE").getbytes("UTF-8")
-	  some_byte_array_from_an_external_source
+      some_byte_array_from_an_external_source
+	  some_bytes_from_a_file
       some_configuration_string.getbytes("UTF-8")
-      some_data_from_an_rpc	  
-  ...
+      some_data_from_an_rpc
+
+   ...
 
    try (SplitKeyEncryption MyEncryptor = new SplitKeyEncryption(CALCULATED_HMAC_KEY, some_bytes_1, some_bytes_2, some_bytes_3)) {
-	  // Clear all bytes that have been used for the instantiation
+      // Clear all bytes that have been used for the instantiation
       Arrays.fill(some_bytes_1, (byte) 0);
       Arrays.fill(some_bytes_2, (byte) 0);
       Arrays.fill(some_bytes_3, (byte) 0);
-	  ...
-	  // Never store a password or a secret as a string as strings are immutable and can be gathered from a memory dump!
+      ...
+      // Never store a password or a secret as a string as strings are immutable and can be gathered from a memory dump!
       char[] decryptedData = MyEncryptor.decryptDataAsCharacterArray(dataToDecrypt, subject);
-	  ...
-	  // TODO: Do whatever you need to do with the decrypted data
-	  ...
-	  // Now delete the decrypted data from memory if you no longer need it. That can not be done with a string.
-	  Arrays.fill(decryptedData, '\0');
+      ...
+      // TODO: Do whatever you need to do with the decrypted data
+      ...
+      // Now delete the decrypted data from memory if you no longer need it. That can not be done with a string.
+      Arrays.fill(decryptedData, '\0');
    } catch (Exception e) {
       System.err.print(e.toString());
    }
@@ -229,18 +232,18 @@ One can also use a constant HMAC key and take the external bytes the key is calc
       (byte) 0x4C, (byte) 0x17, (byte) 0x11, (byte) 0xD0,
       (byte) 0x90, (byte) 0xF6, (byte) 0x53, (byte) 0x8A,
       (byte) 0x0B, (byte) 0xDF, (byte) 0xA4, (byte) 0x17};
-    
+
    ...
-	
+
    try (FileAndKeyEncryption MyEncryptor = new FileAndKeyEncryption(HMAC_KEY, pathToKeyFile)) {
-	  ...
-	  // Never store a password or a secret as a string as strings are immutable and can be gathered from a memory dump!
+      ...
+      // Never store a password or a secret as a string as strings are immutable and can be gathered from a memory dump!
       char[] decryptedData = MyEncryptor.decryptDataAsCharacterArray(dataToDecrypt, subject);
-	  ...
-	  // TODO: Do whatever you need to do with the decrypted data
-	  ...
-	  // Now delete the decrypted data from memory if you no longer need it. That can not be done with a string.
-	  Arrays.fill(decryptedData, '\0');
+      ...
+      // TODO: Do whatever you need to do with the decrypted data
+      ...
+      // Now delete the decrypted data from memory if you no longer need it. That can not be done with a string.
+      Arrays.fill(decryptedData, '\0');
    } catch (Exception e) {
       System.err.print(e.toString());
    }
