@@ -70,7 +70,7 @@ public class CharacterArrayHelper {
          try {
             tempByteBuffer = UTF8_ENCODER.encode(tempCharBuffer);
          } catch (Exception e) {
-            // As UTF-8 can always encode *every* Unicode character an CharacterCodingException exception can never happen.
+            // As UTF-8 can always encode *every* Unicode character a CharacterCodingException exception can never happen.
             // With this try-statement the unnecessary declaration of "throws CharacterCodingException"
             // in the method signature is suppressed.
          }
