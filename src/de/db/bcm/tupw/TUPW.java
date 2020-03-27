@@ -39,7 +39,8 @@
  *     2019-03-07: V4.0.1: Strengthen test for invalid blinding data. fhs
  *     2019-03-07: V4.1.0: Correct handling of keys with subject parameter. fhs
  *     2020-03-06: V4.1.1: Simply read from System.in. fhs
- *     2020-03-27: V4.1.2: Adapted to new interface.. fhs
+ *     2020-03-27: V4.1.2: Adapted to new interface. fhs
+ *     2020-03-27: V4.1.3: Show usage with char[] on decryption. fhs
  */
 package de.db.bcm.tupw;
 
@@ -48,6 +49,7 @@ import de.db.bcm.tupw.numbers.Xoroshiro128plusplus;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * Example program to calculate the encryption of user and password for
@@ -61,7 +63,7 @@ import java.io.IOException;
  * </p>
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 4.1.2
+ * @version 4.1.3
  */
 public class TUPW {
    private static final int MAX_INPUT_BYTES = 50000000;
@@ -117,7 +119,12 @@ public class TUPW {
             if (args[0].substring(0, 1).toLowerCase().equals("e")) {
                System.out.println(myEncryptor.encryptData(getInputFromWhereEver(args[itemIndex]), subject));
             } else {
-               System.out.println(myEncryptor.decryptDataAsString(getInputFromWhereEver(args[itemIndex]), subject));
+               final char[] decryptedOutput = myEncryptor.decryptDataAsCharacterArray(getInputFromWhereEver(args[itemIndex]), subject);
+
+               System.out.println(decryptedOutput);
+
+               // Clear decrypted output after use
+               Arrays.fill(decryptedOutput, '\0');
             }
          } catch (final Exception e) {
             e.printStackTrace();
