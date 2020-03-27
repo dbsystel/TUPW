@@ -31,7 +31,8 @@ import java.util.Arrays;
 /**
  * Class to convert between character and byte arrays
  *
- * <p>This is a class that should not exist, but in Java there is absolutely no easy way to convert between character
+ * <p>This is a class that should not exist. Java ought to have a method {@code ByteArray.toCharArray(CharSet)}.
+ * Unfortunately Java does not have it and there is absolutely no easy way to convert between character
  * and byte arrays. One has to use this complicated, unintuitive and strange buffer conversion stuff implemented here.</p>
  */
 public class CharacterArrayHelper {
