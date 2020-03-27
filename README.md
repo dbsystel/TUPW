@@ -4,9 +4,14 @@ Safely store secrets in config files, environment variables, and files
 
 ## Introduction
 
-This program and library serve as an example of how to safely store credentials. It works as a command line tool to encrypt and decrypt secrets and provides classes to decrypt these encrypted secrets.
+In almost every project, secrets need to be stored: passwords, tokens, user names, you name it. Developers are faced with the question of how to store these secrets securely? Too often they are simply stored in plain text in configuration files where an attacker can easily find them. If not, often some kind of home-brewn obfuscation is used. This is a very bad idea as it can easily be broken. Sometimes these secrets are encrypted. Most of the time this encryption is done wrong, so that it is not secure. Encryption is hard to do correctly. Even if it is done correctly, the question arises how to store the key for the encrypted secret and once again one is faced with the problem of how to securely store this key?
 
-Please note that this is *not* obfuscation. This is real encryption. Encryption is hard to do correctly. TUPW helps you to get it done correctly.
+This project helps to solve the above problem in two ways:
+
+   1. It uses a secure encryption
+   2. It divides the key in different parts, so there is not one single place where it is stored
+
+This alleviates the usability problem described above.
 
 Of course, if one can use key management systems like [Azure Key Vault](https://azure.microsoft.com/en-us/services/key-vault/), [AWS KMS](https://aws.amazon.com/kms/), [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/), or [Hashicorp Vault](https://www.vaultproject.io/) these should be used. They offer better security and have more features. TUPW can be used if a key management system is not available.
 
@@ -187,15 +192,19 @@ The "SplitKeyEncryption" class is used like in the following example:
       some_data_from_an_rpc	  
   ...
 
-   try (FileAndKeyEncryption MyEncryptor = new FileAndKeyEncryption(CALCULATED_HMAC_KEY, some_bytes_1, some_bytes_2, some_bytes_3)) {
+   try (SplitKeyEncryption MyEncryptor = new SplitKeyEncryption(CALCULATED_HMAC_KEY, some_bytes_1, some_bytes_2, some_bytes_3)) {
 	  // Clear all bytes that have been used for the instantiation
       Arrays.fill(some_bytes_1, (byte) 0);
       Arrays.fill(some_bytes_2, (byte) 0);
       Arrays.fill(some_bytes_3, (byte) 0);
 	  ...
-      String decryptedData = MyEncryptor.decryptData(dataToDecrypt, subject);
+	  // Never store a password or a secret as a string as strings are immutable and can be gathered from a memory dump!
+      char[] decryptedData = MyEncryptor.decryptDataAsCharacterArray(dataToDecrypt, subject);
 	  ...
-	  // TODO: Do whatever you need to do with the decrypted string
+	  // TODO: Do whatever you need to do with the decrypted data
+	  ...
+	  // Now delete the decrypted data from memory if you no longer need it. That can not be done with a string.
+	  Arrays.fill(decryptedData, '\0');
    } catch (Exception e) {
       System.err.print(e.toString());
    }
@@ -225,15 +234,19 @@ One can also use a constant HMAC key and take the external bytes the key is calc
 	
    try (FileAndKeyEncryption MyEncryptor = new FileAndKeyEncryption(HMAC_KEY, pathToKeyFile)) {
 	  ...
-      String decryptedData = MyEncryptor.decryptData(dataToDecrypt, subject);
+	  // Never store a password or a secret as a string as strings are immutable and can be gathered from a memory dump!
+      char[] decryptedData = MyEncryptor.decryptDataAsCharacterArray(dataToDecrypt, subject);
 	  ...
-	  // TODO: Do whatever you need to do with the decrypted string
+	  // TODO: Do whatever you need to do with the decrypted data
+	  ...
+	  // Now delete the decrypted data from memory if you no longer need it. That can not be done with a string.
+	  Arrays.fill(decryptedData, '\0');
    } catch (Exception e) {
       System.err.print(e.toString());
    }
 ```
 
-The class instances then generate the keys from the HMAC and the supplied bytes and store these keys safely in the program's memory. Encryption and decryption expect a `String` as input data and return a `String` as output data. So you can not encrypt binary data with it, which makes kind of sense as it is designed to store readable data.
+The class instances then generate the keys from the HMAC and the supplied bytes and store these keys safely in the program's memory.
 
 The classes are meant to be instantiated once and then used throughout the lifetime of the program as needed. They should not be instantiated every time they are used as checking the supplied bytes and calculating the keys is quite expensive. The class stores the calculated key in a secure manner in an instance of the `SecureSecretKeySpec` class which can be found in the `dbscryptolib` source path.
 
