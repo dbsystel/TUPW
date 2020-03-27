@@ -20,6 +20,7 @@
  *
  * Changes:
  *     2020-03-25: V1.0.0: Created. fhs
+ *     2020-03-27: V1.0.1: Only catch the expected checked exception in method convertCharacterArrayToUTF8ByteArray. fhs
  */
 package de.db.bcm.tupw.strings;
 
@@ -34,6 +35,9 @@ import java.util.Arrays;
  * <p>This is a class that should not exist. Java ought to have a method {@code ByteArray.toCharArray(CharSet)}.
  * Unfortunately Java does not have it and there is absolutely no easy way to convert between character
  * and byte arrays. One has to use this complicated, unintuitive and strange buffer conversion stuff implemented here.</p>
+ *
+ * @author FrankSchwab
+ * @version 1.0.1
  */
 public class CharacterArrayHelper {
    //******************************************************************
@@ -69,7 +73,7 @@ public class CharacterArrayHelper {
          ByteBuffer tempByteBuffer = null;
          try {
             tempByteBuffer = UTF8_ENCODER.encode(tempCharBuffer);
-         } catch (Exception e) {
+         } catch (CharacterCodingException e) {
             // As UTF-8 can always encode *every* Unicode character a CharacterCodingException exception can never happen.
             // With this try-statement the unnecessary declaration of "throws CharacterCodingException"
             // in the method signature is suppressed.
