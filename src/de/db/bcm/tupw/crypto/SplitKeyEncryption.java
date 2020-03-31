@@ -388,6 +388,8 @@ public class SplitKeyEncryption implements AutoCloseable {
    /**
     * Decrypt an encrypted string under a subject and return a byte array
     *
+    * <p>The contents of a byte array can be cleared after use.</p>
+    *
     * @param stringToDecrypt String to decrypt
     * @param subject         The subject of this decryption
     * @return Decrypted string as a byte array
@@ -427,6 +429,8 @@ public class SplitKeyEncryption implements AutoCloseable {
    /**
     * Decrypt an encrypted string and return a byte array
     *
+    * <p>The contents of a byte array can be cleared after use.</p>
+    *
     * @param stringToDecrypt String to decrypt
     * @return Decrypted string as a byte array
     * @throws DataIntegrityException          if the checksum does not match the data
@@ -443,6 +447,8 @@ public class SplitKeyEncryption implements AutoCloseable {
 
    /**
     * Decrypt an encrypted string under a subject and return a character array
+    *
+    * <p>The contents of a character array can be cleared after use.</p>
     *
     * @param stringToDecrypt String to decrypt
     * @param subject         The subject of this decryption
@@ -469,6 +475,8 @@ public class SplitKeyEncryption implements AutoCloseable {
 
    /**
     * Decrypt an encrypted string and return a character array
+    *
+    * <p>The contents of a character array can be cleared after use.</p>
     *
     * @param stringToDecrypt String to decrypt
     * @return Decrypted string as a character array
@@ -503,6 +511,9 @@ public class SplitKeyEncryption implements AutoCloseable {
             IllegalArgumentException,
             InvalidCryptoParameterException,
             NullPointerException {
+      // "new String(byteArray)" is *not* used here, as this does not throw a "CharacterCodingException"
+      // on a malformed byte array. Instead, the decoded byte array is first converted to a character array
+      // (which throws a "CharacterCodingException") and that is converted to a string.
       final char[] decryptedContent = decryptDataAsCharacterArray(stringToDecrypt, subject);
 
       final String result = new String(decryptedContent);
@@ -534,7 +545,8 @@ public class SplitKeyEncryption implements AutoCloseable {
    /**
     * Decrypt an encrypted string under a subject as a string
     *
-    * <p>This is the <b>old</b> interface and is deprecated. Use {@link #decryptDataAsString(String, String)} instead.</p>
+    * @deprecated This is the <b>old</b> interface without a return type in its name. Use {@link #decryptDataAsString(String, String)} instead,
+    * or even better {@link #decryptDataAsCharacterArray(String, String)}.
     *
     * @param stringToDecrypt String to decrypt
     * @param subject         The subject of this decryption
@@ -557,7 +569,8 @@ public class SplitKeyEncryption implements AutoCloseable {
    /**
     * Decrypt an encrypted string as a string
     *
-    * <p>This is the <b>old</b> interface and is deprecated. Use {@link #decryptDataAsString(String)} instead.</p>
+    * @deprecated This is the <b>old</b> interface without a return type in its name. Use {@link #decryptDataAsString(String)} instead.
+    * or even better {@link #decryptDataAsCharacterArray(String)}.
     *
     * @param stringToDecrypt String to decrypt
     * @return Decrypted data as a string
