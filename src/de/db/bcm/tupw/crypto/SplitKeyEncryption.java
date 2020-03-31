@@ -69,7 +69,6 @@ import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -99,9 +98,9 @@ public class SplitKeyEncryption implements AutoCloseable {
    /*
     * Constants for empty data
     */
-   private static String NO_SUBJECT = "";
-   private static byte FILL_BYTE = (byte) 0;
-   private static char FILL_CHARACTER = '\0';
+   private static final String NO_SUBJECT = "";
+   private static final byte FILL_BYTE = (byte) 0;
+   private static final char FILL_CHARACTER = '\0';
 
    /**
     * Boundaries for valid format ids
@@ -282,10 +281,10 @@ public class SplitKeyEncryption implements AutoCloseable {
     * Encrypt a byte array under a subject
     *
     * @param byteArrayToEncrypt Byte array to encrypt
-    * @param subject         The subject of this encryption
+    * @param subject            The subject of this encryption
     * @return Printable form of the encrypted string
-    * @throws InvalidCryptoParameterException    if a parameter of a cryptographic method is invalid (must never happen)
-    * @throws NullPointerException               if {@code byteArrayToEncrypt} or {@code subject} is {@code null}
+    * @throws InvalidCryptoParameterException if a parameter of a cryptographic method is invalid (must never happen)
+    * @throws NullPointerException            if {@code byteArrayToEncrypt} or {@code subject} is {@code null}
     */
    public String encryptData(final byte[] byteArrayToEncrypt, final String subject) throws InvalidCryptoParameterException,
             NullPointerException {
@@ -300,8 +299,8 @@ public class SplitKeyEncryption implements AutoCloseable {
     *
     * @param byteArrayToEncrypt Byte array to encrypt
     * @return Printable form of the encrypted string
-    * @throws InvalidCryptoParameterException    if a parameter of a cryptographic method is invalid (must never happen)
-    * @throws NullPointerException               if {@code byteArrayToEncrypt} is {@code null}
+    * @throws InvalidCryptoParameterException if a parameter of a cryptographic method is invalid (must never happen)
+    * @throws NullPointerException            if {@code byteArrayToEncrypt} is {@code null}
     */
    public String encryptData(final byte[] byteArrayToEncrypt) throws InvalidCryptoParameterException,
             NullPointerException {
@@ -312,10 +311,10 @@ public class SplitKeyEncryption implements AutoCloseable {
     * Encrypt a character array under a subject
     *
     * @param characterArrayToEncrypt Char array to encrypt
-    * @param subject         The subject of this encryption
+    * @param subject                 The subject of this encryption
     * @return Printable form of the encrypted string
-    * @throws InvalidCryptoParameterException    if a parameter of a cryptographic method is invalid (must never happen)
-    * @throws NullPointerException               if {@code characterArrayToEncrypt} or {@code subject} is {@code null}
+    * @throws InvalidCryptoParameterException if a parameter of a cryptographic method is invalid (must never happen)
+    * @throws NullPointerException            if {@code characterArrayToEncrypt} or {@code subject} is {@code null}
     */
    public String encryptData(final char[] characterArrayToEncrypt, final String subject) throws InvalidCryptoParameterException,
             NullPointerException {
@@ -336,8 +335,8 @@ public class SplitKeyEncryption implements AutoCloseable {
     *
     * @param characterArrayToEncrypt Char array to encrypt
     * @return Printable form of the encrypted string
-    * @throws InvalidCryptoParameterException    if a parameter of a cryptographic method is invalid (must never happen)
-    * @throws NullPointerException               if {@code characterArrayToEncrypt} is {@code null}
+    * @throws InvalidCryptoParameterException if a parameter of a cryptographic method is invalid (must never happen)
+    * @throws NullPointerException            if {@code characterArrayToEncrypt} is {@code null}
     */
    public String encryptData(final char[] characterArrayToEncrypt) throws IllegalArgumentException,
             InvalidCryptoParameterException,
@@ -351,8 +350,8 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @param stringToEncrypt String to encrypt
     * @param subject         The subject of this encryption
     * @return Printable form of the encrypted string
-    * @throws InvalidCryptoParameterException    if a parameter of a cryptographic method is invalid (must never happen)
-    * @throws NullPointerException               if {@code stringToEncrypt} or {@code subject} is {@code null}
+    * @throws InvalidCryptoParameterException if a parameter of a cryptographic method is invalid (must never happen)
+    * @throws NullPointerException            if {@code stringToEncrypt} or {@code subject} is {@code null}
     */
    public String encryptData(final String stringToEncrypt, final String subject) throws InvalidCryptoParameterException,
             NullPointerException {
@@ -373,8 +372,8 @@ public class SplitKeyEncryption implements AutoCloseable {
     *
     * @param stringToEncrypt String to encrypt
     * @return Printable form of the encrypted string
-    * @throws InvalidCryptoParameterException    if a parameter of a cryptographic method is invalid (must never happen)
-    * @throws NullPointerException               if {@code stringToEncrypt} is {@code null}
+    * @throws InvalidCryptoParameterException if a parameter of a cryptographic method is invalid (must never happen)
+    * @throws NullPointerException            if {@code stringToEncrypt} is {@code null}
     */
    public String encryptData(final String stringToEncrypt) throws InvalidCryptoParameterException,
             NullPointerException {
@@ -391,10 +390,10 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @param stringToDecrypt String to decrypt
     * @param subject         The subject of this decryption
     * @return Decrypted string as a byte array
-    * @throws DataIntegrityException             if the checksum does not match the data
-    * @throws IllegalArgumentException           if the given string does not adhere to the format specification
-    * @throws InvalidCryptoParameterException    if a parameter of a cryptographic method is invalid (must never happen)
-    * @throws NullPointerException               if {@code stringToDecrypt} or {@code subject} is {@code null}
+    * @throws DataIntegrityException          if the checksum does not match the data
+    * @throws IllegalArgumentException        if the given string does not adhere to the format specification
+    * @throws InvalidCryptoParameterException if a parameter of a cryptographic method is invalid (must never happen)
+    * @throws NullPointerException            if {@code stringToDecrypt} or {@code subject} is {@code null}
     */
    public byte[] decryptDataAsByteArray(final String stringToDecrypt, final String subject) throws DataIntegrityException,
             IllegalArgumentException,
@@ -414,7 +413,7 @@ public class SplitKeyEncryption implements AutoCloseable {
          checkChecksumForEncryptionParts(encryptionParts, subjectBytes);
 
          result = rawDataDecryption(encryptionParts, subjectBytes);
-      } catch (BadPaddingException|IllegalBlockSizeException|InvalidAlgorithmParameterException|InvalidKeyException|NoSuchAlgorithmException|NoSuchPaddingException e) {
+      } catch (BadPaddingException | IllegalBlockSizeException | InvalidAlgorithmParameterException | InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException e) {
          throw new InvalidCryptoParameterException("Invalid cryptographic parameter: " + e.toString(), e);
       } finally {
          if (encryptionParts != null)
@@ -429,10 +428,10 @@ public class SplitKeyEncryption implements AutoCloseable {
     *
     * @param stringToDecrypt String to decrypt
     * @return Decrypted string as a byte array
-    * @throws DataIntegrityException             if the checksum does not match the data
-    * @throws IllegalArgumentException           if the given string does not adhere to the format specification
-    * @throws InvalidCryptoParameterException    if a parameter of a cryptographic method is invalid (must never happen)
-    * @throws NullPointerException               if {@code stringToDecrypt} is {@code null}
+    * @throws DataIntegrityException          if the checksum does not match the data
+    * @throws IllegalArgumentException        if the given string does not adhere to the format specification
+    * @throws InvalidCryptoParameterException if a parameter of a cryptographic method is invalid (must never happen)
+    * @throws NullPointerException            if {@code stringToDecrypt} is {@code null}
     */
    public byte[] decryptDataAsByteArray(final String stringToDecrypt) throws DataIntegrityException,
             IllegalArgumentException,
@@ -447,11 +446,11 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @param stringToDecrypt String to decrypt
     * @param subject         The subject of this decryption
     * @return Decrypted string as a character array
-    * @throws CharacterCodingException           if the data contain a byte sequence that can not be interpreted as a valid UTF-8 byte sequence
-    * @throws DataIntegrityException             if the checksum does not match the data
-    * @throws IllegalArgumentException           if the given string does not adhere to the format specification
-    * @throws InvalidCryptoParameterException    if a parameter of a cryptographic method is invalid (must never happen)
-    * @throws NullPointerException               if {@code stringToDecrypt} or {@code subject} is {@code null}
+    * @throws CharacterCodingException        if the data contain a byte sequence that can not be interpreted as a valid UTF-8 byte sequence
+    * @throws DataIntegrityException          if the checksum does not match the data
+    * @throws IllegalArgumentException        if the given string does not adhere to the format specification
+    * @throws InvalidCryptoParameterException if a parameter of a cryptographic method is invalid (must never happen)
+    * @throws NullPointerException            if {@code stringToDecrypt} or {@code subject} is {@code null}
     */
    public char[] decryptDataAsCharacterArray(final String stringToDecrypt, final String subject) throws CharacterCodingException,
             DataIntegrityException,
@@ -472,11 +471,11 @@ public class SplitKeyEncryption implements AutoCloseable {
     *
     * @param stringToDecrypt String to decrypt
     * @return Decrypted string as a character array
-    * @throws CharacterCodingException           if the data contain a byte sequence that can not be interpreted as a valid UTF-8 byte sequence
-    * @throws DataIntegrityException             if the checksum does not match the data
-    * @throws IllegalArgumentException           if the given string does not adhere to the format specification
-    * @throws InvalidCryptoParameterException    if a parameter of a cryptographic method is invalid (must never happen)
-    * @throws NullPointerException               if {@code stringToDecrypt} or {@code subject} is {@code null}
+    * @throws CharacterCodingException        if the data contain a byte sequence that can not be interpreted as a valid UTF-8 byte sequence
+    * @throws DataIntegrityException          if the checksum does not match the data
+    * @throws IllegalArgumentException        if the given string does not adhere to the format specification
+    * @throws InvalidCryptoParameterException if a parameter of a cryptographic method is invalid (must never happen)
+    * @throws NullPointerException            if {@code stringToDecrypt} or {@code subject} is {@code null}
     */
    public char[] decryptDataAsCharacterArray(final String stringToDecrypt) throws CharacterCodingException,
             DataIntegrityException,
@@ -492,11 +491,11 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @param stringToDecrypt String to decrypt
     * @param subject         The subject of this decryption
     * @return Decrypted data as a string
-    * @throws CharacterCodingException           if the data contain a byte sequence that can not be interpreted as a valid UTF-8 byte sequence
-    * @throws DataIntegrityException             if the checksum does not match the data
-    * @throws IllegalArgumentException           if the given string does not adhere to the format specification
-    * @throws InvalidCryptoParameterException    if a parameter of a cryptographic method is invalid (must never happen)
-    * @throws NullPointerException               if {@code stringToDecrypt} or {@code subject} is {@code null}
+    * @throws CharacterCodingException        if the data contain a byte sequence that can not be interpreted as a valid UTF-8 byte sequence
+    * @throws DataIntegrityException          if the checksum does not match the data
+    * @throws IllegalArgumentException        if the given string does not adhere to the format specification
+    * @throws InvalidCryptoParameterException if a parameter of a cryptographic method is invalid (must never happen)
+    * @throws NullPointerException            if {@code stringToDecrypt} or {@code subject} is {@code null}
     */
    public String decryptDataAsString(final String stringToDecrypt, final String subject) throws CharacterCodingException,
             DataIntegrityException,
@@ -517,11 +516,11 @@ public class SplitKeyEncryption implements AutoCloseable {
     *
     * @param stringToDecrypt String to decrypt
     * @return Decrypted data as a string
-    * @throws CharacterCodingException           if the data contain a byte sequence that can not be interpreted as a valid UTF-8 byte sequence
-    * @throws DataIntegrityException             if the checksum does not match the data
-    * @throws IllegalArgumentException           if the given string does not adhere to the format specification
-    * @throws InvalidCryptoParameterException    if a parameter of a cryptographic method is invalid (must never happen)
-    * @throws NullPointerException               if {@code stringToDecrypt} or {@code subject} is {@code null}
+    * @throws CharacterCodingException        if the data contain a byte sequence that can not be interpreted as a valid UTF-8 byte sequence
+    * @throws DataIntegrityException          if the checksum does not match the data
+    * @throws IllegalArgumentException        if the given string does not adhere to the format specification
+    * @throws InvalidCryptoParameterException if a parameter of a cryptographic method is invalid (must never happen)
+    * @throws NullPointerException            if {@code stringToDecrypt} or {@code subject} is {@code null}
     */
    public String decryptDataAsString(final String stringToDecrypt) throws CharacterCodingException,
             DataIntegrityException,
@@ -539,11 +538,11 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @param stringToDecrypt String to decrypt
     * @param subject         The subject of this decryption
     * @return Decrypted data as a string
-    * @throws CharacterCodingException           if the data contain a byte sequence that can not be interpreted as a valid UTF-8 byte sequence
-    * @throws DataIntegrityException             if the checksum does not match the data
-    * @throws IllegalArgumentException           if the given string does not adhere to the format specification
-    * @throws InvalidCryptoParameterException    if a parameter of a cryptographic method is invalid (must never happen)
-    * @throws NullPointerException               if {@code stringToDecrypt} or {@code subject} is {@code null}
+    * @throws CharacterCodingException        if the data contain a byte sequence that can not be interpreted as a valid UTF-8 byte sequence
+    * @throws DataIntegrityException          if the checksum does not match the data
+    * @throws IllegalArgumentException        if the given string does not adhere to the format specification
+    * @throws InvalidCryptoParameterException if a parameter of a cryptographic method is invalid (must never happen)
+    * @throws NullPointerException            if {@code stringToDecrypt} or {@code subject} is {@code null}
     */
    @Deprecated
    public String decryptData(final String stringToDecrypt, final String subject) throws CharacterCodingException,
@@ -561,11 +560,11 @@ public class SplitKeyEncryption implements AutoCloseable {
     *
     * @param stringToDecrypt String to decrypt
     * @return Decrypted data as a string
-    * @throws CharacterCodingException           if the data contain a byte sequence that can not be interpreted as a valid UTF-8 byte sequence
-    * @throws DataIntegrityException             if the checksum does not match the data
-    * @throws IllegalArgumentException           if the given string does not adhere to the format specification
-    * @throws InvalidCryptoParameterException    if a parameter of a cryptographic method is invalid (must never happen)
-    * @throws NullPointerException               if {@code stringToDecrypt} or {@code subject} is {@code null}
+    * @throws CharacterCodingException        if the data contain a byte sequence that can not be interpreted as a valid UTF-8 byte sequence
+    * @throws DataIntegrityException          if the checksum does not match the data
+    * @throws IllegalArgumentException        if the given string does not adhere to the format specification
+    * @throws InvalidCryptoParameterException if a parameter of a cryptographic method is invalid (must never happen)
+    * @throws NullPointerException            if {@code stringToDecrypt} or {@code subject} is {@code null}
     */
    @Deprecated
    public String decryptData(final String stringToDecrypt) throws CharacterCodingException,
@@ -959,7 +958,7 @@ public class SplitKeyEncryption implements AutoCloseable {
     * cleared so that nothing is leaked in memory through this object.</p>
     *
     * @param sourceBytes Source bytes to be encrypted
-    * @param subject The subject of this encryption
+    * @param subject     The subject of this encryption
     * @return Formatted encryption string
     * @throws InvalidCryptoParameterException if a parameter of a cryptographic method is invalid (must never happen)
     */
@@ -973,7 +972,7 @@ public class SplitKeyEncryption implements AutoCloseable {
          rawEncryptionData = rawDataEncryption(sourceBytes, subjectBytes);
 
          result = makeEncryptionStringFromEncryptionParts(rawEncryptionData);
-      } catch (BadPaddingException|IllegalBlockSizeException|InvalidAlgorithmParameterException|InvalidKeyException|NoSuchAlgorithmException|NoSuchPaddingException e) {
+      } catch (BadPaddingException | IllegalBlockSizeException | InvalidAlgorithmParameterException | InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException e) {
          throw new InvalidCryptoParameterException("Invalid cryptographic parameter: " + e.toString(), e);
       } finally {
          if (rawEncryptionData != null)
@@ -986,7 +985,7 @@ public class SplitKeyEncryption implements AutoCloseable {
    /**
     * Encrypt source bytes
     *
-    * @param sourceBytes Source bytes to be encrypted
+    * @param sourceBytes  Source bytes to be encrypted
     * @param subjectBytes The subject of this encryption as a byte array
     * @return Raw encrypted data as a fully filled EncryptionParts object
     * @throws InvalidAlgorithmParameterException if an invalid encryption parameter was specified (must never happen)

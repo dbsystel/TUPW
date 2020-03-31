@@ -32,7 +32,7 @@ import java.util.Arrays;
 /**
  * Class to convert between character and byte arrays
  *
- * <p>This is a class that should not exist. Java ought to have a method {@code ByteArray.toCharArray(CharSet)}.
+ * <p>This is a class that should not exist. Java ought to have a method {@code ByteArray.toCharArray(CharSet)} and vice versa.
  * Unfortunately Java does not have it and there is absolutely no easy way to convert between character
  * and byte arrays. One has to use this complicated, unintuitive and strange buffer conversion stuff implemented here.</p>
  *
@@ -64,7 +64,7 @@ public class CharacterArrayHelper {
     * @param sourceCharacterArray character array to encode
     * @return UTF-8 encoded byte array of the characters in {@code sourceCharacterArray}
     */
-   public static byte[] convertCharacterArrayToUTF8ByteArray(final char[] sourceCharacterArray)  {
+   public static byte[] convertCharacterArrayToUTF8ByteArray(final char[] sourceCharacterArray) {
       byte[] result = null;
 
       if (sourceCharacterArray != null) {
@@ -75,7 +75,7 @@ public class CharacterArrayHelper {
             tempByteBuffer = UTF8_ENCODER.encode(tempCharBuffer);
          } catch (CharacterCodingException e) {
             // As UTF-8 can always encode *every* Unicode character a CharacterCodingException exception can never happen.
-            // With this try-statement the unnecessary declaration of "throws CharacterCodingException"
+            // With this try-catch-statement the unnecessary declaration of "throws CharacterCodingException"
             // in the method signature is suppressed.
          }
 

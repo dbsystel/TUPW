@@ -63,7 +63,7 @@ public class TestByteArrayBlinding {
    }
 
    @Test
-   public void TestBlinding() throws IOException {
+   public void TestBlinding() {
       Random rng = new Random();
 
       byte[] data = new byte[1];
@@ -108,7 +108,7 @@ public class TestByteArrayBlinding {
    }
 
    @Test
-   public void TestBlindingLoop() throws IOException {
+   public void TestBlindingLoop() {
       SecureRandom rng = SecureRandomFactory.getSensibleInstance();
 
       byte[] blindedData;
