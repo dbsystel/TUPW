@@ -64,7 +64,8 @@ public class StringSplitter {
     * <li>A {@code null} {@code searchString} returns {@code null}</li>
     * <li>A {@code null} or empty {@code separator} returns an array with one element
     * that contains the whole {@code searchString}</li>
-    * </ul></p>
+    * </ul>
+    * </p>
     *
     * @param searchString The String to parse, may be {@code null}
     * @param separator    The String to be used as a separator

@@ -2,7 +2,7 @@
  * This is an implementation of the Splitmix64 pseudo-random number generator
  * written in 2015 by Sebastiano Vigna.
  *
- * It is taken from the C source code at http://xoroshiro.di.unimi.it/splitmix64.c.
+ * It is derived from the C source code at http://xoroshiro.di.unimi.it/splitmix64.c.
  *
  * The source code there has the following comment which is reproduced here:
  *
@@ -31,6 +31,8 @@ import java.util.Objects;
 
 /**
  * Splitmix64 pseudo-random number generator
+ *
+ * <p>It is derived from the <a href="http://xoroshiro.di.unimi.it/splitmix64.c">C source code</a>.</p>
  *
  * @author Frank Schwab
  * @version 1.2.0

@@ -2,7 +2,7 @@
  * This is an implementation of the Xoroshiro128plusplus pseudo-random number generator
  * written in 2019 by David Blackman and Sebastiano Vigna.
  *
- * It is taken from the C source code at http://prng.di.unimi.it/xoroshiro128plusplus.c.
+ * It is derived from the C source code at http://prng.di.unimi.it/xoroshiro128plusplus.c.
  *
  * The source code there has the following comment which is reproduced here:
  *
@@ -38,6 +38,8 @@ import java.util.Objects;
 
 /**
  * Xoroshiro128plusplus pseudo-random number generator
+ *
+ * <p>It is derived from the <a href="http://prng.di.unimi.it/xoroshiro128plusplus.c">C source code</a>.</p>
  *
  * @author Frank Schwab
  * @version 1.2.0
