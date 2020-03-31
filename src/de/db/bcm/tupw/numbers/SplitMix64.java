@@ -79,9 +79,9 @@ public class SplitMix64 extends SimplePseudoRandomNumberGenerator {
    //******************************************************************
 
    /**
-    * Get next pseudo-random {@ode long} value
+    * Get next pseudo-random {@code long} value
     *
-    * @return Pseudo-random {@ode long}
+    * @return Pseudo-random {@code long}
     */
    @Override
    public long nextLong() {

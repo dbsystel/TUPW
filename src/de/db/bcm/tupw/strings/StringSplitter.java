@@ -40,7 +40,7 @@ import java.util.ArrayList;
  * <p>This class is a modified version of the Apache Commons {@code StringUtil.splitByWholeSeparatorWorker}
  * to be found in the package {@code org.apache.commons.lang3} in the file {@code StringUtils.java}.</p>
  *
- * I wrote it because I absolutely do not like inefficiency in programming and I
+ * <p>I wrote it because I absolutely do not like inefficiency in programming and I
  * do not want to load a full RegEx machinery, like Java's String.split method does,
  * just to split a string at a simple character.</p>
  *
