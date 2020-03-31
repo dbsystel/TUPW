@@ -58,6 +58,7 @@
  *     2020-03-20: V4.3.0: Use a nested exception, instead of a suppressed exception. fhs
  *     2020-03-23: V4.4.0: Restructured source code according to DBS programming guidelines. fhs
  *     2020-03-26: V5.0.0: Provide interfaces for strings, character arrays and byte arrays. fhs
+ *     2020-03-31: V5.0.1: Added some finals. fhs
  */
 package de.db.bcm.tupw.crypto;
 
@@ -82,7 +83,7 @@ import java.util.Objects;
  * Implement encryption by key generated from several source bytes and a key
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 5.0.0
+ * @version 5.0.1
  */
 
 public class SplitKeyEncryption implements AutoCloseable {
