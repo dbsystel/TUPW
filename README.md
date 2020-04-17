@@ -13,7 +13,7 @@ This project helps to solve the above problem in two ways:
 
 This alleviates the usability problem described above.
 
-Of course, if one can use key management systems like [Azure Key Vault](https://azure.microsoft.com/en-us/services/key-vault/), [AWS KMS](https://aws.amazon.com/kms/), [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/), or [Hashicorp Vault](https://www.vaultproject.io/) these should be used. They offer better security and have more features. TUPW can be used if a key management system is not available.
+Of course, if one can use key management systems like [Azure Key Vault](https://azure.microsoft.com/en-us/services/key-vault/), [AWS KMS](https://aws.amazon.com/kms/), [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/), [Google Cloud KMS](https://cloud.google.com/kms/), or [Hashicorp Vault](https://www.vaultproject.io/) these should be used. They offer better security and have more features. TUPW can be used if a key management system is not available.
 
 The idea of TUPW is to store secrets in an encrypted form and to distribute the elements the key is derived from, so it is not found in a single place.
 
