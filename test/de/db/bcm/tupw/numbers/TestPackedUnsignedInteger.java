@@ -69,9 +69,9 @@ public class TestPackedUnsignedInteger {
       final int iMin2Bytes = iMax1Byte + 1;
       final int iMax2Bytes = 16447;
       final int iMin3Bytes = iMax2Bytes + 1;
-      final int iMax3Bytes = 4210687;
+      final int iMax3Bytes = 4210751;
       final int iMin4Bytes = iMax3Bytes + 1;
-      final int iMax4Bytes = 1077936127;
+      final int iMax4Bytes = 1077952575;
       final int iMinOverflow = iMax4Bytes + 1;
 
       final byte [] piMin1Byte = PackedUnsignedInteger.fromInteger(iMin1Byte);

@@ -25,6 +25,7 @@
  *     2019-03-07: V1.2.0: Added "toString" method. fhs
  *     2020-03-13: V1.3.0: Added checks for null. fhs
  *     2020-03-23: V1.4.0: Restructured source code according to DBS programming guidelines. fhs
+ *     2020-04-22: V1.5.0: Corrected ranges for 3 and 4 byte values. fhs
  */
 package de.db.bcm.tupw.numbers;
 
@@ -35,17 +36,34 @@ import java.util.Objects;
  * Converts integers from and to an unsigned packed byte array
  *
  * @author FrankSchwab
- * @version 1.4.0
+ * @version 1.5.0
  */
 public class PackedUnsignedInteger {
    //******************************************************************
    // Private constants
    //******************************************************************
 
-   private final static int START_TWO_BYTE_VALUE = 0x40;
-   private final static int START_THREE_BYTE_VALUE = 0x4000;
-   private final static int START_FOUR_BYTE_VALUE = 0x400000;
-   private final static int START_TOO_LARGE_VALUE = 0x40000000;
+   /*
+    * Range start values
+    */
+   private final static int START_2_BYTE_VALUE = 0x40;
+   private final static int START_3_BYTE_VALUE = 0x4040;
+   private final static int START_4_BYTE_VALUE = 0x404040;
+   private final static int START_TOO_LARGE_VALUE = 0x40404040;
+
+   /*
+    * Constants for masks
+   */
+   private final static int NO_LENGTH_MASK = 0x3f;
+   private final static int BYTE_MASK = 0xff;
+
+   /*
+    * Constants for length indicators
+    */
+   private final static byte LENGTH_1_MASK = (byte) 0;
+   private final static byte LENGTH_2_MASK = (byte) 0x40;
+   private final static byte LENGTH_3_MASK = (byte) 0x80;
+   private final static byte LENGTH_4_MASK = (byte) 0xc0;
 
 
    //******************************************************************
@@ -55,54 +73,55 @@ public class PackedUnsignedInteger {
    /**
     * Convert an integer into a packed decimal byte array
     * <p>
-    * Valid integers range from 0 to 1,077,936,127.
+    * Valid integers range from 0 to 1,077,952,575.
     * All other numbers throw an {@code IllegalArgumentException}
+    * </p>
     *
-    * @param aNumber Integer to convert
+    * @param anInteger Integer to convert
     * @return Packed decimal byte array with integer as value
     * @throws IllegalArgumentException if {@code aNumber} has not a value between 0 and 1,077,936,127 (inclusive)
     */
-   public static byte[] fromInteger(final int aNumber) throws IllegalArgumentException {
+   public static byte[] fromInteger(final int anInteger) throws IllegalArgumentException {
       byte[] result;
-      int intermediateNumber;
+      int intermediateInteger;
 
-      if (aNumber >= 0)
-         if (aNumber <= 0x3f) {
+      if (anInteger >= 0)
+         if (anInteger < START_2_BYTE_VALUE) {
             result = new byte[1];
-            result[0] = (byte) (aNumber & 0x3f);
-         } else if (aNumber < (START_THREE_BYTE_VALUE + START_TWO_BYTE_VALUE)) {
+            result[0] = (byte) anInteger;
+         } else if (anInteger < START_3_BYTE_VALUE) {
             result = new byte[2];
-            intermediateNumber = aNumber - START_TWO_BYTE_VALUE;
+            intermediateInteger = anInteger - START_2_BYTE_VALUE;
 
-            result[1] = (byte) (intermediateNumber & 0xff);
+            result[1] = (byte) (intermediateInteger & BYTE_MASK);
 
-            intermediateNumber >>>= 8;
-            result[0] = (byte) (0x40 | (intermediateNumber & 0xff));
-         } else if (aNumber < (START_FOUR_BYTE_VALUE + START_THREE_BYTE_VALUE)) {
+            intermediateInteger >>>= 8;
+            result[0] = (byte) (LENGTH_2_MASK | intermediateInteger);
+         } else if (anInteger < START_4_BYTE_VALUE) {
             result = new byte[3];
-            intermediateNumber = aNumber - START_THREE_BYTE_VALUE;
+            intermediateInteger = anInteger - START_3_BYTE_VALUE;
 
-            result[2] = (byte) (intermediateNumber & 0xff);
+            result[2] = (byte) (intermediateInteger & BYTE_MASK);
 
-            intermediateNumber >>>= 8;
-            result[1] = (byte) (intermediateNumber & 0xff);
+            intermediateInteger >>>= 8;
+            result[1] = (byte) (intermediateInteger & BYTE_MASK);
 
-            intermediateNumber >>>= 8;
-            result[0] = (byte) (0x80 | (intermediateNumber & 0xff));
-         } else if (aNumber < (START_TOO_LARGE_VALUE + START_FOUR_BYTE_VALUE)) {
+            intermediateInteger >>>= 8;
+            result[0] = (byte) (LENGTH_3_MASK | intermediateInteger);
+         } else if (anInteger < START_TOO_LARGE_VALUE) {
             result = new byte[4];
-            intermediateNumber = aNumber - START_FOUR_BYTE_VALUE;
+            intermediateInteger = anInteger - START_4_BYTE_VALUE;
 
-            result[3] = (byte) (intermediateNumber & 0xff);
+            result[3] = (byte) (intermediateInteger & BYTE_MASK);
 
-            intermediateNumber >>>= 8;
-            result[2] = (byte) (intermediateNumber & 0xff);
+            intermediateInteger >>>= 8;
+            result[2] = (byte) (intermediateInteger & BYTE_MASK);
 
-            intermediateNumber >>>= 8;
-            result[1] = (byte) (intermediateNumber & 0xff);
+            intermediateInteger >>>= 8;
+            result[1] = (byte) (intermediateInteger & BYTE_MASK);
 
-            intermediateNumber >>>= 8;
-            result[0] = (byte) (0xc0 | (intermediateNumber & 0xff));
+            intermediateInteger >>>= 8;
+            result[0] = (byte) (LENGTH_4_MASK | intermediateInteger);
          } else
             throw new IllegalArgumentException("Integer too large for packed integer");
       else
@@ -139,28 +158,28 @@ public class PackedUnsignedInteger {
       if (expectedLength == packedNumber.length)
          switch (expectedLength) {
             case 1:
-               result = (packedNumber[0] & 0x3f);
+               result = (packedNumber[0] & NO_LENGTH_MASK);
                break;
 
             case 2:
-               result = (((packedNumber[0] & 0x3f) << 8) |
-                        (packedNumber[1] & 0xff)) +
-                        START_TWO_BYTE_VALUE;
+               result = (((packedNumber[0] & NO_LENGTH_MASK) << 8) |
+                        (packedNumber[1] & BYTE_MASK)) +
+                        START_2_BYTE_VALUE;
                break;
 
             case 3:
-               result = (((packedNumber[0] & 0x3f) << 16) |
-                        ((packedNumber[1] & 0xff) << 8) |
-                        (packedNumber[2] & 0xff)) +
-                        START_THREE_BYTE_VALUE;
+               result = (((((packedNumber[0] & NO_LENGTH_MASK) << 8) |
+                            (packedNumber[1] & BYTE_MASK)) << 8) |
+                            (packedNumber[2] & BYTE_MASK)) +
+                        START_3_BYTE_VALUE;
                break;
 
             case 4:
-               result = (((packedNumber[0] & 0x3f) << 24) |
-                        ((packedNumber[1] & 0xff) << 16) |
-                        ((packedNumber[2] & 0xff) << 8) |
-                        (packedNumber[3] & 0xff)) +
-                        START_FOUR_BYTE_VALUE;
+               result = (((((((packedNumber[0] & NO_LENGTH_MASK) << 8) |
+                              (packedNumber[1] & BYTE_MASK)) << 8) |
+                              (packedNumber[2] & BYTE_MASK)) << 8) |
+                              (packedNumber[3] & BYTE_MASK)) +
+                        START_4_BYTE_VALUE;
                break;
 
             // There is no "else" case as all possible values of "expectedLength" are covered
