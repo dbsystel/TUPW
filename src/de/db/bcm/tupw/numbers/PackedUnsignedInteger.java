@@ -26,6 +26,7 @@
  *     2020-03-13: V1.3.0: Added checks for null. fhs
  *     2020-03-23: V1.4.0: Restructured source code according to DBS programming guidelines. fhs
  *     2020-04-22: V1.5.0: Corrected ranges for 3 and 4 byte values. fhs
+ *     2020-04-22: V1.5.1: Removed unnecessary check and corrected some comments. fhs
  */
 package de.db.bcm.tupw.numbers;
 
@@ -36,7 +37,7 @@ import java.util.Objects;
  * Converts integers from and to an unsigned packed byte array
  *
  * @author FrankSchwab
- * @version 1.5.0
+ * @version 1.5.1
  */
 public class PackedUnsignedInteger {
    //******************************************************************
@@ -79,7 +80,7 @@ public class PackedUnsignedInteger {
     *
     * @param anInteger Integer to convert
     * @return Packed decimal byte array with integer as value
-    * @throws IllegalArgumentException if {@code aNumber} has not a value between 0 and 1,077,936,127 (inclusive)
+    * @throws IllegalArgumentException if {@code aNumber} has not a value between 0 and 1,077,952,575 (inclusive)
     */
    public static byte[] fromInteger(final int anInteger) throws IllegalArgumentException {
       byte[] result;
@@ -144,7 +145,7 @@ public class PackedUnsignedInteger {
     * Convert a packed decimal byte array into an integer
     *
     * @param packedNumber Packed decimal byte array
-    * @return Converted integer (value between 0 and 1,077,936,127)
+    * @return Converted integer (value between 0 and 1,077,952,575)
     * @throws IllegalArgumentException if the actual length of the packed number does not match the expected length
     * @throws NullPointerException     if {@code packedNumber} is {@code null}
     */
@@ -219,8 +220,6 @@ public class PackedUnsignedInteger {
     * @throws NullPointerException if {@code arrayWithPackedNumber} is {@code null}
     */
    public static String toString(final byte[] aPackedUnsignedInteger) throws NullPointerException {
-      Objects.requireNonNull(aPackedUnsignedInteger, "Packed number array is null");
-
       return Integer.toString(PackedUnsignedInteger.toInteger(aPackedUnsignedInteger));
    }
 }
