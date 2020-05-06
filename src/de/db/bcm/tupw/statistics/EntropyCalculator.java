@@ -22,6 +22,7 @@
  *     2020-02-28: V1.0.0: Created. fhs
  *     2020-03-13: V1.1.0: Handle null arguments. fhs
  *     2020-03-23: V1.2.0: Restructured source code according to DBS programming guidelines. fhs
+ *     2020-04-28: V1.2.1: Remove unused variable declaration. fhs
  */
 
 package de.db.bcm.tupw.statistics;
@@ -33,7 +34,7 @@ import java.util.Objects;
  * Class to calculate the entropy of byte arrays
  *
  * @author Frank Schwab
- * @version 1.2.0
+ * @version 1.2.1
  */
 public class EntropyCalculator {
    //******************************************************************
@@ -76,7 +77,6 @@ public class EntropyCalculator {
    public void addBytes(final byte[] aByteArray, final int fromIndex, final int toIndex) throws NullPointerException {
       Objects.requireNonNull(aByteArray, "Byte array is null");
 
-      byte aByte;
       int  counterIndex;
 
       for (int i = fromIndex; i < toIndex; i++) {

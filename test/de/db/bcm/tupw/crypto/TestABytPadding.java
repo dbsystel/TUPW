@@ -19,8 +19,9 @@
  *
  * Author: Frank Schwab, DB Systel GmbH
  *
- * Changes: 
+ * Changes:
  *     2015-12-20: V1.0.0: Created. fhs
+ *     2020-04-29: V1.0.1: Simplified. fhs
  */
 package de.db.bcm.tupw.crypto;
 
@@ -35,7 +36,7 @@ import static org.junit.Assert.*;
  * Test cases for arbitrary tail byte padding
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.0.0
+ * @version 1.0.1
  */
 public class TestABytPadding {
    
@@ -47,7 +48,11 @@ public class TestABytPadding {
     * Assumed padding block size
     */
    private static final int BLOCK_SIZE = 32;
-   
+
+   /*
+    * Test methods
+    */
+
    public TestABytPadding() {
    }
    
@@ -70,65 +75,43 @@ public class TestABytPadding {
    @Test
    public void TestABytPaddingWorking0DataSize() {
       byte[] unpaddedSourceData = new byte[0];
-      
-      byte[] paddedSourceData = ArbitraryTailPadding.addPadding(unpaddedSourceData, BLOCK_SIZE);
 
-      assertTrue("Padded data not longer than unpadded data", paddedSourceData.length > unpaddedSourceData.length);
-      assertTrue("Padding length is not multiple of block size: " + paddedSourceData.length, (paddedSourceData.length % BLOCK_SIZE) == 0);
-      assertTrue("Padding is longer than block size", (paddedSourceData.length - unpaddedSourceData.length) <= BLOCK_SIZE);
-      
-      byte[] unpaddedPaddedSourceData = ArbitraryTailPadding.removePadding(paddedSourceData);
-      
-      
-      assertEquals("Lengths are not the same after padding and unpadding", unpaddedSourceData.length, unpaddedPaddedSourceData.length);
-      assertArrayEquals("Data ist not the same after padding and unpadding", unpaddedSourceData,unpaddedPaddedSourceData);
+      TestPadAndUnpad(unpaddedSourceData);
    }
 
    @Test
    public void TestABytPaddingWorkingSmallerThanBlockSize() {
       byte[] unpaddedSourceData = new byte[BLOCK_SIZE / 4 - 1];
-      
-      byte[] paddedSourceData = ArbitraryTailPadding.addPadding(unpaddedSourceData, BLOCK_SIZE);
 
-      assertTrue("Padded data not longer than unpadded data", paddedSourceData.length > unpaddedSourceData.length);
-      assertTrue("Padding length is not multiple of block size: " + paddedSourceData.length, (paddedSourceData.length % BLOCK_SIZE) == 0);
-      assertTrue("Padding is longer than block size", (paddedSourceData.length - unpaddedSourceData.length) <= BLOCK_SIZE);
-      
-      byte[] unpaddedPaddedSourceData = ArbitraryTailPadding.removePadding(paddedSourceData);
-      
-      
-      assertEquals("Lengths are not the same after padding and unpadding", unpaddedSourceData.length, unpaddedPaddedSourceData.length);
-      assertArrayEquals("Data ist not the same after padding and unpadding", unpaddedSourceData,unpaddedPaddedSourceData);
+      TestPadAndUnpad(unpaddedSourceData);
    }
 
    @Test
    public void TestABytPaddingWorkingEqualBlockSize() {
       byte[] unpaddedSourceData = new byte[BLOCK_SIZE];
-      
-      byte[] paddedSourceData = ArbitraryTailPadding.addPadding(unpaddedSourceData, BLOCK_SIZE);
 
-      assertTrue("Padded data not longer than unpadded data", paddedSourceData.length > unpaddedSourceData.length);
-      assertTrue("Padding length is not multiple of block size: " + paddedSourceData.length, (paddedSourceData.length % BLOCK_SIZE) == 0);
-      assertTrue("Padding is longer than block size", (paddedSourceData.length - unpaddedSourceData.length) <= BLOCK_SIZE);
-      
-      byte[] unpaddedPaddedSourceData = ArbitraryTailPadding.removePadding(paddedSourceData);
-      
-      assertEquals("Lengths are not the same after padding and unpadding", unpaddedSourceData.length, unpaddedPaddedSourceData.length);
-      assertArrayEquals("Data ist not the same after padding and unpadding", unpaddedSourceData,unpaddedPaddedSourceData);
+      TestPadAndUnpad(unpaddedSourceData);
    }
 
    @Test
    public void TestABytPaddingWorkingGreaterThanBlockSize() {
       byte[] unpaddedSourceData = new byte[BLOCK_SIZE + (BLOCK_SIZE / 2) + 1];
-      
+
+      TestPadAndUnpad(unpaddedSourceData);
+   }
+
+   /*
+    * Private methods
+    */
+   private void TestPadAndUnpad(byte[] unpaddedSourceData) {
       byte[] paddedSourceData = ArbitraryTailPadding.addPadding(unpaddedSourceData, BLOCK_SIZE);
 
       assertTrue("Padded data not longer than unpadded data", paddedSourceData.length > unpaddedSourceData.length);
       assertTrue("Padding length is not multiple of block size: " + paddedSourceData.length, (paddedSourceData.length % BLOCK_SIZE) == 0);
       assertTrue("Padding is longer than block size", (paddedSourceData.length - unpaddedSourceData.length) <= BLOCK_SIZE);
-      
+
       byte[] unpaddedPaddedSourceData = ArbitraryTailPadding.removePadding(paddedSourceData);
-      
+
       assertEquals("Lengths are not the same after padding and unpadding", unpaddedSourceData.length, unpaddedPaddedSourceData.length);
       assertArrayEquals("Data ist not the same after padding and unpadding", unpaddedSourceData,unpaddedPaddedSourceData);
    }

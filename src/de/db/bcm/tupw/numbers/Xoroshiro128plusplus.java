@@ -83,6 +83,27 @@ public class Xoroshiro128plusplus extends SimplePseudoRandomNumberGenerator {
       initializeState(seed.longValue());
    }
 
+   /**
+    * Constructor for Xoroshiro128plusplus with seed array.
+    *
+    * @param seed Initial seed array.
+    */
+   public Xoroshiro128plusplus(final long[] seed) {
+      m_State0 = seed[0];
+      m_State1 = seed[1];
+   }
+
+   /**
+    * Constructor for Xoroshiro128plusplus with two seed values.
+    *
+    * @param seed0 Initial seed 1.
+    * @param seed1 Initial seed 2.
+    */
+   public Xoroshiro128plusplus(final long seed0,final long seed1) {
+      m_State0 = seed0;
+      m_State1 = seed1;
+   }
+
    //******************************************************************
    // Public methods
    //******************************************************************

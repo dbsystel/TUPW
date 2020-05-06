@@ -27,6 +27,7 @@
  *     2020-03-19: V1.3.0: Removed ByteArrayOutputStream. fhs
  *     2020-03-20: V1.4.0: Refactored blinded bytes build process. fhs
  *     2020-03-23: V1.5.0: Restructured source code according to DBS programming guidelines. fhs
+ *     2020-04-28: V1.5.1: Added missing null check. fhs
  */
 package de.db.bcm.tupw.crypto;
 
@@ -40,7 +41,7 @@ import java.util.Objects;
  * Implements blinding for byte arrays
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.5.0
+ * @version 1.5.1
  */
 public class ByteArrayBlinding {
    //******************************************************************
@@ -57,6 +58,7 @@ public class ByteArrayBlinding {
     */
    private final static String ERROR_MESSAGE_INVALID_ARRAY = "Invalid blinded byte array";
    private final static String ERROR_MESSAGE_INVALID_MIN_LENGTH = "Invalid minimum length";
+   private final static String ERROR_MESSAGE_NULL_SOURCE_BYTES = "Source bytes is null";
 
    /*
     * Constants for indexing and lengths
@@ -90,6 +92,8 @@ public class ByteArrayBlinding {
     * @throws IllegalArgumentException if minimum length is too small or too large
     */
    public static byte[] buildBlindedByteArray(final byte[] sourceBytes, final int minimumLength) throws IllegalArgumentException {
+      Objects.requireNonNull(sourceBytes, ERROR_MESSAGE_NULL_SOURCE_BYTES);
+
       checkMinimumLength(minimumLength);
 
       final byte[] packedSourceLength = PackedUnsignedInteger.fromInteger(sourceBytes.length);
@@ -128,7 +132,7 @@ public class ByteArrayBlinding {
     * @throws NullPointerException     if {@code sourceBytes} is {@code null}
     */
    public static byte[] unBlindByteArray(final byte[] sourceBytes) throws IllegalArgumentException, NullPointerException {
-      Objects.requireNonNull(sourceBytes, "Source bytes is null");
+      Objects.requireNonNull(sourceBytes, ERROR_MESSAGE_NULL_SOURCE_BYTES);
 
       if (sourceBytes.length > LENGTHS_LENGTH) {
          final int packedNumberLength = PackedUnsignedInteger.getExpectedLength(sourceBytes[INDEX_SOURCE_PACKED_LENGTH]);

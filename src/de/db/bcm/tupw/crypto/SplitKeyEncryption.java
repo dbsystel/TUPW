@@ -69,6 +69,7 @@ import de.db.bcm.tupw.strings.StringSplitter;
 
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -252,7 +253,7 @@ public class SplitKeyEncryption implements AutoCloseable {
     * <p><b>Attention:</b> The caller is responsible for clearing the source byte arrays
     * with {@code Arrays.fill()} after they have been used here.</p>
     *
-    * @param hmacKey     Key for the HMAC of the file
+    * @param hmacKey     Key for the HMAC of the source bytes
     * @param sourceBytes Bytes that the key is derived from
     * @throws IllegalArgumentException The HMAC key or the source bytes are not valid
     * @throws InvalidKeyException      if the key is invalid (must never happen)
@@ -932,28 +933,47 @@ public class SplitKeyEncryption implements AutoCloseable {
     * Calculate the HMAC of the encrypted parts
     *
     * @param encryptionParts Encrypted parts to calculate the checksum for
-    * @return Checksum of the encrypted parts
+    * @param subjectBytes    The subject for this HMAC calculation
+    * @return Checksum of the encrypted parts with @code{subjectBytes}
     * @throws InvalidKeyException      if the key is not valid for the HMAC algorithm (must never happen)
     * @throws NoSuchAlgorithmException if there is no HMAC-256 algorithm (must never happen)
     */
    private byte[] getChecksumForEncryptionParts(final EncryptionParts encryptionParts, final byte[] subjectBytes) throws InvalidKeyException, NoSuchAlgorithmException {
       final Mac hmac = getHMACInstance();
 
+      SecureSecretKeySpec hmacSecretKeySpec;
+
       if (encryptionParts.formatId >= 5)
-         hmac.init(getSecretKeySpecForHMACDependingOnSubject(subjectBytes));
+         hmacSecretKeySpec = getSecretKeySpecForHMACDependingOnSubject(subjectBytes);
       else
-         hmac.init(getDefaultSecretKeySpecForHMAC());
+         hmacSecretKeySpec = getDefaultSecretKeySpecForHMAC();
 
-      hmac.update(encryptionParts.formatId);
-      hmac.update(encryptionParts.iv);
+      byte[] result = null;
 
-      return hmac.doFinal(encryptionParts.encryptedData);
+      try {
+         hmac.init(hmacSecretKeySpec);
+
+         hmac.update(encryptionParts.formatId);
+         hmac.update(encryptionParts.iv);
+
+         hmac.update(encryptionParts.encryptedData);
+         result = hmac.doFinal();
+
+         hmacSecretKeySpec.close();
+      }
+      catch (Exception ex) {
+         hmacSecretKeySpec.close();
+         throw(ex);
+      }
+
+      return result;
    }
 
    /**
     * Check the checksum of the encrypted parts that have been read
     *
     * @param encryptionParts Parts to be checked
+    * @param subjectBytes    Subject bytes to use for HMAC key calculation.
     * @throws DataIntegrityException   if the HMAC of the parts is not correct
     * @throws InvalidKeyException      if the key is not valid for the HMAC algorithm (must never happen)
     * @throws NoSuchAlgorithmException if there is no HMAC-256 algorithm (must never happen)

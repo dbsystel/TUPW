@@ -19,14 +19,14 @@
  *
  * Author: Frank Schwab, DB Systel GmbH
  *
- * Changes: 
+ * Changes:
  *     2018-08-16: V1.0.0: Created. fhs
+ *     2020-04-27: V1.0.1: Corrected some typos. fhs
  */
 package de.db.bcm.tupw.crypto;
 
 import org.junit.*;
 
-import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.Random;
 
@@ -36,7 +36,7 @@ import static org.junit.Assert.*;
  * Test cases for ByteArrayBlinding
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.0.0
+ * @version 1.0.1
  */
 public class TestByteArrayBlinding {
 
@@ -66,15 +66,25 @@ public class TestByteArrayBlinding {
    public void TestBlinding() {
       Random rng = new Random();
 
-      byte[] data = new byte[1];
-      rng.nextBytes(data);
+      byte[] data0 = new byte[0];
+      rng.nextBytes(data0);
 
-      byte[] blindedData = ByteArrayBlinding.buildBlindedByteArray(data, 17);
+      byte[] blindedData = ByteArrayBlinding.buildBlindedByteArray(data0, 17);
       byte[] unblindedData = ByteArrayBlinding.unBlindByteArray(blindedData);
 
-      assertTrue("Blinded data not longer than source data", blindedData.length > data.length);
-      assertEquals("Lengths are not the same after blinding and unblinding", data.length, unblindedData.length);
-      assertArrayEquals("Data is not the same after blinding and unblinding", data, unblindedData);
+      assertTrue("Blinded data not longer than source data", blindedData.length > data0.length);
+      assertEquals("Lengths are not the same after blinding and unblinding", data0.length, unblindedData.length);
+      assertArrayEquals("Data is not the same after blinding and unblinding", data0, unblindedData);
+
+      byte[] data1 = new byte[1];
+      rng.nextBytes(data1);
+
+      blindedData = ByteArrayBlinding.buildBlindedByteArray(data1, 17);
+      unblindedData = ByteArrayBlinding.unBlindByteArray(blindedData);
+
+      assertTrue("Blinded data not longer than source data", blindedData.length > data1.length);
+      assertEquals("Lengths are not the same after blinding and unblinding", data1.length, unblindedData.length);
+      assertArrayEquals("Data is not the same after blinding and unblinding", data1, unblindedData);
 
       byte[] data2 = new byte[16];
       rng.nextBytes(data2);
@@ -82,7 +92,7 @@ public class TestByteArrayBlinding {
       blindedData = ByteArrayBlinding.buildBlindedByteArray(data2, 17);
       unblindedData = ByteArrayBlinding.unBlindByteArray(blindedData);
 
-      assertTrue("Blinded data not longer than source data", blindedData.length > data.length);
+      assertTrue("Blinded data not longer than source data", blindedData.length > data2.length);
       assertEquals("Lengths are not the same after blinding and unblinding", data2.length, unblindedData.length);
       assertArrayEquals("Data is not the same after blinding and unblinding", data2, unblindedData);
 
@@ -92,7 +102,7 @@ public class TestByteArrayBlinding {
       blindedData = ByteArrayBlinding.buildBlindedByteArray(data3, 17);
       unblindedData = ByteArrayBlinding.unBlindByteArray(blindedData);
 
-      assertTrue("Blinded data not longer than source data", blindedData.length > data.length);
+      assertTrue("Blinded data not longer than source data", blindedData.length > data3.length);
       assertEquals("Lengths are not the same after blinding and unblinding", data3.length, unblindedData.length);
       assertArrayEquals("Data is not the same after blinding and unblinding", data3, unblindedData);
 
@@ -102,7 +112,7 @@ public class TestByteArrayBlinding {
       blindedData = ByteArrayBlinding.buildBlindedByteArray(data4, 17);
       unblindedData = ByteArrayBlinding.unBlindByteArray(blindedData);
 
-      assertTrue("Blinded data not longer than source data", blindedData.length > data.length);
+      assertTrue("Blinded data not longer than source data", blindedData.length > data4.length);
       assertEquals("Lengths are not the same after blinding and unblinding", data4.length, unblindedData.length);
       assertArrayEquals("Data is not the same after blinding and unblinding", data4, unblindedData);
    }

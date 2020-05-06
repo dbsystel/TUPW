@@ -19,8 +19,9 @@
  *
  * Author: Frank Schwab, DB Systel GmbH
  *
- * Changes: 
+ * Changes:
  *     2020-03-11: V1.0.0: Created. fhs
+ *     2020-04-29: V1.0.1: Removed unnecessary constants. fhs
  */
 package de.db.bcm.tupw.crypto;
 
@@ -34,7 +35,7 @@ import static org.junit.Assert.*;
  * Test cases for SecureSecretKeySpec
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.0.0
+ * @version 1.0.1
  */
 public class TestProtectedByteArray {
 
@@ -42,8 +43,6 @@ public class TestProtectedByteArray {
     * Private constants
     */
    static final byte FILL_VALUE = (byte) 0x55;
-   static final byte OTHER_VALUE = (byte) 0xAA;
-   static final int CHANGE_INDEX = 7;
 
    static final String EXPECTED_EXCEPTION = "Expected exception not thrown";
 

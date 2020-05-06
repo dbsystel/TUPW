@@ -29,6 +29,8 @@ package de.db.bcm.tupw.crypto;
 import de.db.bcm.tupw.numbers.Xoroshiro128plusplus;
 import org.junit.*;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
@@ -51,7 +53,8 @@ public class TestSplitKeyEncryption {
     * This is the static HMAC key which is only known to the program
     * TODO: Do not use this constant byte array. Roll your own!!!!
     */
-   private static final byte[] CONSTANT_HMAC_KEY = {(byte) 0xC1, (byte) 0xC2, (byte) 0xC8, (byte) 0x0F,
+   private static final byte[] CONSTANT_HMAC_KEY = {
+           (byte) 0xC1, (byte) 0xC2, (byte) 0xC8, (byte) 0x0F,
            (byte) 0xDE, (byte) 0x75, (byte) 0xD7, (byte) 0xA9,
            (byte) 0xFC, (byte) 0x92, (byte) 0x56, (byte) 0xEA,
            (byte) 0x3C, (byte) 0x0C, (byte) 0x7A, (byte) 0x08,
@@ -82,7 +85,7 @@ public class TestSplitKeyEncryption {
     *
     * <p>For the sake of repeatable tests the source bytes are constants in this test file.
     * In real use use one <b>must never</b> use values that originate <em>in</em> the program.
-    * All source <b></b>are required</b> to originate from <em>outside</em> the program!</p>
+    * All source <b>are required</b> to originate from <em>outside</em> the program!</p>
     */
    private static final String SOURCE_TEXT_1 = "The quick brown fox jumped over the lazy dog";
    private static final String SOURCE_TEXT_2 = "314159265358979323846264338327952718281828459045235360287471352722459157718361045473427152204544";
@@ -165,7 +168,7 @@ public class TestSplitKeyEncryption {
    }
 
    /**
-    * Create nonrandom key file before the test
+    * Create keys and source data before the test
     */
    @BeforeClass
    public static void setUpClass() throws UnsupportedEncodingException {
@@ -309,7 +312,7 @@ public class TestSplitKeyEncryption {
    }
 
    /**
-    * Test if the encryption of an an empty string correctly decrypted with a subject present.
+    * Test if the encryption of an empty string is correctly decrypted with a subject present.
     */
    @Test
    public void TestEmptyEncryptionDecryptionWithSubject() {
@@ -330,7 +333,7 @@ public class TestSplitKeyEncryption {
    }
 
    /**
-    * Test if a given encrypted text is correctly decrypted.
+    * Test if a known encrypted text is correctly decrypted.
     */
    @Test
    public void TestKnownDecryption() {
@@ -527,7 +530,7 @@ public class TestSplitKeyEncryption {
    }
 
    /**
-    * Test if a given encrypted text with an empty format id throws an exception.
+    * Test if a given encrypted text with an empty IV throws an exception.
     */
    @Test
    public void TestKnownDecryptionWithEmptyIV() {
@@ -543,7 +546,7 @@ public class TestSplitKeyEncryption {
    }
 
    /**
-    * Test if a given encrypted text with a missing format id throws an exception.
+    * Test if a given encrypted text with a missing IV throws an exception.
     */
    @Test
    public void TestKnownDecryptionWithMissingIV() {
