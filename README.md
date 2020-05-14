@@ -277,9 +277,9 @@ A "compressed integer" encodes an unsigned integer in a variable length format. 
 | First bits  | Length (in bytes) | Valuation |
 | :---: | :---: | ---: |
 |00 | 1 | 0 - 63 |
-|01 | 2 | 64 - 16447 |
-|10 | 3 | 16448 - 4210751 |
-|11 | 4 | 4210752 - 1077952575 |
+|01 | 2 | 64 - 16,447 |
+|10 | 3 | 16,448 - 4,210,751 |
+|11 | 4 | 4,210,752 - 1,077,952,575 |
 
 ## Contributing
 
