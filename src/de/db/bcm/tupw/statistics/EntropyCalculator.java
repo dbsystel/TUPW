@@ -142,13 +142,9 @@ public class EntropyCalculator {
     * maximum possible entropy the actual entropy value is.</p>
     *
     * @return Relative entropy
-    * @throws UnsupportedOperationException if there are not enough bytes sampled
     */
-   public double getRelativeEntropy() throws UnsupportedOperationException {
-      if (m_ByteCount > 1)
-         return getEntropy() * 0.125; // Maximum entropy is 8, so relative entropy is entropy divided by 8
-      else
-         throw new UnsupportedOperationException("At least 2 bytes are needed to calculate the relative entropy");
+   public double getRelativeEntropy() {
+      return getEntropy() * 0.125; // Maximum entropy is 8, so relative entropy is entropy divided by 8
    }
 
    /**
