@@ -60,6 +60,7 @@
  *     2020-03-26: V5.0.0: Provide interfaces for strings, character arrays and byte arrays. fhs
  *     2020-03-31: V5.0.1: Added some finals. fhs
  *     2020-04-22: V5.1.0: Corrected number range bug in class 'PackedUnsignedInteger'. fhs
+ *     2020-05-14: V5.1.1: Removed unnecessary byte counting when checking source bytes. fhs
  */
 package de.db.bcm.tupw.crypto;
 
@@ -85,7 +86,7 @@ import java.util.Objects;
  * Implement encryption by key generated from several source bytes and a key
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 5.1.0
+ * @version 5.1.1
  */
 
 public class SplitKeyEncryption implements AutoCloseable {
@@ -666,8 +667,6 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @throws NullPointerException     if any sourceByte array is {@code null}
     */
    private void checkSourceBytes(final byte[]... sourceBytes) throws IllegalArgumentException, NullPointerException {
-      int totalLength = 0;
-
       EntropyCalculator ec = new EntropyCalculator();
 
       int sourceLength;
@@ -679,7 +678,6 @@ public class SplitKeyEncryption implements AutoCloseable {
 
          if (sourceLength > 0) {
             ec.addBytes(sourceBytes[i]);
-            totalLength += sourceLength;
          } else
             throw new IllegalArgumentException((i + 1) + ". source byte array has 0 length");
       }
@@ -693,10 +691,10 @@ public class SplitKeyEncryption implements AutoCloseable {
             throw new IllegalArgumentException("There is no information provided in the source bytes (i.e. there are only identical byte values). Use bytes with varying values.");
       }
 
-      if (totalLength < MINIMUM_SOURCE_BYTES_LENGTH)
+      if (ec.getCount() < MINIMUM_SOURCE_BYTES_LENGTH)
          throw new IllegalArgumentException("There are less than " + MINIMUM_SOURCE_BYTES_LENGTH + " source bytes");
 
-      if (totalLength > MAXIMUM_SOURCE_BYTES_LENGTH)
+      if (ec.getCount() > MAXIMUM_SOURCE_BYTES_LENGTH)
          throw new IllegalArgumentException("There are more than " + MAXIMUM_SOURCE_BYTES_LENGTH + " source bytes");
    }
 

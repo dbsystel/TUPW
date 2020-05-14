@@ -23,6 +23,8 @@
  *     2020-03-13: V1.1.0: Handle null arguments. fhs
  *     2020-03-23: V1.2.0: Restructured source code according to DBS programming guidelines. fhs
  *     2020-04-28: V1.2.1: Remove unused variable declaration. fhs
+ *     2020-05-14: V1.3.0: Expose no. of processed bytes as a read-only property and corrected
+ *                         calculation of relative entropy. fhs
  */
 
 package de.db.bcm.tupw.statistics;
@@ -34,7 +36,7 @@ import java.util.Objects;
  * Class to calculate the entropy of byte arrays
  *
  * @author Frank Schwab
- * @version 1.2.1
+ * @version 1.3.0
  */
 public class EntropyCalculator {
    //******************************************************************
@@ -144,7 +146,7 @@ public class EntropyCalculator {
     */
    public double getRelativeEntropy() throws UnsupportedOperationException {
       if (m_ByteCount > 1)
-         return getEntropy() / Math.log(m_ByteCount) * LOG_2;
+         return getEntropy() * 0.125; // Maximum entropy is 8, so relative entropy is entropy divided by 8
       else
          throw new UnsupportedOperationException("At least 2 bytes are needed to calculate the relative entropy");
    }
@@ -163,5 +165,14 @@ public class EntropyCalculator {
          result = (int) Math.round((getEntropy() * m_ByteCount));
 
       return result;
+   }
+
+   /**
+    * Gets the count of bytes that have been processed
+    *
+    * @return Number of bytes that have been processed
+    */
+   public int getCount() {
+      return m_ByteCount;
    }
 }
