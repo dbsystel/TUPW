@@ -278,8 +278,8 @@ A "compressed integer" encodes an unsigned integer in a variable length format. 
 | :---: | :---: | ---: |
 |00 | 1 | 0 - 63 |
 |01 | 2 | 64 - 16447 |
-|10 | 3 | 16448 - 4210687 |
-|11 | 4 | 4210688 - 1077936127 |
+|10 | 3 | 16448 - 4210751 |
+|11 | 4 | 4210752 - 1077952575 |
 
 ## Contributing
 
