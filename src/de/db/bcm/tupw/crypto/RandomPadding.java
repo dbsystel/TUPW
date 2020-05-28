@@ -25,6 +25,7 @@
  *     2020-03-13: V1.1.0: Added checks for null. fhs
  *     2020-03-16: V1.1.1: Added text to UnsupportedOperationException. fhs
  *     2020-03-23: V1.2.0: Restructured source code according to DBS programming guidelines. fhs
+ *     2020-05-28: V2.0.0: Removed unnecessary "RemovePadding" method. fhs
  */
 package de.db.bcm.tupw.crypto;
 
@@ -39,7 +40,7 @@ import java.util.Objects;
  * It can only be used to pad data where the length is known.</p>
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.2.0
+ * @version 2.0.0
  */
 public class RandomPadding {
    //******************************************************************
@@ -100,19 +101,6 @@ public class RandomPadding {
       }
 
       return result;
-   }
-
-   /**
-    * Remove padding bytes from source data
-    *
-    * <p>Note: Random padding can not be removed.</p>
-    *
-    * @param paddedSourceData Data with padding bytes
-    * @return Never
-    * @throws UnsupportedOperationException Random padding can not be removed
-    */
-   public static byte[] removePadding(final byte[] paddedSourceData) throws UnsupportedOperationException {
-      throw new UnsupportedOperationException("Random padding can not be removed");
    }
 
 
