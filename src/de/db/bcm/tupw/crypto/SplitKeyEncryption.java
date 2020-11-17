@@ -61,9 +61,11 @@
  *     2020-03-31: V5.0.1: Added some finals. fhs
  *     2020-04-22: V5.1.0: Corrected number range bug in class 'PackedUnsignedInteger'. fhs
  *     2020-05-14: V5.1.1: Removed unnecessary byte counting when checking source bytes. fhs
+ *     2020-11-13: V5.3.0: Implemented V6 of the encoded format. fhs
  */
 package de.db.bcm.tupw.crypto;
 
+import de.db.bcm.tupw.arrays.Base32Encoding;
 import de.db.bcm.tupw.statistics.EntropyCalculator;
 import de.db.bcm.tupw.strings.CharacterArrayHelper;
 import de.db.bcm.tupw.strings.StringSplitter;
@@ -86,7 +88,7 @@ import java.util.Objects;
  * Implement encryption by key generated from several source bytes and a key
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 5.1.1
+ * @version 5.3.0
  */
 
 public class SplitKeyEncryption implements AutoCloseable {
@@ -110,7 +112,11 @@ public class SplitKeyEncryption implements AutoCloseable {
     * Boundaries for valid format ids
     */
    private static final byte FORMAT_ID_MIN = (byte) 1;
-   private static final byte FORMAT_ID_MAX = (byte) 5;
+   private static final byte FORMAT_ID_MAX = (byte) 6;
+
+   private static final byte FORMAT_ID_USE_BLINDING = (byte) 3;
+   private static final byte FORMAT_ID_USE_CORRECT_HMAC_KEY = (byte) 5;
+   private static final byte FORMAT_ID_USE_SAFE_ENCODING = (byte) 6;
 
    /**
     * HMAC algorithm to be used
@@ -146,6 +152,7 @@ public class SplitKeyEncryption implements AutoCloseable {
             AES_ALGORITHM_NAME + "/CTR/NoPadding",
             AES_ALGORITHM_NAME + "/CTR/NoPadding",
             AES_ALGORITHM_NAME + "/CBC/NoPadding",
+            AES_ALGORITHM_NAME + "/CBC/NoPadding",
             AES_ALGORITHM_NAME + "/CBC/NoPadding"};
 
    /**
@@ -156,7 +163,8 @@ public class SplitKeyEncryption implements AutoCloseable {
    /**
     * Separator character in key representation
     */
-   private static final String PARTS_SEPARATOR = "$";
+   private static final String OLD_PARTS_SEPARATOR = "$";
+   private static final String SAFE_PARTS_SEPARATOR = "1";
 
    /**
     * Minimum source bytes length
@@ -707,28 +715,47 @@ public class SplitKeyEncryption implements AutoCloseable {
     *                                  number of '$' separated parts
     */
    private EncryptionParts getPartsFromPrintableString(final String encryptionText) throws IllegalArgumentException {
-      final String[] parts = StringSplitter.split(encryptionText, PARTS_SEPARATOR);  // Use my own string splitter to avoid Java's RegEx inefficiency
-//        parts = encryptionText.split("\\Q$\\E");   // This should have been just "$". But Java stays true to it's motto: Why make it simple when there's a complicated way to do it?
+      char formatCharacter = encryptionText.charAt(0);
 
-      final EncryptionParts result = new EncryptionParts();
+      byte formatId;
 
       try {
-         result.formatId = Byte.parseByte(parts[0]);
+         formatId = Byte.parseByte(String.valueOf(formatCharacter));
       } catch (final NumberFormatException e) {
          throw new IllegalArgumentException("Invalid format id");
       }
 
-      if ((result.formatId >= FORMAT_ID_MIN) && (result.formatId <= FORMAT_ID_MAX)) {
-         if (parts.length == 4) {
-            Base64.Decoder b64Decoder = Base64.getDecoder();
-
-            result.iv = b64Decoder.decode(parts[1]);
-            result.encryptedData = b64Decoder.decode(parts[2]);
-            result.checksum = b64Decoder.decode(parts[3]);
-         } else
-            throw new IllegalArgumentException("Number of '$' separated parts in encrypted text is not 4");
-      } else
+      if ((formatId < FORMAT_ID_MIN) || (formatId > FORMAT_ID_MAX))
          throw new IllegalArgumentException("Unknown format id");
+
+      String separator;
+
+      if (formatId >= FORMAT_ID_USE_SAFE_ENCODING)
+         separator = SAFE_PARTS_SEPARATOR;
+      else
+         separator = OLD_PARTS_SEPARATOR;
+
+      final String[] parts = StringSplitter.split(encryptionText, separator);  // Use my own string splitter to avoid Java's RegEx inefficiency
+//        parts = encryptionText.split("\\Q$\\E");   // This should have been just "$". But Java stays true to it's motto: Why make it simple when there's a complicated way to do it?
+
+      final EncryptionParts result = new EncryptionParts();
+
+      result.formatId = formatId;
+
+         if (parts.length == 4) {
+            if (formatId >= FORMAT_ID_USE_SAFE_ENCODING) {
+               result.iv = Base32Encoding.decodeSpellSafe(parts[1]);
+               result.encryptedData = Base32Encoding.decodeSpellSafe(parts[2]);
+               result.checksum = Base32Encoding.decodeSpellSafe(parts[3]);
+            } else {
+               Base64.Decoder b64Decoder = Base64.getDecoder();
+
+               result.iv = b64Decoder.decode(parts[1]);
+               result.encryptedData = b64Decoder.decode(parts[2]);
+               result.checksum = b64Decoder.decode(parts[3]);
+            }
+         } else
+            throw new IllegalArgumentException("Number of '" + separator + "' separated parts in encrypted text is not 4");
 
       return result;
    }
@@ -742,7 +769,7 @@ public class SplitKeyEncryption implements AutoCloseable {
     */
    private byte[] getUnpaddedStringBytes(final byte formatId, final byte[] paddedDecryptedStringBytes) {
       // Formats 1 and 2 use padding. Starting from format 3 blinding is used.
-      if (formatId >= 3)
+      if (formatId >= FORMAT_ID_USE_BLINDING)
          return ByteArrayBlinding.unBlindByteArray(paddedDecryptedStringBytes);
       else
          return ArbitraryTailPadding.removePadding(paddedDecryptedStringBytes);
@@ -892,9 +919,9 @@ public class SplitKeyEncryption implements AutoCloseable {
    /**
     * Calculate capacity of StringBuilder for encryption parts
     *
-    * <p>The size of the final string is 4 + SumOf(ceil(ArrayLength * 4 / 3)).
+    * <p>The size of the final string is 4 + SumOf(ceil(ArrayLength * 8 / 5)).
     * This is a complicated expression which is overestimated by the easier
-    * expression 4 + SumOfArrayLengths * 3 / 2</p>
+    * expression 4 + SumOfArrayLengths * 7 / 4</p>
     *
     * @param encryptionParts Encryption parts to calculate the capacity for
     * @return Slightly overestimated capacity of the StringBuilder for the
@@ -903,7 +930,7 @@ public class SplitKeyEncryption implements AutoCloseable {
    private int calculateStringBuilderCapacityForEncryptionParts(final EncryptionParts encryptionParts) {
       final int arrayLengths = encryptionParts.iv.length + encryptionParts.encryptedData.length + encryptionParts.checksum.length;
 
-      return 4 + arrayLengths + (arrayLengths >> 1);
+      return 4 + arrayLengths + (arrayLengths >>> 1) + (arrayLengths >>> 2);
    }
 
    /**
@@ -913,16 +940,15 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @return Printable string of the encrypted parts
     */
    private String makeEncryptionStringFromEncryptionParts(final EncryptionParts encryptionParts) {
-      Base64.Encoder b64Encoder = Base64.getEncoder().withoutPadding();
       StringBuilder myStringBuilder = new StringBuilder(calculateStringBuilderCapacityForEncryptionParts(encryptionParts));
 
       myStringBuilder.append(encryptionParts.formatId);
-      myStringBuilder.append(PARTS_SEPARATOR);
-      myStringBuilder.append(b64Encoder.encodeToString(encryptionParts.iv));
-      myStringBuilder.append(PARTS_SEPARATOR);
-      myStringBuilder.append(b64Encoder.encodeToString(encryptionParts.encryptedData));
-      myStringBuilder.append(PARTS_SEPARATOR);
-      myStringBuilder.append(b64Encoder.encodeToString(encryptionParts.checksum));
+      myStringBuilder.append(SAFE_PARTS_SEPARATOR);
+      myStringBuilder.append(Base32Encoding.encodeSpellSafeNoPadding(encryptionParts.iv));
+      myStringBuilder.append(SAFE_PARTS_SEPARATOR);
+      myStringBuilder.append(Base32Encoding.encodeSpellSafeNoPadding(encryptionParts.encryptedData));
+      myStringBuilder.append(SAFE_PARTS_SEPARATOR);
+      myStringBuilder.append(Base32Encoding.encodeSpellSafeNoPadding(encryptionParts.checksum));
 
       return myStringBuilder.toString();
    }
@@ -941,7 +967,7 @@ public class SplitKeyEncryption implements AutoCloseable {
 
       SecureSecretKeySpec hmacSecretKeySpec;
 
-      if (encryptionParts.formatId >= 5)
+      if (encryptionParts.formatId >= FORMAT_ID_USE_CORRECT_HMAC_KEY)
          hmacSecretKeySpec = getSecretKeySpecForHMACDependingOnSubject(subjectBytes);
       else
          hmacSecretKeySpec = getDefaultSecretKeySpecForHMAC();

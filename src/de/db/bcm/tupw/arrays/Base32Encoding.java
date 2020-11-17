@@ -1,0 +1,411 @@
+/*
+ * SPDX-FileCopyrightText: 2020 DB Systel GmbH
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * You may not use this file except in compliance with the License.
+ *
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Author: Frank Schwab, DB Systel GmbH
+ *
+ * Version: 1.0.0
+ *
+ * Change history:
+ *    2020-11-12: V1.0.0: Created.
+ */
+
+package de.db.bcm.tupw.arrays;
+
+import java.util.Arrays;
+import java.util.Objects;
+
+/**
+ * Converts byte arrays from and to Base32 encoding either, as specified in RFC4868, or in spell-safe format.
+ *
+ * @author Frank Schwab
+ * @version 1.0.0
+ */
+
+public class Base32Encoding {
+   //******************************************************************
+   // Private constants
+   //******************************************************************
+
+   // Error messages
+   private static final String ERROR_TEXT_INVALID_BYTE_VALUE = "Byte is not a valid Base32 value";
+   private static final String ERROR_TEXT_INVALID_CHARACTER = "Character is not a valid Base32 character";
+   private static final String ERROR_TEXT_INVALID_STRING_LENGTH = "Invalid Base32 string length";
+
+   // Processing constants
+   private static final byte BITS_PER_CHARACTER = 5;
+   private static final byte BITS_PER_BYTE = 8;
+   private static final byte BITS_DIFFERENCE = BITS_PER_BYTE - BITS_PER_CHARACTER;
+   private static final byte CHARACTER_MASK = 31;
+   private static final byte INVALID_CHARACTER_VALUE = -1;
+   private static final int BYTE_MASK = 255;
+   private static final char PADDING_CHARACTER = '=';
+   private static final int CODEPOINT_ZERO = 48;
+
+   // Mapping tables
+
+   // RFC 4648
+
+   /*
+    * This is the RFC 4648 mapping:
+    *
+    * Value      0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31
+    * Character  A  B  C  D  E  F  G  H  I  J  K  L  M  N  O  P  Q  R  S  T  U  V  W  X  Y  Z  2  3  4  5  6  7
+    */
+
+   /**
+    * Mapping from a byte value to an RFC 4648 Base32 character
+    */
+   private static final char[] RFC_4648_VALUE_TO_CHAR = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+            'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+            'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
+            'Y', 'Z', '2', '3', '4', '5', '6', '7'};
+
+   /**
+    * Mapping from an RFC 4648 Base32 character to byte value ('0'-based)
+    */
+   private static final byte[] RFC_4648_CHAR_TO_VALUE = {-1, -1, 26, 27, 28, 29, 30, 31,
+            -1, -1, -1, -1, -1, -1, -1, -1,
+            -1, 0, 1, 2, 3, 4, 5, 6,
+            7, 8, 9, 10, 11, 12, 13, 14,
+            15, 16, 17, 18, 19, 20, 21, 22,
+            23, 24, 25, -1, -1, -1, -1, -1,
+            -1, 0, 1, 2, 3, 4, 5, 6,
+            7, 8, 9, 10, 11, 12, 13, 14,
+            15, 16, 17, 18, 19, 20, 21, 22,
+            23, 24, 25};
+
+   // Spell-safe
+
+   /*
+    * This is the spell-safe mapping:
+    *
+    * Value      0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31
+    * Character  2  3  4  5  6  7  8  9  C  D  G  H  J  K  N  P  T  V  X  Z  c  d  g  h  j  k  n  p  t  v  x  z
+    *
+    * The mapping is constructed so that there are no vowels, no B that can be confused with 8,
+    * no S that can be confused with 5, no O or Q that can be confused with 0,
+    * no 1, I and L that can be confused with each other, no R that can be confused with P and
+    * no U and W that can be confused with each other and with V.
+    */
+
+   /**
+    * Mapping from a byte value to a spell-safe Base32 character
+    */
+   private static final char[] SPELL_SAFE_VALUE_TO_CHAR = {'2', '3', '4', '5', '6', '7', '8', '9',
+            'C', 'D', 'G', 'H', 'J', 'K', 'N', 'P',
+            'T', 'V', 'X', 'Z', 'c', 'd', 'g', 'h',
+            'j', 'k', 'n', 'p', 't', 'v', 'x', 'z'};
+
+   /**
+    * Mapping from a spell-safe Base32 character to byte value ('0'-based)
+    */
+   private static final byte[] SPELL_SAFE_CHAR_TO_VALUE = {-1, -1, 0, 1, 2, 3, 4, 5,
+            6, 7, -1, -1, -1, -1, -1, -1,
+            -1, -1, -1, 8, 9, -1, -1, 10,
+            11, -1, 12, 13, -1, -1, 14, -1,
+            15, -1, -1, -1, 16, -1, 17, -1,
+            18, -1, 19, -1, -1, -1, -1, -1,
+            -1, -1, -1, 20, 21, -1, -1, 22,
+            23, -1, 24, 25, -1, -1, 26, -1,
+            27, -1, -1, -1, 28, -1, 29, -1,
+            30, -1, 31};
+
+   //******************************************************************
+   // Public methods
+   //******************************************************************
+
+   // Decode methods
+
+   /**
+    * Decodes a Base32 string into a byte array
+    *
+    * @param encodedValue The Base32 string to decode
+    * @return The decoded Base32 string as a byte array
+    */
+   public static byte[] decode(String encodedValue) {
+      return decodeWorker(encodedValue, RFC_4648_CHAR_TO_VALUE);
+   }
+
+   /**
+    * Decodes a spell-safe Base32 string into a byte array
+    *
+    * @param encodedValue The Base32 string to decode
+    * @return The decoded spell-safe Base32 string as a byte array
+    */
+   public static byte[] decodeSpellSafe(String encodedValue) {
+      return decodeWorker(encodedValue, SPELL_SAFE_CHAR_TO_VALUE);
+   }
+
+   // Encode methods
+
+   /**
+    * Encodes a byte array into a padded Base32 string
+    *
+    * @param aByteArray The byte array to encode
+    * @return The Base32 representation of the bytes in {@code aByteArray}
+    */
+   public static String encode(byte[] aByteArray) {
+      return encodeWorker(aByteArray, RFC_4648_VALUE_TO_CHAR, true);
+   }
+
+   /**
+    * Encodes a byte array into an unpadded Base32 string
+    *
+    * @param aByteArray The byte array to encode
+    * @return The Base32 representation of the bytes in {@code aByteArray}
+    */
+   public static String encodeNoPadding(byte[] aByteArray) {
+      return encodeWorker(aByteArray, RFC_4648_VALUE_TO_CHAR, false);
+   }
+
+   /**
+    * Encodes a byte array into a padded spell-safe Base32 string
+    *
+    * @param aByteArray The byte array to encode
+    * @return The spell-safe Base32 representation of the bytes in {@code aByteArray}
+    */
+   public static String encodeSpellSafe(byte[] aByteArray) {
+      return encodeWorker(aByteArray, SPELL_SAFE_VALUE_TO_CHAR, true);
+   }
+
+   /**
+    * Encodes a byte array into an unpadded spell-safe Base32 string
+    *
+    * @param aByteArray The byte array to encode
+    * @return The spell-safe Base32 representation of the bytes in {@code aByteArray}
+    */
+   public static String encodeSpellSafeNoPadding(byte[] aByteArray) {
+      return encodeWorker(aByteArray, SPELL_SAFE_VALUE_TO_CHAR, false);
+   }
+
+   //******************************************************************
+   // Public methods
+   //******************************************************************
+
+   // Internal encode and decode methods
+   // Decode methods
+
+   /**
+    * ecodes a Base32 string into a byte array
+    *
+    * @param encodedValue  The Base32 string to decode
+    * @param mapCharToByte Array with mappings from the character to the corresponding byte
+    * @return The decoded Base32 string as a byte array
+    */
+   private static byte[] decodeWorker(String encodedValue, byte[] mapCharToByte) {
+      Objects.requireNonNull(encodedValue, "encodedValue must not be null");
+
+      final int lengthWithoutPadding = lengthWithoutTrailingChar(encodedValue, PADDING_CHARACTER);
+
+      if (lengthWithoutPadding > 0) {
+         if (isLengthValid(encodedValue.length(), lengthWithoutPadding)) {
+            final int byteCount = (lengthWithoutPadding * BITS_PER_CHARACTER) / BITS_PER_BYTE;
+            final byte[] result = new byte[byteCount];
+
+            byte actByte = 0;
+            byte bitsRemaining = BITS_PER_BYTE;
+            byte mask;
+            int arrayIndex = 0;
+
+            for (int i = 0; i < lengthWithoutPadding; i++) {
+               byte charValue = charToValue(encodedValue.charAt(i), mapCharToByte);
+
+               if (bitsRemaining > BITS_PER_CHARACTER) {
+                  mask = (byte) (charValue << (bitsRemaining - BITS_PER_CHARACTER));
+                  actByte |= mask;
+                  bitsRemaining -= BITS_PER_CHARACTER;
+               } else {
+                  mask = (byte) (charValue >>> (BITS_PER_CHARACTER - bitsRemaining));
+                  actByte |= mask;
+                  result[arrayIndex] = actByte;
+                  arrayIndex++;
+                  bitsRemaining += BITS_DIFFERENCE;
+
+                  if (bitsRemaining < BITS_PER_BYTE)
+                     actByte = (byte) (charValue << bitsRemaining);
+                  else
+                     actByte = 0;
+               }
+            }
+
+            // If we did not end with a full byte, write the remainder
+            if (arrayIndex < byteCount)
+               result[arrayIndex] = actByte;
+
+            return result;
+         } else
+            throw new IllegalArgumentException(ERROR_TEXT_INVALID_STRING_LENGTH);
+      } else
+         return new byte[0];
+   }
+
+   // Encode methods
+
+   /**
+    * Encodes a byte array into a Base32 string
+    *
+    * @param aByteArray    The byte array to encode
+    * @param mapByteToChar Array with mappings from the byte to the corresponding character
+    * @param withPadding {@code True}: Result will be padded, {@code False}: Result will not be padded
+    * @return The Base32 representation of the bytes in {@code aByteArray}
+    */
+   private static String encodeWorker(byte[] aByteArray, char[] mapByteToChar, boolean withPadding) {
+      int[] lastIndex = new int[1];   // Since Java can not return a value in a call parameter we need to specify this as an array
+      char[] resultArray = encodeInternal(aByteArray, lastIndex, mapByteToChar);
+
+      if (withPadding) {
+         Arrays.fill(resultArray, lastIndex[0], resultArray.length, PADDING_CHARACTER);
+         lastIndex[0] = resultArray.length;
+      }
+
+      String result = new String(resultArray, 0, lastIndex[0]);
+
+      Arrays.fill(resultArray, '\0');
+
+      return result;
+   }
+
+   /**
+    * Encodes a byte array into Base32 character array
+    *
+    * @param aByteArray    The byte array to encode
+    * @param lastIndex     The last index to use. This is a return value!
+    * @param mapByteToChar Array with mappings from the byte to the corresponding character
+    * @return The encoded bytes as a character array
+    */
+   private static char[] encodeInternal(byte[] aByteArray, int[] lastIndex, char[] mapByteToChar) {
+      Objects.requireNonNull(aByteArray, "aByteArray must not be null");
+
+      if (aByteArray.length > 0) {
+         final int charCount = (int) (Math.ceil((double) aByteArray.length / BITS_PER_CHARACTER) * BITS_PER_BYTE);
+
+         char[] result = new char[charCount];
+
+         byte actValue = 0;
+         byte bitsRemaining = BITS_PER_CHARACTER;
+         int arrayIndex = 0;
+
+         for (byte b : aByteArray) {
+            final int bNoSignExtension = b & BYTE_MASK;   // This stupid Java implicit sign extended conversion to int!!!!
+
+            actValue |= bNoSignExtension >>> (BITS_PER_BYTE - bitsRemaining);
+            result[arrayIndex] = valueToChar(actValue, mapByteToChar);
+            arrayIndex++;
+
+            if (bitsRemaining <= BITS_DIFFERENCE) {
+               actValue = (byte) ((byte) (bNoSignExtension >>> (BITS_DIFFERENCE - bitsRemaining)) & CHARACTER_MASK);
+               result[arrayIndex] = valueToChar(actValue, mapByteToChar);
+               arrayIndex++;
+               bitsRemaining += BITS_PER_CHARACTER;
+            }
+
+            bitsRemaining -= BITS_DIFFERENCE;
+            actValue = (byte) ((bNoSignExtension << bitsRemaining) & CHARACTER_MASK);
+         }
+
+         // If we did not end with a full char
+         if (arrayIndex < charCount) {
+            result[arrayIndex] = valueToChar(actValue, mapByteToChar);
+            arrayIndex++;
+         }
+
+         lastIndex[0] = arrayIndex;
+
+         return result;
+      } else {
+         lastIndex[0] = 0;
+         return new char[0];
+      }
+   }
+
+   // Mapping methods
+
+   /**
+    * Maps a character to the corresponding byte value
+    *
+    * @param c Character to map
+    * @param mapCharToByte Map array
+    * @return Value corresponding to character {@code c}
+    */
+   private static byte charToValue(char c, byte[] mapCharToByte) {
+      final int index = (int) c - CODEPOINT_ZERO;
+
+      if ((index >= 0) && (index < mapCharToByte.length)) {
+         final byte result = mapCharToByte[index];
+
+         if (result != INVALID_CHARACTER_VALUE)
+            return result;
+         else
+            throw new IllegalArgumentException(ERROR_TEXT_INVALID_CHARACTER);
+      } else
+         throw new IllegalArgumentException(ERROR_TEXT_INVALID_CHARACTER);
+   }
+
+   /**
+    * Maps a value to the corresponding character
+    *
+    * @param b             Value to map
+    * @param mapByteToChar Map array
+    * @return Character corresponding to value {@code b}
+    */
+   private static char valueToChar(byte b, char[] mapByteToChar) throws IllegalArgumentException {
+      if ((b >= 0) && (b < mapByteToChar.length)) {
+         return mapByteToChar[b];
+      } else
+         throw new IllegalArgumentException(ERROR_TEXT_INVALID_BYTE_VALUE);
+   }
+
+   // Length helper methods
+
+   /**
+    * Gets length of string without counting a trailing character
+    *
+    * @param sourceString String to get the length for
+    * @param trailingChar Trailing character to ignore
+    * @return Length of {@code sourceString} without countign {@code trailingChar} at the end
+    */
+   private static int lengthWithoutTrailingChar(String sourceString, char trailingChar) {
+      for (int i = sourceString.length() - 1; i >= 0; i--) {
+         if (sourceString.charAt(i) != trailingChar)
+            return i + 1;
+      }
+
+      // Only padding characters found or length is 0
+      return 0;
+   }
+
+   /**
+    * Tests if data length is valid for a Base32 string
+    *
+    * @param dataLength           Total length of Base32 string
+    * @param lengthWithoutPadding Length of data without padding in Base32 string
+    * @return {@code True}: Length is valid, {@code False}: Length is invalid
+    */
+   private static boolean isLengthValid(int dataLength, int lengthWithoutPadding) {
+      int lastLength = lengthWithoutPadding % BITS_PER_BYTE;
+
+      // 1/3/6 are invalid lengths of the last 8 character block
+      if ((lastLength == 1) || (lastLength == 3) || (lastLength == 6))
+         return false;
+      else
+         if (dataLength != lengthWithoutPadding)
+            return (dataLength % BITS_PER_BYTE) == 0;
+         else
+            return true;
+   }
+}
