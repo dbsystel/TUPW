@@ -18,10 +18,11 @@
  *
  * Author: Frank Schwab, DB Systel GmbH
  *
- * Version: 1.0.0
+ * Version: 1.1.0
  *
  * Change history:
  *    2020-11-12: V1.0.0: Created.
+ *    2020-11-20: V1.1.0: Added interface methods with existing buffers.
  */
 
 package de.db.bcm.tupw.arrays;
@@ -33,7 +34,7 @@ import java.util.Objects;
  * Converts byte arrays from and to Base32 encoding either, as specified in RFC4868, or in spell-safe format.
  *
  * @author Frank Schwab
- * @version 1.0.0
+ * @version 1.1.0
  */
 
 public class Base32Encoding {
@@ -45,6 +46,7 @@ public class Base32Encoding {
    private static final String ERROR_TEXT_INVALID_BYTE_VALUE = "Byte is not a valid Base32 value";
    private static final String ERROR_TEXT_INVALID_CHARACTER = "Character is not a valid Base32 character";
    private static final String ERROR_TEXT_INVALID_STRING_LENGTH = "Invalid Base32 string length";
+   private static final String ERROR_TEXT_DESTINATION_TOO_SMALL = "destinationBuffer is too small";
 
    // Processing constants
    private static final byte BITS_PER_CHARACTER = 5;
@@ -132,23 +134,45 @@ public class Base32Encoding {
    // Decode methods
 
    /**
-    * Decodes a Base32 string into a byte array
+    * Decodes a Base32 string into a new byte array
     *
     * @param encodedValue The Base32 string to decode
     * @return The decoded Base32 string as a byte array
     */
    public static byte[] decode(String encodedValue) {
-      return decodeWorker(encodedValue, RFC_4648_CHAR_TO_VALUE);
+      return decodeNewBufferWithMapping(encodedValue, RFC_4648_CHAR_TO_VALUE);
    }
 
    /**
-    * Decodes a spell-safe Base32 string into a byte array
+    * Decodes a Base32 string into an existing byte array
+    *
+    * @param encodedValue The Base32 string to decode
+    * @param destinationBuffer Byte array where the decoded values are placed
+    * @return The length of the bytes written into the destination buffer
+    */
+   public static int decode(String encodedValue, byte[] destinationBuffer) {
+      return decodeExistingBufferWithMapping(encodedValue, destinationBuffer, RFC_4648_CHAR_TO_VALUE);
+   }
+
+   /**
+    * Decodes a spell-safe Base32 string into a new byte array
     *
     * @param encodedValue The Base32 string to decode
     * @return The decoded spell-safe Base32 string as a byte array
     */
    public static byte[] decodeSpellSafe(String encodedValue) {
-      return decodeWorker(encodedValue, SPELL_SAFE_CHAR_TO_VALUE);
+      return decodeNewBufferWithMapping(encodedValue, SPELL_SAFE_CHAR_TO_VALUE);
+   }
+
+   /**
+    * Decodes a spell-safe Base32 string into an existing byte array
+    *
+    * @param encodedValue The Base32 string to decode
+    * @param destinationBuffer Byte array where the decoded values are placed
+    * @return The length of the bytes written into the destination buffer
+    */
+   public static int decodeSpellSafe(String encodedValue, byte[] destinationBuffer) {
+      return decodeExistingBufferWithMapping(encodedValue, destinationBuffer, SPELL_SAFE_CHAR_TO_VALUE);
    }
 
    // Encode methods
@@ -201,57 +225,87 @@ public class Base32Encoding {
    // Decode methods
 
    /**
-    * ecodes a Base32 string into a byte array
+    * Decode an encoded value to a new byte array with a specified mapping
+    *
+    * @param encodedValue Encoded value to decode
+    * @param mapCharToByte Mapping table to use
+    * @return Newly created byte array with the decoded bytes
+    */
+   private static byte[] decodeNewBufferWithMapping(String encodedValue, byte[] mapCharToByte) {
+      final int byteCount = checkEncodedValue(encodedValue);
+
+      byte[] result = new byte[byteCount];
+
+      if (byteCount > 0)
+         decodeWorker(encodedValue, result, byteCount, mapCharToByte);
+
+      return result;
+   }
+
+   /**
+    * Decode an encoded value to an existing byte array with a specified mapping
+    *
+    * @param encodedValue Encoded value to decode
+    * @param destinationBuffer Byte array where the decoded values are placed
+    * @param mapCharToByte Mapping table to use
+    * @return Number of bytes in the {@code destinationBuffer} that are filled
+    */
+   private static int decodeExistingBufferWithMapping(String encodedValue, byte[] destinationBuffer, byte[] mapCharToByte) {
+      final int byteCount = checkEncodedValue(encodedValue);
+
+      if (byteCount >= destinationBuffer.length) {
+         if (byteCount > 0)
+            decodeWorker(encodedValue, destinationBuffer, byteCount, mapCharToByte);
+
+         return byteCount;
+      }
+      else
+         throw new IllegalArgumentException(ERROR_TEXT_DESTINATION_TOO_SMALL);
+   }
+
+   /**
+    * Decodes a Base32 string into a byte array
     *
     * @param encodedValue  The Base32 string to decode
+    * @param destinationBuffer Byte array where the result is placed
+    * @param byteCount No. of bytes to be placed in {@code destinationBuffer}
     * @param mapCharToByte Array with mappings from the character to the corresponding byte
-    * @return The decoded Base32 string as a byte array
     */
-   private static byte[] decodeWorker(String encodedValue, byte[] mapCharToByte) {
-      Objects.requireNonNull(encodedValue, "encodedValue must not be null");
+   private static void decodeWorker(String encodedValue, byte[] destinationBuffer, int byteCount, byte[] mapCharToByte) {
+      byte actByte = 0;
+      byte bitsRemaining = BITS_PER_BYTE;
+      byte mask;
+      int arrayIndex = 0;
 
-      final int lengthWithoutPadding = lengthWithoutTrailingChar(encodedValue, PADDING_CHARACTER);
+      for (int i = 0; i < encodedValue.length(); i++) {
+         char encodedChar = encodedValue.charAt(i);
 
-      if (lengthWithoutPadding > 0) {
-         if (isLengthValid(encodedValue.length(), lengthWithoutPadding)) {
-            final int byteCount = (lengthWithoutPadding * BITS_PER_CHARACTER) / BITS_PER_BYTE;
-            final byte[] result = new byte[byteCount];
+         if (encodedChar == PADDING_CHARACTER)
+            break;
 
-            byte actByte = 0;
-            byte bitsRemaining = BITS_PER_BYTE;
-            byte mask;
-            int arrayIndex = 0;
+         byte charValue = charToValue(encodedChar, mapCharToByte);
 
-            for (int i = 0; i < lengthWithoutPadding; i++) {
-               byte charValue = charToValue(encodedValue.charAt(i), mapCharToByte);
+         if (bitsRemaining > BITS_PER_CHARACTER) {
+            mask = (byte) (charValue << (bitsRemaining - BITS_PER_CHARACTER));
+            actByte |= mask;
+            bitsRemaining -= BITS_PER_CHARACTER;
+         } else {
+            mask = (byte) (charValue >>> (BITS_PER_CHARACTER - bitsRemaining));
+            actByte |= mask;
+            destinationBuffer[arrayIndex] = actByte;
+            arrayIndex++;
+            bitsRemaining += BITS_DIFFERENCE;
 
-               if (bitsRemaining > BITS_PER_CHARACTER) {
-                  mask = (byte) (charValue << (bitsRemaining - BITS_PER_CHARACTER));
-                  actByte |= mask;
-                  bitsRemaining -= BITS_PER_CHARACTER;
-               } else {
-                  mask = (byte) (charValue >>> (BITS_PER_CHARACTER - bitsRemaining));
-                  actByte |= mask;
-                  result[arrayIndex] = actByte;
-                  arrayIndex++;
-                  bitsRemaining += BITS_DIFFERENCE;
+            if (bitsRemaining < BITS_PER_BYTE)
+               actByte = (byte) (charValue << bitsRemaining);
+            else
+               actByte = 0;
+         }
+      }
 
-                  if (bitsRemaining < BITS_PER_BYTE)
-                     actByte = (byte) (charValue << bitsRemaining);
-                  else
-                     actByte = 0;
-               }
-            }
-
-            // If we did not end with a full byte, write the remainder
-            if (arrayIndex < byteCount)
-               result[arrayIndex] = actByte;
-
-            return result;
-         } else
-            throw new IllegalArgumentException(ERROR_TEXT_INVALID_STRING_LENGTH);
-      } else
-         return new byte[0];
+      // If we did not end with a full byte, write the remainder
+      if (arrayIndex < byteCount)
+         destinationBuffer[arrayIndex] = actByte;
    }
 
    // Encode methods
@@ -373,6 +427,26 @@ public class Base32Encoding {
    // Length helper methods
 
    /**
+    * Checks if {@code encodedValue} has a valid length and returns it, if it has one
+    *
+    * @param encodedValue The encoded value to check
+    * @return The number of decoded bytes in the encdoed value
+    */
+   private static int checkEncodedValue(String encodedValue) {
+      Objects.requireNonNull(encodedValue, "encodedValue must not be null");
+
+      final int lengthWithoutPadding = lengthWithoutTrailingChar(encodedValue, PADDING_CHARACTER);
+
+      if (lengthWithoutPadding > 0)
+         if (isLengthValid(encodedValue.length(), lengthWithoutPadding))
+            return (lengthWithoutPadding * BITS_PER_CHARACTER) / BITS_PER_BYTE;
+         else
+            throw new IllegalArgumentException(ERROR_TEXT_INVALID_STRING_LENGTH);
+      else
+         return 0;
+   }
+
+   /**
     * Gets length of string without counting a trailing character
     *
     * @param sourceString String to get the length for
@@ -403,9 +477,9 @@ public class Base32Encoding {
       if ((lastLength == 1) || (lastLength == 3) || (lastLength == 6))
          return false;
       else
-         if (dataLength != lengthWithoutPadding)
-            return (dataLength % BITS_PER_BYTE) == 0;
-         else
-            return true;
+      if (dataLength != lengthWithoutPadding)
+         return (dataLength % BITS_PER_BYTE) == 0;
+      else
+         return true;
    }
 }
