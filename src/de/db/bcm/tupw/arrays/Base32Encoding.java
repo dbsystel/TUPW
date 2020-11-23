@@ -253,7 +253,7 @@ public class Base32Encoding {
    private static int decodeExistingBufferWithMapping(String encodedValue, byte[] destinationBuffer, byte[] mapCharToByte) {
       final int byteCount = checkEncodedValue(encodedValue);
 
-      if (byteCount >= destinationBuffer.length) {
+      if (byteCount <= destinationBuffer.length) {
          if (byteCount > 0)
             decodeWorker(encodedValue, destinationBuffer, byteCount, mapCharToByte);
 
