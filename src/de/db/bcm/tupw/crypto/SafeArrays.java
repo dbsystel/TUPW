@@ -23,6 +23,7 @@
  *     2018-06-18: V1.0.1: A few more comments and a small optimization. fhs
  *     2018-08-15: V1.0.2: Added a few "finals". fhs
  *     2020-03-23: V1.1.0: Restructured source code according to DBS programming guidelines. fhs
+ *     2020-12-04: V1.1.1: Corrected several SonarLint findings. fhs
  */
 package de.db.bcm.tupw.crypto;
 
@@ -32,9 +33,22 @@ import java.util.Objects;
  * Implement cryptographically safe array operations
  *
  * @author FrankSchwab, DB Systel GmbH
- * @version 1.1.0
+ * @version 1.1.1
  */
 public final class SafeArrays {
+   //******************************************************************
+   // Constructor
+   //******************************************************************
+
+   /**
+    * Private constructor
+    *
+    * <p>This class is not meant to be instantiated.</p>
+    */
+   private SafeArrays() {
+      throw new IllegalStateException("Utility class");
+   }
+
    //******************************************************************
    // Public methods
    //******************************************************************
@@ -51,7 +65,7 @@ public final class SafeArrays {
     * @param b Second byte array to compare
     * @return {@code true}, if both byte arrays are equal, {@code false}, if not
     */
-   public static boolean constantTimeEquals(final byte[] a, final byte[] b) throws NullPointerException {
+   public static boolean constantTimeEquals(final byte[] a, final byte[] b) {
       Objects.requireNonNull(a, "First byte array is null");
       Objects.requireNonNull(b, "Second byte array is null");
 
@@ -64,7 +78,7 @@ public final class SafeArrays {
       for (int i = 0; i < minArrayLength; i++)
          diff |= a[i] ^ b[i];
 
-      // Diff will only be 0 if bytes and lenghts were equal
+      // Diff will only be 0 if bytes and lengths were equal
       return diff == 0;
    }
 }

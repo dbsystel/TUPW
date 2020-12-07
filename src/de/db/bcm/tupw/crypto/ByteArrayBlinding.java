@@ -28,6 +28,7 @@
  *     2020-03-20: V1.4.0: Refactored blinded bytes build process. fhs
  *     2020-03-23: V1.5.0: Restructured source code according to DBS programming guidelines. fhs
  *     2020-04-28: V1.5.1: Added missing null check. fhs
+ *     2020-12-04: V1.5.2: Corrected several SonarLint findings. fhs
  */
 package de.db.bcm.tupw.crypto;
 
@@ -41,7 +42,7 @@ import java.util.Objects;
  * Implements blinding for byte arrays
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.5.1
+ * @version 1.5.2
  */
 public class ByteArrayBlinding {
    //******************************************************************
@@ -51,29 +52,43 @@ public class ByteArrayBlinding {
    /**
     * Class level secure pseudo random number generator
     */
-   private final static SecureRandom SECURE_PRNG = SecureRandomFactory.getSensibleSingleton();
+   private static final SecureRandom SECURE_PRNG = SecureRandomFactory.getSensibleSingleton();
 
    /*
     * Constants for error messages
     */
-   private final static String ERROR_MESSAGE_INVALID_ARRAY = "Invalid blinded byte array";
-   private final static String ERROR_MESSAGE_INVALID_MIN_LENGTH = "Invalid minimum length";
-   private final static String ERROR_MESSAGE_NULL_SOURCE_BYTES = "Source bytes is null";
+   private static final String ERROR_MESSAGE_INVALID_ARRAY = "Invalid blinded byte array";
+   private static final String ERROR_MESSAGE_INVALID_MIN_LENGTH = "Invalid minimum length";
+   private static final String ERROR_MESSAGE_NULL_SOURCE_BYTES = "Source bytes is null";
 
    /*
     * Constants for indexing and lengths
     */
-   private final static int INDEX_LENGTHS_PREFIX_LENGTH = 0;
-   private final static int INDEX_LENGTHS_POSTFIX_LENGTH = 1;
-   private final static int LENGTHS_LENGTH = 2;
+   private static final int INDEX_LENGTHS_PREFIX_LENGTH = 0;
+   private static final int INDEX_LENGTHS_POSTFIX_LENGTH = 1;
+   private static final int LENGTHS_LENGTH = 2;
 
-   private final static int INDEX_SOURCE_PREFIX_LENGTH = 0;
-   private final static int INDEX_SOURCE_POSTFIX_LENGTH = 1;
-   private final static int INDEX_SOURCE_PACKED_LENGTH = 2;
+   private static final int INDEX_SOURCE_PREFIX_LENGTH = 0;
+   private static final int INDEX_SOURCE_POSTFIX_LENGTH = 1;
+   private static final int INDEX_SOURCE_PACKED_LENGTH = 2;
 
-   private final static int MAX_NORMAL_SINGLE_BLINDING_LENGTH = 15;   // This needs to be a power of 2 minus 1
+   private static final int MAX_NORMAL_SINGLE_BLINDING_LENGTH = 15;   // This needs to be a power of 2 minus 1
 
-   private final static int MAX_MINIMUM_LENGTH = 256;
+   private static final int MAX_MINIMUM_LENGTH = 256;
+
+
+   //******************************************************************
+   // Constructor
+   //******************************************************************
+
+   /**
+    * Private constructor
+    *
+    * <p>This class is not meant to be instantiated.</p>
+    */
+   private ByteArrayBlinding() {
+      throw new IllegalStateException("Utility class");
+   }
 
 
    //******************************************************************
@@ -170,9 +185,7 @@ public class ByteArrayBlinding {
     * @throws IllegalArgumentException if minimum length is too small or too large
     */
    private static void checkMinimumLength(final int minimumLength) throws IllegalArgumentException {
-      if (minimumLength < 0)
-         throw new IllegalArgumentException(ERROR_MESSAGE_INVALID_MIN_LENGTH);
-      else if (minimumLength > MAX_MINIMUM_LENGTH)
+      if ((minimumLength < 0) || (minimumLength > MAX_MINIMUM_LENGTH))
          throw new IllegalArgumentException(ERROR_MESSAGE_INVALID_MIN_LENGTH);
    }
 

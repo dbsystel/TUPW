@@ -27,6 +27,7 @@
  *     2020-03-23: V1.4.0: Restructured source code according to DBS programming guidelines. fhs
  *     2020-04-22: V1.5.0: Corrected ranges for 3 and 4 byte values. fhs
  *     2020-04-22: V1.5.1: Removed unnecessary check and corrected some comments. fhs
+ *     2020-12-04: V1.5.2: Corrected several SonarLint findings. fhs
  */
 package de.db.bcm.tupw.numbers;
 
@@ -37,7 +38,7 @@ import java.util.Objects;
  * Converts integers from and to an unsigned packed byte array
  *
  * @author FrankSchwab
- * @version 1.5.1
+ * @version 1.5.2
  */
 public class PackedUnsignedInteger {
    //******************************************************************
@@ -47,24 +48,37 @@ public class PackedUnsignedInteger {
    /*
     * Range start values
     */
-   private final static int START_2_BYTE_VALUE = 0x40;
-   private final static int START_3_BYTE_VALUE = 0x4040;
-   private final static int START_4_BYTE_VALUE = 0x404040;
-   private final static int START_TOO_LARGE_VALUE = 0x40404040;
+   private static final int START_2_BYTE_VALUE = 0x40;
+   private static final int START_3_BYTE_VALUE = 0x4040;
+   private static final int START_4_BYTE_VALUE = 0x404040;
+   private static final int START_TOO_LARGE_VALUE = 0x40404040;
 
    /*
     * Constants for masks
    */
-   private final static int NO_LENGTH_MASK = 0x3f;
-   private final static int BYTE_MASK = 0xff;
+   private static final int NO_LENGTH_MASK = 0x3f;
+   private static final int BYTE_MASK = 0xff;
 
    /*
     * Constants for length indicators
     */
-   private final static byte LENGTH_1_MASK = (byte) 0;
-   private final static byte LENGTH_2_MASK = (byte) 0x40;
-   private final static byte LENGTH_3_MASK = (byte) 0x80;
-   private final static byte LENGTH_4_MASK = (byte) 0xc0;
+   // private static final byte LENGTH_1_MASK = (byte) 0;
+   private static final byte LENGTH_2_MASK = (byte) 0x40;
+   private static final byte LENGTH_3_MASK = (byte) 0x80;
+   private static final byte LENGTH_4_MASK = (byte) 0xc0;
+
+   //******************************************************************
+   // Constructor
+   //******************************************************************
+
+   /**
+    * Private constructor
+    *
+    * <p>This class is not meant to be instantiated.</p>
+    */
+   private PackedUnsignedInteger() {
+      throw new IllegalStateException("Utility class");
+   }
 
 
    //******************************************************************
@@ -82,7 +96,7 @@ public class PackedUnsignedInteger {
     * @return Packed decimal byte array with integer as value
     * @throws IllegalArgumentException if {@code aNumber} has not a value between 0 and 1,077,952,575 (inclusive)
     */
-   public static byte[] fromInteger(final int anInteger) throws IllegalArgumentException {
+   public static byte[] fromInteger(final int anInteger) {
       byte[] result;
       int intermediateInteger;
 
@@ -149,7 +163,7 @@ public class PackedUnsignedInteger {
     * @throws IllegalArgumentException if the actual length of the packed number does not match the expected length
     * @throws NullPointerException     if {@code packedNumber} is {@code null}
     */
-   public static int toInteger(final byte[] packedNumber) throws IllegalArgumentException, NullPointerException {
+   public static int toInteger(final byte[] packedNumber) {
       Objects.requireNonNull(packedNumber, "Packed number is null");
 
       int result = 0;
@@ -200,7 +214,7 @@ public class PackedUnsignedInteger {
     * @throws IllegalArgumentException if the array is not long enough
     * @throws NullPointerException     if {@code arrayWithPackedNumber} is {@code null}
     */
-   public static int toIntegerFromArray(final byte[] arrayWithPackedNumber, final int startIndex) throws IllegalArgumentException, NullPointerException {
+   public static int toIntegerFromArray(final byte[] arrayWithPackedNumber, final int startIndex) {
       Objects.requireNonNull(arrayWithPackedNumber, "Packed number array is null");
 
       final int expectedLength = getExpectedLength(arrayWithPackedNumber[startIndex]);
@@ -219,7 +233,7 @@ public class PackedUnsignedInteger {
     * @return String representation of the given packed unsigned integer
     * @throws NullPointerException if {@code arrayWithPackedNumber} is {@code null}
     */
-   public static String toString(final byte[] aPackedUnsignedInteger) throws NullPointerException {
+   public static String toString(final byte[] aPackedUnsignedInteger) {
       return Integer.toString(PackedUnsignedInteger.toInteger(aPackedUnsignedInteger));
    }
 }

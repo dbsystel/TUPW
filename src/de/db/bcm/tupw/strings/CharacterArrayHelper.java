@@ -21,6 +21,7 @@
  * Changes:
  *     2020-03-25: V1.0.0: Created. fhs
  *     2020-03-27: V1.0.1: Only catch the expected checked exception in method convertCharacterArrayToUTF8ByteArray. fhs
+ *     2020-12-04: V1.0.2: Corrected several SonarLint findings. fhs
  */
 package de.db.bcm.tupw.strings;
 
@@ -37,21 +38,35 @@ import java.util.Arrays;
  * and byte arrays. One has to use this complicated, unintuitive and strange buffer conversion stuff implemented here.</p>
  *
  * @author FrankSchwab
- * @version 1.0.1
+ * @version 1.0.2
  */
 public class CharacterArrayHelper {
    //******************************************************************
    // Constants
    //******************************************************************
-   final private static char FILL_CHAR = '\0';
-   final private static byte FILL_BYTE = (byte) 0;
+   private static final char FILL_CHAR = '\0';
+   private static final byte FILL_BYTE = (byte) 0;
 
 
    //******************************************************************
    // Class variables
    //******************************************************************
-   final private static CharsetDecoder UTF8_DECODER = StandardCharsets.UTF_8.newDecoder();
-   final private static CharsetEncoder UTF8_ENCODER = StandardCharsets.UTF_8.newEncoder();
+   private static final CharsetDecoder UTF8_DECODER = StandardCharsets.UTF_8.newDecoder();
+   private static final CharsetEncoder UTF8_ENCODER = StandardCharsets.UTF_8.newEncoder();
+
+
+   //******************************************************************
+   // Constructor
+   //******************************************************************
+
+   /**
+    * Private constructor
+    *
+    * <p>This class is not meant to be instantiated.</p>
+    */
+   private CharacterArrayHelper() {
+      throw new IllegalStateException("Utility class");
+   }
 
 
    //******************************************************************
@@ -79,6 +94,10 @@ public class CharacterArrayHelper {
             // in the method signature is suppressed.
          }
 
+         // tempByteBuffer is guaranteed not be null here
+         // The encode method above can only throw runtime exceptions
+         // In this case we will not get here
+         // If we get here there was no runtime exception and tempByteBuffer is not null
          result = Arrays.copyOf(tempByteBuffer.array(), tempByteBuffer.limit());
          Arrays.fill(tempByteBuffer.array(), FILL_BYTE);
       }

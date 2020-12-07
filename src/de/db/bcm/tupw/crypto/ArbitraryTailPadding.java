@@ -29,6 +29,7 @@
  *     2020-03-13: V2.1.0: Added checks for null. fhs
  *     2020-03-23: V2.2.0: Restructured source code according to DBS programming guidelines. fhs
  *     2020-08-13: V2.2.1: Improved getPaddingByteValue method. fhs
+ *     2020-12-04: V2.2.2: Corrected several SonarLint findings. fhs
  */
 package de.db.bcm.tupw.crypto;
 
@@ -40,7 +41,7 @@ import java.util.Objects;
  * Implements arbitrary tail padding for block ciphers
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 2.2.1
+ * @version 2.2.2
  */
 public class ArbitraryTailPadding {
    //******************************************************************
@@ -59,6 +60,20 @@ public class ArbitraryTailPadding {
     * class is done only once.</p>
     */
    private static final SecureRandom SECURE_PRNG = SecureRandomFactory.getSensibleSingleton();
+
+
+   //******************************************************************
+   // Constructor
+   //******************************************************************
+
+   /**
+    * Private constructor
+    *
+    * <p>This class is not meant to be instantiated.</p>
+    */
+   private ArbitraryTailPadding() {
+      throw new IllegalStateException("Utility class");
+   }
 
 
    //******************************************************************

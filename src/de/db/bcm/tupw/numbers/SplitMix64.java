@@ -23,6 +23,7 @@
  *     2020-02-27: V1.0.0: Created. fhs
  *     2020-03-13: V1.1.0: Check for null. fhs
  *     2020-03-23: V1.2.0: Restructured source code according to DBS programming guidelines. fhs
+ *     2020-12-04: V1.2.1: Corrected several SonarLint findings. fhs
  */
 
 package de.db.bcm.tupw.numbers;
@@ -35,7 +36,7 @@ import java.util.Objects;
  * <p>It is derived from the <a href="http://xoroshiro.di.unimi.it/splitmix64.c">C source code</a>.</p>
  *
  * @author Frank Schwab
- * @version 1.2.0
+ * @version 1.2.1
  */
 public class SplitMix64 extends SimplePseudoRandomNumberGenerator {
    //******************************************************************
@@ -67,7 +68,7 @@ public class SplitMix64 extends SimplePseudoRandomNumberGenerator {
     * @param seed Initial seed.
     * @throws NullPointerException if {@code seed} is null
     */
-   public SplitMix64(final Long seed) throws NullPointerException {
+   public SplitMix64(final Long seed) {
       Objects.requireNonNull(seed, "Seed is null");
 
       // In a real object oriented language one would place "this(seed.longValue());"

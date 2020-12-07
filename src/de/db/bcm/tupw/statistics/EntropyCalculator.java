@@ -25,6 +25,7 @@
  *     2020-04-28: V1.2.1: Remove unused variable declaration. fhs
  *     2020-05-14: V1.3.0: Expose no. of processed bytes as a read-only property and corrected
  *                         calculation of relative entropy. fhs
+ *     2020-12-04: V1.3.1: Corrected several SonarLint findings. fhs
  */
 
 package de.db.bcm.tupw.statistics;
@@ -36,7 +37,7 @@ import java.util.Objects;
  * Class to calculate the entropy of byte arrays
  *
  * @author Frank Schwab
- * @version 1.3.0
+ * @version 1.3.1
  */
 public class EntropyCalculator {
    //******************************************************************
@@ -76,7 +77,7 @@ public class EntropyCalculator {
     * @param toIndex    End index (exclusive)
     * @throws NullPointerException if {@code aByteArray} is null
     */
-   public void addBytes(final byte[] aByteArray, final int fromIndex, final int toIndex) throws NullPointerException {
+   public void addBytes(final byte[] aByteArray, final int fromIndex, final int toIndex) {
       Objects.requireNonNull(aByteArray, "Byte array is null");
 
       int  counterIndex;
@@ -97,7 +98,7 @@ public class EntropyCalculator {
     * @param fromIndex  Start index (inclusive)
     * @throws NullPointerException if {@code aByteArray} is null
     */
-   public void addBytes(final byte[] aByteArray, final int fromIndex) throws NullPointerException {
+   public void addBytes(final byte[] aByteArray, final int fromIndex) {
       addBytes(aByteArray, fromIndex, aByteArray.length);
    }
 
@@ -107,7 +108,7 @@ public class EntropyCalculator {
     * @param aByteArray Byte array to add to the calculation
     * @throws NullPointerException if {@code aByteArray} is null
     */
-   public void addBytes(final byte[] aByteArray) throws NullPointerException {
+   public void addBytes(final byte[] aByteArray) {
       addBytes(aByteArray, 0, aByteArray.length);
    }
 

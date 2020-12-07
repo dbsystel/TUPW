@@ -21,8 +21,9 @@
  * Version: 1.1.0
  *
  * Change history:
- *    2020-11-12: V1.0.0: Created.
- *    2020-11-20: V1.1.0: Added interface methods with existing buffers.
+ *    2020-11-12: V1.0.0: Created. fhs
+ *    2020-11-20: V1.1.0: Added interface methods with existing buffers. fhs
+ *    2020-12-04: V1.1.1: Corrected several SonarLint findings. fhs
  */
 
 package de.db.bcm.tupw.arrays;
@@ -34,7 +35,7 @@ import java.util.Objects;
  * Converts byte arrays from and to Base32 encoding either, as specified in RFC4868, or in spell-safe format.
  *
  * @author Frank Schwab
- * @version 1.1.0
+ * @version 1.1.1
  */
 
 public class Base32Encoding {
@@ -126,6 +127,21 @@ public class Base32Encoding {
             23, -1, 24, 25, -1, -1, 26, -1,
             27, -1, -1, -1, 28, -1, 29, -1,
             30, -1, 31};
+
+
+   //******************************************************************
+   // Constructor
+   //******************************************************************
+
+   /**
+    * Private constructor
+    *
+    * <p>This class is not meant to be instantiated.</p>
+    */
+   private Base32Encoding() {
+      throw new IllegalStateException("Utility class");
+   }
+
 
    //******************************************************************
    // Public methods
@@ -417,7 +433,7 @@ public class Base32Encoding {
     * @param mapByteToChar Map array
     * @return Character corresponding to value {@code b}
     */
-   private static char valueToChar(byte b, char[] mapByteToChar) throws IllegalArgumentException {
+   private static char valueToChar(byte b, char[] mapByteToChar) {
       if ((b >= 0) && (b < mapByteToChar.length)) {
          return mapByteToChar[b];
       } else
