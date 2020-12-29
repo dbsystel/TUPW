@@ -29,6 +29,7 @@
  *     2020-03-23: V1.5.0: Restructured source code according to DBS programming guidelines. fhs
  *     2020-04-28: V1.5.1: Added missing null check. fhs
  *     2020-12-04: V1.5.2: Corrected several SonarLint findings. fhs
+ *     2020-12-29: V1.6.0: Make thread safe. fhs
  */
 package de.db.bcm.tupw.crypto;
 
@@ -42,7 +43,7 @@ import java.util.Objects;
  * Implements blinding for byte arrays
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.5.2
+ * @version 1.6.0
  */
 public class ByteArrayBlinding {
    //******************************************************************
@@ -106,7 +107,7 @@ public class ByteArrayBlinding {
     * @return Blinded byte array
     * @throws IllegalArgumentException if minimum length is too small or too large
     */
-   public static byte[] buildBlindedByteArray(final byte[] sourceBytes, final int minimumLength) throws IllegalArgumentException {
+   public static synchronized byte[] buildBlindedByteArray(final byte[] sourceBytes, final int minimumLength) throws IllegalArgumentException {
       Objects.requireNonNull(sourceBytes, ERROR_MESSAGE_NULL_SOURCE_BYTES);
 
       checkMinimumLength(minimumLength);
@@ -146,7 +147,7 @@ public class ByteArrayBlinding {
     * @throws IllegalArgumentException if the source byte array is not correctly formatted
     * @throws NullPointerException     if {@code sourceBytes} is {@code null}
     */
-   public static byte[] unBlindByteArray(final byte[] sourceBytes) throws IllegalArgumentException, NullPointerException {
+   public static synchronized byte[] unBlindByteArray(final byte[] sourceBytes) throws IllegalArgumentException, NullPointerException {
       Objects.requireNonNull(sourceBytes, ERROR_MESSAGE_NULL_SOURCE_BYTES);
 
       if (sourceBytes.length > LENGTHS_LENGTH) {

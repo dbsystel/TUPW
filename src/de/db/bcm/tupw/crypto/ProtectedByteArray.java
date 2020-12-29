@@ -28,6 +28,7 @@
  *     2020-03-13: V4.5.0: Added checks for null. fhs
  *     2020-03-23: V4.6.0: Restructured source code according to DBS programming guidelines. fhs
  *     2020-12-04: V4.7.0: Corrected several SonarLint findings and made class serializable. fhs
+ *     2020-12-29: V4.8.0: Make thread safe. fhs
  */
 package de.db.bcm.tupw.crypto;
 
@@ -45,7 +46,7 @@ import java.util.Objects;
  * with the constructor.</p>
  *
  * @author Frank Schwab
- * @version 4.7.0
+ * @version 4.8.0
  */
 public final class ProtectedByteArray implements AutoCloseable, Serializable {
    /**
@@ -122,7 +123,7 @@ public final class ProtectedByteArray implements AutoCloseable, Serializable {
     * @return the data in the byte array.
     * @throws IllegalStateException if the protected array has already been destroyed.
     */
-   public byte[] getData() {
+   public synchronized byte[] getData() {
       checkState();
 
       return getDeObfuscatedArray();
@@ -136,7 +137,7 @@ public final class ProtectedByteArray implements AutoCloseable, Serializable {
     *                               destroyed.
     */
    @Override
-   public int hashCode() {
+   public synchronized int hashCode() {
       checkState();
 
       return this.protectedArray.hashCode();
@@ -151,7 +152,7 @@ public final class ProtectedByteArray implements AutoCloseable, Serializable {
     * @throws IllegalStateException if the protected array has already been  destroyed.
     */
    @Override
-   public boolean equals(final Object obj) {
+   public synchronized boolean equals(final Object obj) {
       checkState();
 
       if (obj == null)
@@ -178,7 +179,7 @@ public final class ProtectedByteArray implements AutoCloseable, Serializable {
     * @return Real length of stored array
     * @throws IllegalStateException if the protected array has already been destroyed
     */
-   public int length() {
+   public synchronized int length() {
       checkState();
 
       return this.protectedArray.length();
@@ -189,7 +190,7 @@ public final class ProtectedByteArray implements AutoCloseable, Serializable {
     *
     * @return {@code true}: Data are valid. {@code false}: Data are not valid.
     */
-   public boolean isValid() {
+   public synchronized boolean isValid() {
       return this.protectedArray.isValid();
    }
 
@@ -203,7 +204,7 @@ public final class ProtectedByteArray implements AutoCloseable, Serializable {
     * <p>This method is idempotent and never throws an exception.</p>
     */
    @Override
-   public void close() {
+   public synchronized void close() {
       this.protectedArray.close();
       this.obfuscation.close();
    }

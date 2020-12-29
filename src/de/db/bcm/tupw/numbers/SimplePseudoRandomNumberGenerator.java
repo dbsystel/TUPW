@@ -20,6 +20,7 @@
  *
  * Changes:
  *     2020-03-23: V1.0.0: Created. fhs
+ *     2020-12-29: V1.1.0: Make thread safe. fhs
  */
 
 package de.db.bcm.tupw.numbers;
@@ -28,6 +29,9 @@ package de.db.bcm.tupw.numbers;
  * Common class for a simple pseudo-random number generator that only supports getting numbers one by one.
  *
  * <p>All subclasses need to implement the {@code nextLong()} method. All other {@code next} methods are implemented here.</p>
+ *
+ * @author Frank Schwab
+ * @version 1.1.0
  */
 public class SimplePseudoRandomNumberGenerator {
    //******************************************************************
@@ -42,7 +46,7 @@ public class SimplePseudoRandomNumberGenerator {
     * @return Never
     * @throws UnsupportedOperationException as this method <b>must</b> be overridden
     */
-   public long nextLong() {
+   public synchronized long nextLong() {
       throw new UnsupportedOperationException("Method must be overridden");
    }  // This method *must* be overridden
 
@@ -51,7 +55,7 @@ public class SimplePseudoRandomNumberGenerator {
     *
     * @return Pseudo-random {@code int}
     */
-   public int nextInt() {
+   public synchronized int nextInt() {
       return (int) (this.nextLong() >>> 32);
    }
 
@@ -60,7 +64,7 @@ public class SimplePseudoRandomNumberGenerator {
     *
     * @return Pseudo-random {@code short}
     */
-   public short nextShort() {
+   public synchronized short nextShort() {
       return (short) (this.nextLong() >>> 48);
    }
 
@@ -69,7 +73,7 @@ public class SimplePseudoRandomNumberGenerator {
     *
     * @return Pseudo-random {@code byte}
     */
-   public byte nextByte() {
+   public synchronized byte nextByte() {
       return (byte) (this.nextLong() >>> 56);
    }
 
@@ -85,7 +89,7 @@ public class SimplePseudoRandomNumberGenerator {
     * @param toInclusive   End value (inclusive)
     * @return Pseudo-random number in the specified range
     */
-   public long nextLong(long fromInclusive, long toInclusive) {
+   public synchronized long nextLong(long fromInclusive, long toInclusive) {
       long result;
 
       // Calculate the size of the interval that should be returned
@@ -121,7 +125,7 @@ public class SimplePseudoRandomNumberGenerator {
     * @param toInclusive   End value (inclusive)
     * @return Pseudo-random number in the specified range
     */
-   public int nextInt(int fromInclusive, int toInclusive) {
+   public synchronized int nextInt(int fromInclusive, int toInclusive) {
       long result;
 
       // Calculate the size of the interval that should be returned
@@ -157,7 +161,7 @@ public class SimplePseudoRandomNumberGenerator {
     * @param toInclusive   End value (inclusive)
     * @return Pseudo-random number in the specified range
     */
-   public short nextShort(short fromInclusive, short toInclusive) {
+   public synchronized short nextShort(short fromInclusive, short toInclusive) {
       int result;
 
       // Calculate the size of the interval that should be returned
@@ -193,7 +197,7 @@ public class SimplePseudoRandomNumberGenerator {
     * @param toInclusive   End value (inclusive)
     * @return Pseudo-random number in the specified range
     */
-   public byte nextByte(byte fromInclusive, byte toInclusive) {
+   public synchronized byte nextByte(byte fromInclusive, byte toInclusive) {
       int result;
 
       // Calculate the size of the interval that should be returned

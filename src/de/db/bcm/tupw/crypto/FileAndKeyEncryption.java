@@ -23,6 +23,7 @@
  *     2020-03-19: V1.1.0: Consolidated crypto parameter exceptions. fhs
  *     2020-03-23: V1.2.0: Restructured source code according to DBS programming guidelines. fhs
  *     2020-12-04: V1.2.1: Corrected several SonarLint findings. fhs
+ *     2020-12-29: V1.3.0: Make thread safe. fhs
  */
 package de.db.bcm.tupw.crypto;
 
@@ -43,7 +44,7 @@ import java.util.Objects;
  * for the special case of a file as the source for the key input.</p>
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.2.1
+ * @version 1.3.0
  */
 
 public class FileAndKeyEncryption implements AutoCloseable {
@@ -110,7 +111,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws InvalidCryptoParameterException    if a parameter of a cryptographic method is invalid (must never happen)
     * @throws NullPointerException               if {@code stringToEncrypt} or {@code subject} is {@code null}
     */
-   public String encryptData(final byte[] byteArrayToEncrypt, final String subject) throws
+   public synchronized String encryptData(final byte[] byteArrayToEncrypt, final String subject) throws
             InvalidCryptoParameterException {
       return m_SplitKeyEncryption.encryptData(byteArrayToEncrypt, subject);
    }
@@ -124,7 +125,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws InvalidCryptoParameterException    if a parameter of a cryptographic method is invalid (must never happen)
     * @throws NullPointerException               if {@code stringToEncrypt} or {@code subject} is {@code null}
     */
-   public String encryptData(final byte[] byteArrayToEncrypt) throws
+   public synchronized String encryptData(final byte[] byteArrayToEncrypt) throws
             InvalidCryptoParameterException {
       return m_SplitKeyEncryption.encryptData(byteArrayToEncrypt);
    }
@@ -139,7 +140,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws InvalidCryptoParameterException    if a parameter of a cryptographic method is invalid (must never happen)
     * @throws NullPointerException               if {@code stringToEncrypt} or {@code subject} is {@code null}
     */
-   public String encryptData(final char[] characterArrayToEncrypt, final String subject) throws
+   public synchronized String encryptData(final char[] characterArrayToEncrypt, final String subject) throws
             InvalidCryptoParameterException {
       return m_SplitKeyEncryption.encryptData(characterArrayToEncrypt, subject);
    }
@@ -153,7 +154,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws InvalidCryptoParameterException    if a parameter of a cryptographic method is invalid (must never happen)
     * @throws NullPointerException               if {@code stringToEncrypt} or {@code subject} is {@code null}
     */
-   public String encryptData(final char[] characterArrayToEncrypt) throws
+   public synchronized String encryptData(final char[] characterArrayToEncrypt) throws
             InvalidCryptoParameterException {
       return m_SplitKeyEncryption.encryptData(characterArrayToEncrypt);
    }
@@ -168,7 +169,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws InvalidCryptoParameterException    if a parameter of a cryptographic method is invalid (must never happen)
     * @throws NullPointerException               if {@code stringToEncrypt} or {@code subject} is {@code null}
     */
-   public String encryptData(final String stringToEncrypt, final String subject) throws
+   public synchronized String encryptData(final String stringToEncrypt, final String subject) throws
             InvalidCryptoParameterException {
       return m_SplitKeyEncryption.encryptData(stringToEncrypt, subject);
    }
@@ -182,7 +183,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws InvalidCryptoParameterException    if a parameter of a cryptographic method is invalid (must never happen)
     * @throws NullPointerException               if {@code stringToEncrypt}is {@code null}
     */
-   public String encryptData(final String stringToEncrypt) throws
+   public synchronized String encryptData(final String stringToEncrypt) throws
             InvalidCryptoParameterException {
       return encryptData(stringToEncrypt, "");
    }
@@ -202,7 +203,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws InvalidCryptoParameterException    if a parameter of a cryptographic method is invalid (must never happen)
     * @throws NullPointerException               if {@code stringToDecrypt} or {@code subject} is {@code null}
     */
-   public byte[] decryptDataAsByteArray(final String stringToDecrypt, final String subject) throws DataIntegrityException,
+   public synchronized byte[] decryptDataAsByteArray(final String stringToDecrypt, final String subject) throws DataIntegrityException,
             InvalidCryptoParameterException {
       return m_SplitKeyEncryption.decryptDataAsByteArray(stringToDecrypt, subject);
    }
@@ -217,7 +218,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws InvalidCryptoParameterException    if a parameter of a cryptographic method is invalid (must never happen)
     * @throws NullPointerException               if {@code stringToDecrypt} or {@code subject} is {@code null}
     */
-   public byte[] decryptDataAsByteArray(final String stringToDecrypt) throws
+   public synchronized byte[] decryptDataAsByteArray(final String stringToDecrypt) throws
             DataIntegrityException,
             InvalidCryptoParameterException {
       return m_SplitKeyEncryption.decryptDataAsByteArray(stringToDecrypt);
@@ -235,7 +236,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws InvalidCryptoParameterException    if a parameter of a cryptographic method is invalid (must never happen)
     * @throws NullPointerException               if {@code stringToDecrypt} or {@code subject} is {@code null}
     */
-   public char[] decryptDataAsCharacterArray(final String stringToDecrypt, final String subject) throws CharacterCodingException,
+   public synchronized char[] decryptDataAsCharacterArray(final String stringToDecrypt, final String subject) throws CharacterCodingException,
             DataIntegrityException,
             InvalidCryptoParameterException {
       return m_SplitKeyEncryption.decryptDataAsCharacterArray(stringToDecrypt, subject);
@@ -252,7 +253,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws InvalidCryptoParameterException    if a parameter of a cryptographic method is invalid (must never happen)
     * @throws NullPointerException               if {@code stringToDecrypt} or {@code subject} is {@code null}
     */
-   public char[] decryptDataAsCharacterArray(final String stringToDecrypt) throws CharacterCodingException,
+   public synchronized char[] decryptDataAsCharacterArray(final String stringToDecrypt) throws CharacterCodingException,
             DataIntegrityException,
             InvalidCryptoParameterException {
       return m_SplitKeyEncryption.decryptDataAsCharacterArray(stringToDecrypt);
@@ -270,7 +271,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws InvalidCryptoParameterException    if a parameter of a cryptographic method is invalid (must never happen)
     * @throws NullPointerException               if {@code stringToDecrypt} or {@code subject} is {@code null}
     */
-   public String decryptDataAsString(final String stringToDecrypt, final String subject) throws CharacterCodingException,
+   public synchronized String decryptDataAsString(final String stringToDecrypt, final String subject) throws CharacterCodingException,
             DataIntegrityException,
             InvalidCryptoParameterException {
       return m_SplitKeyEncryption.decryptDataAsString(stringToDecrypt, subject);
@@ -287,7 +288,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws InvalidCryptoParameterException    if a parameter of a cryptographic method is invalid (must never happen)
     * @throws NullPointerException               if {@code stringToDecrypt}is {@code null}
     */
-   public String decryptDataAsString(final String stringToDecrypt) throws CharacterCodingException,
+   public synchronized String decryptDataAsString(final String stringToDecrypt) throws CharacterCodingException,
             DataIntegrityException,
             InvalidCryptoParameterException {
       return m_SplitKeyEncryption.decryptDataAsString(stringToDecrypt);
@@ -309,7 +310,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws NullPointerException               if {@code stringToDecrypt} or {@code subject} is {@code null}
     */
    @Deprecated
-   public String decryptData(final String stringToDecrypt, final String subject) throws CharacterCodingException,
+   public synchronized String decryptData(final String stringToDecrypt, final String subject) throws CharacterCodingException,
             DataIntegrityException,
             InvalidCryptoParameterException {
       return decryptDataAsString(stringToDecrypt, subject);
@@ -330,7 +331,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * @throws NullPointerException               if {@code stringToDecrypt}is {@code null}
     */
    @Deprecated
-   public String decryptData(final String stringToDecrypt) throws CharacterCodingException,
+   public synchronized String decryptData(final String stringToDecrypt) throws CharacterCodingException,
             DataIntegrityException,
             InvalidCryptoParameterException {
       return decryptDataAsString(stringToDecrypt);
@@ -346,7 +347,7 @@ public class FileAndKeyEncryption implements AutoCloseable {
     * <p>This method is idempotent and never throws an exception.</p>
     */
    @Override
-   public void close() {
+   public synchronized void close() {
       this.m_SplitKeyEncryption.close();
    }
 

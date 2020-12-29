@@ -18,12 +18,11 @@
  *
  * Author: Frank Schwab, DB Systel GmbH
  *
- * Version: 1.1.0
- *
  * Change history:
- *    2020-11-12: V1.0.0: Created. fhs
- *    2020-11-20: V1.1.0: Added interface methods with existing buffers. fhs
- *    2020-12-04: V1.1.1: Corrected several SonarLint findings. fhs
+ *     2020-11-12: V1.0.0: Created. fhs
+ *     2020-11-20: V1.1.0: Added interface methods with existing buffers. fhs
+ *     2020-12-04: V1.1.1: Corrected several SonarLint findings. fhs
+ *     2020-12-29: V1.2.0: Make thread safe. fhs
  */
 
 package de.db.bcm.tupw.arrays;
@@ -35,7 +34,7 @@ import java.util.Objects;
  * Converts byte arrays from and to Base32 encoding either, as specified in RFC4868, or in spell-safe format.
  *
  * @author Frank Schwab
- * @version 1.1.1
+ * @version 1.2.0
  */
 
 public class Base32Encoding {
@@ -155,7 +154,7 @@ public class Base32Encoding {
     * @param encodedValue The Base32 string to decode
     * @return The decoded Base32 string as a byte array
     */
-   public static byte[] decode(String encodedValue) {
+   public static synchronized byte[] decode(String encodedValue) {
       return decodeNewBufferWithMapping(encodedValue, RFC_4648_CHAR_TO_VALUE);
    }
 
@@ -166,7 +165,7 @@ public class Base32Encoding {
     * @param destinationBuffer Byte array where the decoded values are placed
     * @return The length of the bytes written into the destination buffer
     */
-   public static int decode(String encodedValue, byte[] destinationBuffer) {
+   public static synchronized int decode(String encodedValue, byte[] destinationBuffer) {
       return decodeExistingBufferWithMapping(encodedValue, destinationBuffer, RFC_4648_CHAR_TO_VALUE);
    }
 
@@ -176,7 +175,7 @@ public class Base32Encoding {
     * @param encodedValue The Base32 string to decode
     * @return The decoded spell-safe Base32 string as a byte array
     */
-   public static byte[] decodeSpellSafe(String encodedValue) {
+   public static synchronized byte[] decodeSpellSafe(String encodedValue) {
       return decodeNewBufferWithMapping(encodedValue, SPELL_SAFE_CHAR_TO_VALUE);
    }
 
@@ -187,7 +186,7 @@ public class Base32Encoding {
     * @param destinationBuffer Byte array where the decoded values are placed
     * @return The length of the bytes written into the destination buffer
     */
-   public static int decodeSpellSafe(String encodedValue, byte[] destinationBuffer) {
+   public static synchronized int decodeSpellSafe(String encodedValue, byte[] destinationBuffer) {
       return decodeExistingBufferWithMapping(encodedValue, destinationBuffer, SPELL_SAFE_CHAR_TO_VALUE);
    }
 
@@ -199,7 +198,7 @@ public class Base32Encoding {
     * @param aByteArray The byte array to encode
     * @return The Base32 representation of the bytes in {@code aByteArray}
     */
-   public static String encode(byte[] aByteArray) {
+   public static synchronized String encode(byte[] aByteArray) {
       return encodeWorker(aByteArray, RFC_4648_VALUE_TO_CHAR, true);
    }
 
@@ -209,7 +208,7 @@ public class Base32Encoding {
     * @param aByteArray The byte array to encode
     * @return The Base32 representation of the bytes in {@code aByteArray}
     */
-   public static String encodeNoPadding(byte[] aByteArray) {
+   public static synchronized String encodeNoPadding(byte[] aByteArray) {
       return encodeWorker(aByteArray, RFC_4648_VALUE_TO_CHAR, false);
    }
 
@@ -219,7 +218,7 @@ public class Base32Encoding {
     * @param aByteArray The byte array to encode
     * @return The spell-safe Base32 representation of the bytes in {@code aByteArray}
     */
-   public static String encodeSpellSafe(byte[] aByteArray) {
+   public static synchronized String encodeSpellSafe(byte[] aByteArray) {
       return encodeWorker(aByteArray, SPELL_SAFE_VALUE_TO_CHAR, true);
    }
 
@@ -229,12 +228,12 @@ public class Base32Encoding {
     * @param aByteArray The byte array to encode
     * @return The spell-safe Base32 representation of the bytes in {@code aByteArray}
     */
-   public static String encodeSpellSafeNoPadding(byte[] aByteArray) {
+   public static synchronized String encodeSpellSafeNoPadding(byte[] aByteArray) {
       return encodeWorker(aByteArray, SPELL_SAFE_VALUE_TO_CHAR, false);
    }
 
    //******************************************************************
-   // Public methods
+   // Private methods
    //******************************************************************
 
    // Internal encode and decode methods

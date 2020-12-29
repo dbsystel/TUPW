@@ -28,6 +28,7 @@
  *     2020-04-22: V1.5.0: Corrected ranges for 3 and 4 byte values. fhs
  *     2020-04-22: V1.5.1: Removed unnecessary check and corrected some comments. fhs
  *     2020-12-04: V1.5.2: Corrected several SonarLint findings. fhs
+ *     2020-12-29: V1.6.0: Make thread safe. fhs
  */
 package de.db.bcm.tupw.numbers;
 
@@ -38,7 +39,7 @@ import java.util.Objects;
  * Converts integers from and to an unsigned packed byte array
  *
  * @author FrankSchwab
- * @version 1.5.2
+ * @version 1.6.0
  */
 public class PackedUnsignedInteger {
    //******************************************************************
@@ -96,7 +97,7 @@ public class PackedUnsignedInteger {
     * @return Packed decimal byte array with integer as value
     * @throws IllegalArgumentException if {@code aNumber} has not a value between 0 and 1,077,952,575 (inclusive)
     */
-   public static byte[] fromInteger(final int anInteger) {
+   public static synchronized byte[] fromInteger(final int anInteger) {
       byte[] result;
       int intermediateInteger;
 
@@ -151,7 +152,7 @@ public class PackedUnsignedInteger {
     * @param firstByteOfPackedNumber First byte of packed decimal integer
     * @return Expected length (1 to 4)
     */
-   public static int getExpectedLength(final byte firstByteOfPackedNumber) {
+   public static synchronized int getExpectedLength(final byte firstByteOfPackedNumber) {
       return ((firstByteOfPackedNumber >>> 6) & 0x03) + 1;
    }
 
@@ -163,7 +164,7 @@ public class PackedUnsignedInteger {
     * @throws IllegalArgumentException if the actual length of the packed number does not match the expected length
     * @throws NullPointerException     if {@code packedNumber} is {@code null}
     */
-   public static int toInteger(final byte[] packedNumber) {
+   public static synchronized int toInteger(final byte[] packedNumber) {
       Objects.requireNonNull(packedNumber, "Packed number is null");
 
       int result = 0;
@@ -214,7 +215,7 @@ public class PackedUnsignedInteger {
     * @throws IllegalArgumentException if the array is not long enough
     * @throws NullPointerException     if {@code arrayWithPackedNumber} is {@code null}
     */
-   public static int toIntegerFromArray(final byte[] arrayWithPackedNumber, final int startIndex) {
+   public static synchronized int toIntegerFromArray(final byte[] arrayWithPackedNumber, final int startIndex) {
       Objects.requireNonNull(arrayWithPackedNumber, "Packed number array is null");
 
       final int expectedLength = getExpectedLength(arrayWithPackedNumber[startIndex]);
@@ -233,7 +234,7 @@ public class PackedUnsignedInteger {
     * @return String representation of the given packed unsigned integer
     * @throws NullPointerException if {@code arrayWithPackedNumber} is {@code null}
     */
-   public static String toString(final byte[] aPackedUnsignedInteger) {
+   public static synchronized String toString(final byte[] aPackedUnsignedInteger) {
       return Integer.toString(PackedUnsignedInteger.toInteger(aPackedUnsignedInteger));
    }
 }

@@ -24,6 +24,7 @@
  *     2020-03-13: V1.1.0: Check for null. fhs
  *     2020-03-23: V1.2.0: Restructured source code according to DBS programming guidelines. fhs
  *     2020-12-04: V1.2.1: Corrected several SonarLint findings. fhs
+ *     2020-12-29: V1.3.0: Make thread safe. fhs
  */
 
 package de.db.bcm.tupw.numbers;
@@ -36,7 +37,7 @@ import java.util.Objects;
  * <p>It is derived from the <a href="http://xoroshiro.di.unimi.it/splitmix64.c">C source code</a>.</p>
  *
  * @author Frank Schwab
- * @version 1.2.1
+ * @version 1.3.0
  */
 public class SplitMix64 extends SimplePseudoRandomNumberGenerator {
    //******************************************************************
@@ -87,7 +88,7 @@ public class SplitMix64 extends SimplePseudoRandomNumberGenerator {
     * @return Pseudo-random {@code long}
     */
    @Override
-   public long nextLong() {
+   public synchronized long nextLong() {
       long z = m_State += 0x9e3779b97f4a7c15L;
       z = (z ^ (z >>> 30)) * 0xbf58476d1ce4e5b9L;
       z = (z ^ (z >>> 27)) * 0x94d049bb133111ebL;

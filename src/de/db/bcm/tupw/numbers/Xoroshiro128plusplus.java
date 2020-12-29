@@ -31,6 +31,7 @@
  *     2020-03-13: V1.1.0: Check for null. fhs
  *     2020-03-23: V1.2.0: Restructured source code according to DBS programming guidelines. fhs
  *     2020-12-04: V1.2.1: Corrected several SonarLint findings. fhs
+ *     2020-12-29: V1.3.0: Make thread safe. fhs
  */
 
 package de.db.bcm.tupw.numbers;
@@ -43,7 +44,7 @@ import java.util.Objects;
  * <p>It is derived from the <a href="http://prng.di.unimi.it/xoroshiro128plusplus.c">C source code</a>.</p>
  *
  * @author Frank Schwab
- * @version 1.2.1
+ * @version 1.3.0
  */
 public class Xoroshiro128plusplus extends SimplePseudoRandomNumberGenerator {
    //******************************************************************
@@ -115,7 +116,7 @@ public class Xoroshiro128plusplus extends SimplePseudoRandomNumberGenerator {
     * @return next pseudo-random long value
     */
    @Override
-   public long nextLong() {
+   public synchronized long nextLong() {
       final long s0 = m_State0;
       long s1 = m_State1;
 

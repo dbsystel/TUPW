@@ -24,6 +24,7 @@
  *     2018-08-15: V1.0.2: Added a few "finals". fhs
  *     2020-03-23: V1.1.0: Restructured source code according to DBS programming guidelines. fhs
  *     2020-12-04: V1.1.1: Corrected several SonarLint findings. fhs
+ *     2020-12-29: V1.2.0: Make thread safe. fhs
  */
 package de.db.bcm.tupw.crypto;
 
@@ -33,7 +34,7 @@ import java.util.Objects;
  * Implement cryptographically safe array operations
  *
  * @author FrankSchwab, DB Systel GmbH
- * @version 1.1.1
+ * @version 1.2.0
  */
 public final class SafeArrays {
    //******************************************************************
@@ -65,7 +66,7 @@ public final class SafeArrays {
     * @param b Second byte array to compare
     * @return {@code true}, if both byte arrays are equal, {@code false}, if not
     */
-   public static boolean constantTimeEquals(final byte[] a, final byte[] b) {
+   public static synchronized boolean constantTimeEquals(final byte[] a, final byte[] b) {
       Objects.requireNonNull(a, "First byte array is null");
       Objects.requireNonNull(b, "Second byte array is null");
 

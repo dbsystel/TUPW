@@ -22,6 +22,7 @@
  *     2020-03-25: V1.0.0: Created. fhs
  *     2020-03-27: V1.0.1: Only catch the expected checked exception in method convertCharacterArrayToUTF8ByteArray. fhs
  *     2020-12-04: V1.0.2: Corrected several SonarLint findings. fhs
+ *     2020-12-29: V1.1.0: Make thread safe. fhs
  */
 package de.db.bcm.tupw.strings;
 
@@ -38,7 +39,7 @@ import java.util.Arrays;
  * and byte arrays. One has to use this complicated, unintuitive and strange buffer conversion stuff implemented here.</p>
  *
  * @author FrankSchwab
- * @version 1.0.2
+ * @version 1.1.0
  */
 public class CharacterArrayHelper {
    //******************************************************************
@@ -79,7 +80,7 @@ public class CharacterArrayHelper {
     * @param sourceCharacterArray character array to encode
     * @return UTF-8 encoded byte array of the characters in {@code sourceCharacterArray}
     */
-   public static byte[] convertCharacterArrayToUTF8ByteArray(final char[] sourceCharacterArray) {
+   public static synchronized byte[] convertCharacterArrayToUTF8ByteArray(final char[] sourceCharacterArray) {
       byte[] result = null;
 
       if (sourceCharacterArray != null) {
@@ -112,7 +113,7 @@ public class CharacterArrayHelper {
     * @return Character array from the UTF-8 encoded {@code sourceByteArray}
     * @throws CharacterCodingException if a byte sequence is malformed
     */
-   public static char[] convertUTF8ByteArrayToCharacterArray(final byte[] sourceByteArray) throws CharacterCodingException {
+   public static synchronized char[] convertUTF8ByteArrayToCharacterArray(final byte[] sourceByteArray) throws CharacterCodingException {
       char[] result = null;
 
       if (sourceByteArray != null) {

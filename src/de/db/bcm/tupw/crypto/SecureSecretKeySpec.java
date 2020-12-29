@@ -28,6 +28,7 @@
  *     2020-03-13: V2.3.0: Added checks for null. fhs
  *     2020-03-23: V2.4.0: Restructured source code according to DBS programming guidelines. fhs
  *     2020-12-04: V2.5.0: Corrected several SonarLint findings and made class serializable. fhs
+ *     2020-12-29: V2.6.0: Make thread safe. fhs
  */
 package de.db.bcm.tupw.crypto;
 
@@ -46,7 +47,7 @@ import java.util.Objects;
  * <p>It is intended to be used as a drop-in replacement for {@code SecretKeySpec}.</p>
  *
  * @author Frank Schwab
- * @version 2.5.0
+ * @version 2.6.0
  */
 public class SecureSecretKeySpec implements KeySpec, SecretKey, Destroyable, AutoCloseable {
    /**
@@ -140,7 +141,7 @@ public class SecureSecretKeySpec implements KeySpec, SecretKey, Destroyable, Aut
     * @throws IllegalStateException if the SecureSecretKeySpec has already been destroyed.
     */
    @Override
-   public String getAlgorithm() {
+   public synchronized String getAlgorithm() {
       checkState();
 
       return new String(algorithm.getData());
@@ -153,7 +154,7 @@ public class SecureSecretKeySpec implements KeySpec, SecretKey, Destroyable, Aut
     * @throws IllegalStateException if the SecureSecretKeySpec has already been destroyed.
     */
    @Override
-   public String getFormat() {
+   public synchronized String getFormat() {
       checkState();
 
       return "RAW";
@@ -166,7 +167,7 @@ public class SecureSecretKeySpec implements KeySpec, SecretKey, Destroyable, Aut
     * @throws IllegalStateException if the SecureSecretKeySpec has already been destroyed.
     */
    @Override
-   public byte[] getEncoded() {
+   public synchronized byte[] getEncoded() {
       checkState();
 
       return this.key.getData();
@@ -179,7 +180,7 @@ public class SecureSecretKeySpec implements KeySpec, SecretKey, Destroyable, Aut
     * @throws IllegalStateException if the SecureSecretKeySpec has already been destroyed.
     */
    @Override
-   public int hashCode() {
+   public synchronized int hashCode() {
       checkState();
 
       // Java does not indicate an over- or underflow so it is safe
@@ -195,7 +196,7 @@ public class SecureSecretKeySpec implements KeySpec, SecretKey, Destroyable, Aut
     * @throws IllegalStateException if the SecureSecretKeySpec has already been destroyed.
     */
    @Override
-   public boolean equals(final Object obj) {
+   public synchronized boolean equals(final Object obj) {
       checkState();
 
       if (obj == null)
@@ -204,7 +205,7 @@ public class SecureSecretKeySpec implements KeySpec, SecretKey, Destroyable, Aut
       final Class objectClass = obj.getClass();
 
       if ((objectClass != thisClass) &&
-               (objectClass != compatibleClass))
+            (objectClass != compatibleClass))
          return false;
 
       final SecretKey other = (SecretKey) obj;
@@ -229,7 +230,7 @@ public class SecureSecretKeySpec implements KeySpec, SecretKey, Destroyable, Aut
     * <p>This method is idempotent and never throws an exception.</p>
     */
    @Override
-   public void close() {
+   public synchronized void close() {
       this.key.close();
       this.algorithm.close();
    }
@@ -244,7 +245,7 @@ public class SecureSecretKeySpec implements KeySpec, SecretKey, Destroyable, Aut
     * <p>This method is idempotent and never throws an exception.</p>
     */
    @Override
-   public void destroy() {
+   public synchronized void destroy() {
       this.close();
    }
 
@@ -252,7 +253,7 @@ public class SecureSecretKeySpec implements KeySpec, SecretKey, Destroyable, Aut
     * Check whether secret key spec is destroyed
     */
    @Override
-   public boolean isDestroyed() {
+   public synchronized boolean isDestroyed() {
       return !this.key.isValid();
    }
 
@@ -261,7 +262,7 @@ public class SecureSecretKeySpec implements KeySpec, SecretKey, Destroyable, Aut
     *
     * @return {@code True}, if this ShuffledByteArray is valid. {@code False}, if it has been deleted.
     */
-   public boolean isValid() {
+   public synchronized boolean isValid() {
       return this.key.isValid();
    }
 

@@ -30,6 +30,7 @@
  *     2020-03-16: V2.1.1: Added some finals. fhs
  *     2020-03-23: V2.2.0: Restructured source code according to DBS programming guidelines. fhs
  *     2020-12-04: V2.2.1: Corrected several SonarLint findings. fhs
+ *     2020-12-29: V2.3.0: Make thread safe. fhs
  */
 package de.db.bcm.tupw.strings;
 
@@ -46,7 +47,7 @@ import java.util.ArrayList;
  * just to split a string at a simple character.</p>
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 2.2.1
+ * @version 2.3.0
  */
 public class StringSplitter {
    //******************************************************************
@@ -86,7 +87,7 @@ public class StringSplitter {
     * @param separator    The String to be used as a separator
     * @return An array of parsed Strings, {@code null} if {@code searchString} is {@code null}
     */
-   public static String[] split(final String searchString, final String separator) {
+   public static synchronized String[] split(final String searchString, final String separator) {
       if (searchString == null)
          return null;
 

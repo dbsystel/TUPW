@@ -28,6 +28,7 @@
  *     2019-08-23: V1.1.3: Use SecureRandom singleton. fhs
  *     2020-03-23: V1.2.0: Restructured source code according to DBS programming guidelines. fhs
  *     2020-12-04: V1.3.0: Corrected several SonarLint findings and made class serializable. fhs
+ *     2020-12-29: V1.4.0: Make thread safe. fhs
  */
 package de.db.bcm.tupw.crypto;
 
@@ -40,7 +41,7 @@ import java.util.Objects;
  * Stores a byte array in a shuffled form.
  *
  * @author Frank Schwab
- * @version 1.3.0
+ * @version 1.4.0
  */
 public final class ShuffledByteArray implements AutoCloseable, Serializable {
    /**
@@ -123,7 +124,7 @@ public final class ShuffledByteArray implements AutoCloseable, Serializable {
     * @return Original array content
     * @throws IllegalStateException if the shuffled array has already been destroyed
     */
-   public byte[] getData() {
+   public synchronized byte[] getData() {
       checkState();
 
       return getValues();
@@ -137,7 +138,7 @@ public final class ShuffledByteArray implements AutoCloseable, Serializable {
     * @throws ArrayIndexOutOfBoundsException if index is outside of allowed bounds
     * @throws IllegalStateException          if array has already been destroyed
     */
-   public byte getAt(final int externalIndex) {
+   public synchronized byte getAt(final int externalIndex) {
       checkStateAndExternalIndex(externalIndex);
 
       return this.byteArray[getArrayIndex(externalIndex)];
@@ -151,7 +152,7 @@ public final class ShuffledByteArray implements AutoCloseable, Serializable {
     * @throws ArrayIndexOutOfBoundsException if index is outside of allowed bounds
     * @throws IllegalStateException          if array has already been destroyed
     */
-   public void setAt(final int externalIndex, final byte newValue) {
+   public synchronized void setAt(final int externalIndex, final byte newValue) {
       checkStateAndExternalIndex(externalIndex);
 
       this.byteArray[getArrayIndex(externalIndex)] = newValue;
@@ -164,7 +165,7 @@ public final class ShuffledByteArray implements AutoCloseable, Serializable {
     * @throws IllegalStateException if the shuffled array has already been
     *                               destroyed
     */
-   public int length() {
+   public synchronized int length() {
       checkState();
 
       return getRealIndex(this.storedArrayLength);
@@ -176,7 +177,7 @@ public final class ShuffledByteArray implements AutoCloseable, Serializable {
     * @return {@code True}, if this ShuffledByteArray is valid.
     * {@code False}, if it has been deleted
     */
-   public boolean isValid() {
+   public synchronized boolean isValid() {
       return this.isValid;
    }
 
@@ -187,7 +188,7 @@ public final class ShuffledByteArray implements AutoCloseable, Serializable {
     * @throws IllegalStateException if this shuffled byte array has already been destroyed.
     */
    @Override
-   public int hashCode() {
+   public synchronized int hashCode() {
       checkState();
 
       return this.hashCode;
@@ -201,7 +202,7 @@ public final class ShuffledByteArray implements AutoCloseable, Serializable {
     * @throws IllegalStateException if the protected array has already been destroyed.
     */
    @Override
-   public boolean equals(final Object obj) {
+   public synchronized boolean equals(final Object obj) {
       if (obj == null)
          return false;
 
@@ -229,7 +230,7 @@ public final class ShuffledByteArray implements AutoCloseable, Serializable {
     * <p>This method is idempotent and never throws an exception.</p>
     */
    @Override
-   public void close() {
+   public synchronized void close() {
       if (this.isValid) {
          clearData();
 

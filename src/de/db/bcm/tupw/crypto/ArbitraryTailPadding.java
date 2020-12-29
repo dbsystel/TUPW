@@ -30,6 +30,7 @@
  *     2020-03-23: V2.2.0: Restructured source code according to DBS programming guidelines. fhs
  *     2020-08-13: V2.2.1: Improved getPaddingByteValue method. fhs
  *     2020-12-04: V2.2.2: Corrected several SonarLint findings. fhs
+ *     2020-12-29: V2.3.0: Make thread safe. fhs
  */
 package de.db.bcm.tupw.crypto;
 
@@ -41,7 +42,7 @@ import java.util.Objects;
  * Implements arbitrary tail padding for block ciphers
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 2.2.2
+ * @version 2.3.0
  */
 public class ArbitraryTailPadding {
    //******************************************************************
@@ -89,7 +90,7 @@ public class ArbitraryTailPadding {
     * @throws IllegalArgumentException if block size is too small or too large
     * @throws NullPointerException     if {@code unpaddedSourceData} is {@code null}
     */
-   public static byte[] addPadding(final byte[] unpaddedSourceData, final int blockSize) throws IllegalArgumentException, NullPointerException {
+   public static synchronized byte[] addPadding(final byte[] unpaddedSourceData, final int blockSize) throws IllegalArgumentException, NullPointerException {
       Objects.requireNonNull(unpaddedSourceData, "Unpadded source data is null");
 
       // Check parameter validity
@@ -117,7 +118,7 @@ public class ArbitraryTailPadding {
     * @return Data without padding bytes
     * @throws NullPointerException if {@code paddedSourceData} is {@code null}
     */
-   public static byte[] removePadding(final byte[] paddedSourceData) throws NullPointerException {
+   public static synchronized byte[] removePadding(final byte[] paddedSourceData) throws NullPointerException {
       Objects.requireNonNull(paddedSourceData, "Padded source data is null");
 
       // Return unpadded data

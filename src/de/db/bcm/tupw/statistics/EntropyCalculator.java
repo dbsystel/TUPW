@@ -26,6 +26,7 @@
  *     2020-05-14: V1.3.0: Expose no. of processed bytes as a read-only property and corrected
  *                         calculation of relative entropy. fhs
  *     2020-12-04: V1.3.1: Corrected several SonarLint findings. fhs
+ *     2020-12-29: V1.4.0: Make thread safe. fhs
  */
 
 package de.db.bcm.tupw.statistics;
@@ -37,7 +38,7 @@ import java.util.Objects;
  * Class to calculate the entropy of byte arrays
  *
  * @author Frank Schwab
- * @version 1.3.1
+ * @version 1.4.0
  */
 public class EntropyCalculator {
    //******************************************************************
@@ -59,7 +60,7 @@ public class EntropyCalculator {
    /**
     * Reset the entropy statistics
     */
-   public void reset() {
+   public synchronized void reset() {
       Arrays.fill(m_Counter, 0);
 
       m_ByteCount = 0;
@@ -77,7 +78,7 @@ public class EntropyCalculator {
     * @param toIndex    End index (exclusive)
     * @throws NullPointerException if {@code aByteArray} is null
     */
-   public void addBytes(final byte[] aByteArray, final int fromIndex, final int toIndex) {
+   public synchronized void addBytes(final byte[] aByteArray, final int fromIndex, final int toIndex) {
       Objects.requireNonNull(aByteArray, "Byte array is null");
 
       int  counterIndex;
@@ -98,7 +99,7 @@ public class EntropyCalculator {
     * @param fromIndex  Start index (inclusive)
     * @throws NullPointerException if {@code aByteArray} is null
     */
-   public void addBytes(final byte[] aByteArray, final int fromIndex) {
+   public synchronized void addBytes(final byte[] aByteArray, final int fromIndex) {
       addBytes(aByteArray, fromIndex, aByteArray.length);
    }
 
@@ -108,7 +109,7 @@ public class EntropyCalculator {
     * @param aByteArray Byte array to add to the calculation
     * @throws NullPointerException if {@code aByteArray} is null
     */
-   public void addBytes(final byte[] aByteArray) {
+   public synchronized void addBytes(final byte[] aByteArray) {
       addBytes(aByteArray, 0, aByteArray.length);
    }
 
@@ -117,7 +118,7 @@ public class EntropyCalculator {
     *
     * @return Entropy per byte
     */
-   public double getEntropy() {
+   public synchronized double getEntropy() {
       double result = 0.0;
 
       if (m_ByteCount > 0) {
@@ -144,7 +145,7 @@ public class EntropyCalculator {
     *
     * @return Relative entropy
     */
-   public double getRelativeEntropy() {
+   public synchronized double getRelativeEntropy() {
       return getEntropy() * 0.125; // Maximum entropy is 8, so relative entropy is entropy divided by 8
    }
 
@@ -155,7 +156,7 @@ public class EntropyCalculator {
     *
     * @return Information content in bits
     */
-   public int getInformationInBits() {
+   public synchronized int getInformationInBits() {
       int result = 0;
 
       if (m_ByteCount > 0)
@@ -169,7 +170,7 @@ public class EntropyCalculator {
     *
     * @return Number of bytes that have been processed
     */
-   public int getCount() {
+   public synchronized int getCount() {
       return m_ByteCount;
    }
 }
