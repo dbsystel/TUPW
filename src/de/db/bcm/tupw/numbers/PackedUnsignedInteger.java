@@ -28,7 +28,7 @@
  *     2020-04-22: V1.5.0: Corrected ranges for 3 and 4 byte values. fhs
  *     2020-04-22: V1.5.1: Removed unnecessary check and corrected some comments. fhs
  *     2020-12-04: V1.5.2: Corrected several SonarLint findings. fhs
- *     2020-12-29: V1.6.0: Make thread safe. fhs
+ *     2020-12-29: V1.6.0: Made thread safe. fhs
  */
 package de.db.bcm.tupw.numbers;
 

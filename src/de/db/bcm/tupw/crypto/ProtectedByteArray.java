@@ -28,7 +28,7 @@
  *     2020-03-13: V4.5.0: Added checks for null. fhs
  *     2020-03-23: V4.6.0: Restructured source code according to DBS programming guidelines. fhs
  *     2020-12-04: V4.7.0: Corrected several SonarLint findings and made class serializable. fhs
- *     2020-12-29: V4.8.0: Make thread safe. fhs
+ *     2020-12-29: V4.8.0: Made thread safe. fhs
  */
 package de.db.bcm.tupw.crypto;
 

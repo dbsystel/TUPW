@@ -22,7 +22,7 @@
  *     2020-11-12: V1.0.0: Created. fhs
  *     2020-11-20: V1.1.0: Added interface methods with existing buffers. fhs
  *     2020-12-04: V1.1.1: Corrected several SonarLint findings. fhs
- *     2020-12-29: V1.2.0: Make thread safe. fhs
+ *     2020-12-29: V1.2.0: Made thread safe. fhs
  */
 
 package de.db.bcm.tupw.arrays;

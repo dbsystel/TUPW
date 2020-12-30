@@ -24,7 +24,7 @@
  *     2018-08-15: V1.0.2: Added a few "finals". fhs
  *     2020-03-23: V1.1.0: Restructured source code according to DBS programming guidelines. fhs
  *     2020-12-04: V1.1.1: Corrected several SonarLint findings. fhs
- *     2020-12-29: V1.2.0: Make thread safe. fhs
+ *     2020-12-29: V1.2.0: Made thread safe. fhs
  */
 package de.db.bcm.tupw.crypto;
 

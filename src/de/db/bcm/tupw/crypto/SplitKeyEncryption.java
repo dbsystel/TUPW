@@ -63,7 +63,8 @@
  *     2020-05-14: V5.1.1: Removed unnecessary byte counting when checking source bytes. fhs
  *     2020-11-13: V5.3.0: Implemented V6 of the encoded format. fhs
  *     2020-12-04: V5.3.1: Corrected several SonarLint findings. fhs
- *     2020-12-29: V5.4.0: Make thread safe. fhs
+ *     2020-12-29: V5.4.0: Made thread safe. fhs
+ *     2020-12-30: V5.4.1: Removed synchronization where it was not necessary. fhs
  */
 package de.db.bcm.tupw.crypto;
 
@@ -89,7 +90,7 @@ import java.util.Objects;
  * Implement encryption by key generated from several source bytes and a key
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 5.4.0
+ * @version 5.4.1
  */
 
 public class SplitKeyEncryption implements AutoCloseable {
@@ -315,7 +316,7 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @throws InvalidCryptoParameterException if a parameter of a cryptographic method is invalid (must never happen)
     * @throws NullPointerException            if {@code byteArrayToEncrypt} is {@code null}
     */
-   public synchronized String encryptData(final byte[] byteArrayToEncrypt) throws
+   public String encryptData(final byte[] byteArrayToEncrypt) throws
          InvalidCryptoParameterException {
       return encryptData(byteArrayToEncrypt, NO_SUBJECT);
    }
@@ -351,7 +352,7 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @throws InvalidCryptoParameterException if a parameter of a cryptographic method is invalid (must never happen)
     * @throws NullPointerException            if {@code characterArrayToEncrypt} is {@code null}
     */
-   public synchronized String encryptData(final char[] characterArrayToEncrypt) throws
+   public String encryptData(final char[] characterArrayToEncrypt) throws
          InvalidCryptoParameterException {
       return encryptData(characterArrayToEncrypt, NO_SUBJECT);
    }
@@ -387,7 +388,7 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @throws InvalidCryptoParameterException if a parameter of a cryptographic method is invalid (must never happen)
     * @throws NullPointerException            if {@code stringToEncrypt} is {@code null}
     */
-   public synchronized String encryptData(final String stringToEncrypt) throws
+   public String encryptData(final String stringToEncrypt) throws
          InvalidCryptoParameterException {
       return encryptData(stringToEncrypt, NO_SUBJECT);
    }
@@ -448,7 +449,7 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @throws InvalidCryptoParameterException if a parameter of a cryptographic method is invalid (must never happen)
     * @throws NullPointerException            if {@code stringToDecrypt} is {@code null}
     */
-   public synchronized byte[] decryptDataAsByteArray(final String stringToDecrypt) throws
+   public byte[] decryptDataAsByteArray(final String stringToDecrypt) throws
          DataIntegrityException,
          InvalidCryptoParameterException {
       return decryptDataAsByteArray(stringToDecrypt, NO_SUBJECT);
@@ -494,7 +495,7 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @throws InvalidCryptoParameterException if a parameter of a cryptographic method is invalid (must never happen)
     * @throws NullPointerException            if {@code stringToDecrypt} or {@code subject} is {@code null}
     */
-   public synchronized char[] decryptDataAsCharacterArray(final String stringToDecrypt) throws CharacterCodingException,
+   public char[] decryptDataAsCharacterArray(final String stringToDecrypt) throws CharacterCodingException,
          DataIntegrityException,
          InvalidCryptoParameterException {
       return decryptDataAsCharacterArray(stringToDecrypt, NO_SUBJECT);
@@ -538,7 +539,7 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @throws InvalidCryptoParameterException if a parameter of a cryptographic method is invalid (must never happen)
     * @throws NullPointerException            if {@code stringToDecrypt} or {@code subject} is {@code null}
     */
-   public synchronized String decryptDataAsString(final String stringToDecrypt) throws CharacterCodingException,
+   public String decryptDataAsString(final String stringToDecrypt) throws CharacterCodingException,
          DataIntegrityException,
          InvalidCryptoParameterException {
       return decryptDataAsString(stringToDecrypt, NO_SUBJECT);
@@ -559,7 +560,7 @@ public class SplitKeyEncryption implements AutoCloseable {
     * or even better {@link #decryptDataAsCharacterArray(String, String)}.
     */
    @Deprecated
-   public synchronized String decryptData(final String stringToDecrypt, final String subject) throws CharacterCodingException,
+   public String decryptData(final String stringToDecrypt, final String subject) throws CharacterCodingException,
          DataIntegrityException,
          InvalidCryptoParameterException {
       return decryptDataAsString(stringToDecrypt, subject);
@@ -579,7 +580,7 @@ public class SplitKeyEncryption implements AutoCloseable {
     * or even better {@link #decryptDataAsCharacterArray(String)}.
     */
    @Deprecated
-   public synchronized String decryptData(final String stringToDecrypt) throws CharacterCodingException,
+   public String decryptData(final String stringToDecrypt) throws CharacterCodingException,
          DataIntegrityException,
          InvalidCryptoParameterException {
       return decryptDataAsString(stringToDecrypt);

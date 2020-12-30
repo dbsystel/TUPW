@@ -20,7 +20,7 @@
  *
  * Changes:
  *     2020-03-23: V1.0.0: Created. fhs
- *     2020-12-29: V1.1.0: Make thread safe. fhs
+ *     2020-12-29: V1.1.0: Made thread safe. fhs
  */
 
 package de.db.bcm.tupw.numbers;

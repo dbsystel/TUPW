@@ -23,7 +23,7 @@
  *     2020-03-19: V1.1.0: Consolidated crypto parameter exceptions. fhs
  *     2020-03-23: V1.2.0: Restructured source code according to DBS programming guidelines. fhs
  *     2020-12-04: V1.2.1: Corrected several SonarLint findings. fhs
- *     2020-12-29: V1.3.0: Make thread safe. fhs
+ *     2020-12-29: V1.3.0: Made thread safe. fhs
  */
 package de.db.bcm.tupw.crypto;
 

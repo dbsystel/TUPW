@@ -22,7 +22,7 @@
  *     2020-03-25: V1.0.0: Created. fhs
  *     2020-03-27: V1.0.1: Only catch the expected checked exception in method convertCharacterArrayToUTF8ByteArray. fhs
  *     2020-12-04: V1.0.2: Corrected several SonarLint findings. fhs
- *     2020-12-29: V1.1.0: Make thread safe. fhs
+ *     2020-12-29: V1.1.0: Made thread safe. fhs
  */
 package de.db.bcm.tupw.strings;
 

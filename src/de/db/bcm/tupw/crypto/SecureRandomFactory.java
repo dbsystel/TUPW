@@ -24,7 +24,7 @@
  *     2019-08-23: V1.2.0: Make it possible to use a SecureRandom singleton. fhs
  *     2020-03-23: V1.3.0: Restructured source code according to DBS programming guidelines. fhs
  *     2020-12-04: V1.3.1: Corrected several SonarLint findings. fhs
- *     2020-12-29: V1.4.0: Make thread safe. fhs
+ *     2020-12-29: V1.4.0: Made thread safe. fhs
  */
 package de.db.bcm.tupw.crypto;
 

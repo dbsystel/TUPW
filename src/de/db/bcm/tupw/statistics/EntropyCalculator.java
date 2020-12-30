@@ -26,7 +26,8 @@
  *     2020-05-14: V1.3.0: Expose no. of processed bytes as a read-only property and corrected
  *                         calculation of relative entropy. fhs
  *     2020-12-04: V1.3.1: Corrected several SonarLint findings. fhs
- *     2020-12-29: V1.4.0: Make thread safe. fhs
+ *     2020-12-29: V1.4.0: Made thread safe. fhs
+ *     2020-12-30: V1.4.1: Removed synchronization where it was not necessary. fhs
  */
 
 package de.db.bcm.tupw.statistics;
@@ -38,7 +39,7 @@ import java.util.Objects;
  * Class to calculate the entropy of byte arrays
  *
  * @author Frank Schwab
- * @version 1.4.0
+ * @version 1.4.1
  */
 public class EntropyCalculator {
    //******************************************************************
@@ -145,7 +146,7 @@ public class EntropyCalculator {
     *
     * @return Relative entropy
     */
-   public synchronized double getRelativeEntropy() {
+   public double getRelativeEntropy() {
       return getEntropy() * 0.125; // Maximum entropy is 8, so relative entropy is entropy divided by 8
    }
 
