@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, DB Systel GmbH
+ * Copyright (c) 2021, DB Systel GmbH
  * All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -65,6 +65,7 @@
  *     2020-12-04: V5.3.1: Corrected several SonarLint findings. fhs
  *     2020-12-29: V5.4.0: Made thread safe. fhs
  *     2020-12-30: V5.4.1: Removed synchronization where it was not necessary. fhs
+ *     2021-01-04: V5.4.2: Corrected wrong method and variable names. fhs
  */
 package de.db.bcm.tupw.crypto;
 
@@ -90,7 +91,7 @@ import java.util.Objects;
  * Implement encryption by key generated from several source bytes and a key
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 5.4.1
+ * @version 5.4.2
  */
 
 public class SplitKeyEncryption implements AutoCloseable {
@@ -747,18 +748,18 @@ public class SplitKeyEncryption implements AutoCloseable {
    }
 
    /**
-    * Return unpadded string bytes depending on format id
+    * Return unpadded data bytes depending on format id
     *
-    * @param formatId                   Format id of data
-    * @param paddedDecryptedStringBytes Byte array of padded decrypted bytes
+    * @param formatId                 Format id of data
+    * @param paddedDecryptedDataBytes Byte array of padded decrypted bytes
     * @return Unpadded decrypted bytes
     */
-   private byte[] getUnpaddedStringBytes(final byte formatId, final byte[] paddedDecryptedStringBytes) {
+   private byte[] getUnpaddedDataBytes(final byte formatId, final byte[] paddedDecryptedDataBytes) {
       // Formats 1 and 2 use padding. Starting from format 3 blinding is used.
       if (formatId >= FORMAT_ID_USE_BLINDING)
-         return ByteArrayBlinding.unBlindByteArray(paddedDecryptedStringBytes);
+         return ByteArrayBlinding.unBlindByteArray(paddedDecryptedDataBytes);
       else
-         return ArbitraryTailPadding.removePadding(paddedDecryptedStringBytes);
+         return ArbitraryTailPadding.removePadding(paddedDecryptedDataBytes);
    }
 
    /**
@@ -891,13 +892,13 @@ public class SplitKeyEncryption implements AutoCloseable {
 
       aesCipher.init(Cipher.DECRYPT_MODE, decryptionKey, new IvParameterSpec(encryptionParts.iv));
 
-      final byte[] paddedDecryptedStringBytes = aesCipher.doFinal(encryptionParts.encryptedData);
+      final byte[] paddedDecryptedDataBytes = aesCipher.doFinal(encryptionParts.encryptedData);
 
       decryptionKey.close();
 
-      final byte[] result = getUnpaddedStringBytes(encryptionParts.formatId, paddedDecryptedStringBytes);
+      final byte[] result = getUnpaddedDataBytes(encryptionParts.formatId, paddedDecryptedDataBytes);
 
-      Arrays.fill(paddedDecryptedStringBytes, FILL_BYTE);
+      Arrays.fill(paddedDecryptedDataBytes, FILL_BYTE);
 
       return result;
    }
