@@ -66,6 +66,7 @@
  *     2020-12-29: V5.4.0: Made thread safe. fhs
  *     2020-12-30: V5.4.1: Removed synchronization where it was not necessary. fhs
  *     2021-01-04: V5.4.2: Corrected wrong method and variable names. fhs
+ *     2021-05-17: V5.4.3: New version because Base32Encoding had a small change. fhs
  */
 package de.db.bcm.tupw.crypto;
 
@@ -91,7 +92,7 @@ import java.util.Objects;
  * Implement encryption by key generated from several source bytes and a key
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 5.4.2
+ * @version 5.4.3
  */
 
 public class SplitKeyEncryption implements AutoCloseable {
