@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.5.0] - 2021-05-28
+
+### Changed
+- Refactored ProtectedByteArray. It now uses a masker so there is no need to store an additional obfuscation array, which means that ShuffledByteArray is gone. The new ProtectedByteArray is the old ShuffledByteArray with a masker. This obfuscates protected data better in memory dumps.
+
 ## [5.4.3] - 2021-05-17
 
 ### Changed

@@ -18,13 +18,14 @@
  *
  * Author: Frank Schwab, DB Systel GmbH
  *
- * Version: 1.2.0
+ * Version: 1.3.0
  *
  * Change history:
  *    2020-11-12: V1.0.0: Created. fhs
  *    2020-11-20: V1.1.0: Added interface methods with existing buffers. fhs
  *    2020-12-04: V1.1.1: Corrected several SonarLint findings. fhs
- *    2021-05-17: V1.2.0: Simplified byte to char mapping. fhs
+ *    2020-12-29: V1.2.0: Made thread safe. fhs
+ *    2021-05-17: V1.3.0: Simplified byte to char mapping. fhs
  */
 
 package de.db.bcm.tupw.arrays;
@@ -36,7 +37,7 @@ import java.util.Objects;
  * Converts byte arrays from and to Base32 encoding either, as specified in RFC4868, or in spell-safe format.
  *
  * @author Frank Schwab
- * @version 1.2.0
+ * @version 1.3.0
  */
 
 public class Base32Encoding {
@@ -45,19 +46,19 @@ public class Base32Encoding {
    //******************************************************************
 
    // Error messages
-   private static final String ERROR_TEXT_INVALID_CHARACTER = "Character is not a valid Base32 character";
+   private static final String ERROR_TEXT_INVALID_CHARACTER     = "Character is not a valid Base32 character";
    private static final String ERROR_TEXT_INVALID_STRING_LENGTH = "Invalid Base32 string length";
-   private static final String ERROR_TEXT_DESTINATION_TOO_SMALL = "destinationBuffer is too small";
+   private static final String ERROR_TEXT_DESTINATION_TOO_SMALL = "DestinationBuffer is too small";
 
    // Processing constants
    private static final byte BITS_PER_CHARACTER = 5;
    private static final byte BITS_PER_BYTE = 8;
    private static final byte BITS_DIFFERENCE = BITS_PER_BYTE - BITS_PER_CHARACTER;
    private static final byte INVALID_CHARACTER_VALUE = -1;
-   private static final int BYTE_MASK = 255;
-   private static final int CHARACTER_MASK = 31;
+   private static final int  BYTE_MASK = 255;
+   private static final int  CHARACTER_MASK = 31;
    private static final char PADDING_CHARACTER = '=';
-   private static final int CODEPOINT_ZERO = 48;
+   private static final int  CODEPOINT_ZERO = 48;
 
    // Mapping tables
 
@@ -155,7 +156,7 @@ public class Base32Encoding {
     * @param encodedValue The Base32 string to decode
     * @return The decoded Base32 string as a byte array
     */
-   public static byte[] decode(String encodedValue) {
+   public static synchronized byte[] decode(String encodedValue) {
       return decodeNewBufferWithMapping(encodedValue, RFC_4648_CHAR_TO_VALUE);
    }
 
@@ -166,7 +167,7 @@ public class Base32Encoding {
     * @param destinationBuffer Byte array where the decoded values are placed
     * @return The length of the bytes written into the destination buffer
     */
-   public static int decode(String encodedValue, byte[] destinationBuffer) {
+   public static synchronized int decode(String encodedValue, byte[] destinationBuffer) {
       return decodeExistingBufferWithMapping(encodedValue, destinationBuffer, RFC_4648_CHAR_TO_VALUE);
    }
 
@@ -176,7 +177,7 @@ public class Base32Encoding {
     * @param encodedValue The Base32 string to decode
     * @return The decoded spell-safe Base32 string as a byte array
     */
-   public static byte[] decodeSpellSafe(String encodedValue) {
+   public static synchronized byte[] decodeSpellSafe(String encodedValue) {
       return decodeNewBufferWithMapping(encodedValue, SPELL_SAFE_CHAR_TO_VALUE);
    }
 
@@ -187,7 +188,7 @@ public class Base32Encoding {
     * @param destinationBuffer Byte array where the decoded values are placed
     * @return The length of the bytes written into the destination buffer
     */
-   public static int decodeSpellSafe(String encodedValue, byte[] destinationBuffer) {
+   public static synchronized int decodeSpellSafe(String encodedValue, byte[] destinationBuffer) {
       return decodeExistingBufferWithMapping(encodedValue, destinationBuffer, SPELL_SAFE_CHAR_TO_VALUE);
    }
 
@@ -199,7 +200,7 @@ public class Base32Encoding {
     * @param aByteArray The byte array to encode
     * @return The Base32 representation of the bytes in {@code aByteArray}
     */
-   public static String encode(byte[] aByteArray) {
+   public static synchronized String encode(byte[] aByteArray) {
       return encodeWorker(aByteArray, RFC_4648_VALUE_TO_CHAR, true);
    }
 
@@ -209,7 +210,7 @@ public class Base32Encoding {
     * @param aByteArray The byte array to encode
     * @return The Base32 representation of the bytes in {@code aByteArray}
     */
-   public static String encodeNoPadding(byte[] aByteArray) {
+   public static synchronized String encodeNoPadding(byte[] aByteArray) {
       return encodeWorker(aByteArray, RFC_4648_VALUE_TO_CHAR, false);
    }
 
@@ -219,7 +220,7 @@ public class Base32Encoding {
     * @param aByteArray The byte array to encode
     * @return The spell-safe Base32 representation of the bytes in {@code aByteArray}
     */
-   public static String encodeSpellSafe(byte[] aByteArray) {
+   public static synchronized String encodeSpellSafe(byte[] aByteArray) {
       return encodeWorker(aByteArray, SPELL_SAFE_VALUE_TO_CHAR, true);
    }
 
@@ -229,12 +230,12 @@ public class Base32Encoding {
     * @param aByteArray The byte array to encode
     * @return The spell-safe Base32 representation of the bytes in {@code aByteArray}
     */
-   public static String encodeSpellSafeNoPadding(byte[] aByteArray) {
+   public static synchronized String encodeSpellSafeNoPadding(byte[] aByteArray) {
       return encodeWorker(aByteArray, SPELL_SAFE_VALUE_TO_CHAR, false);
    }
 
    //******************************************************************
-   // Public methods
+   // Private methods
    //******************************************************************
 
    // Internal encode and decode methods

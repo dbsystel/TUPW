@@ -67,6 +67,7 @@
  *     2020-12-30: V5.4.1: Removed synchronization where it was not necessary. fhs
  *     2021-01-04: V5.4.2: Corrected wrong method and variable names. fhs
  *     2021-05-17: V5.4.3: New version because Base32Encoding had a small change. fhs
+ *     2021-05-28: V5.5.0: New version because of refactored ProtectedByteArray. fhs
  */
 package de.db.bcm.tupw.crypto;
 
@@ -92,7 +93,7 @@ import java.util.Objects;
  * Implement encryption by key generated from several source bytes and a key
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 5.4.3
+ * @version 5.5.0
  */
 
 public class SplitKeyEncryption implements AutoCloseable {
@@ -147,6 +148,7 @@ public class SplitKeyEncryption implements AutoCloseable {
    private static final String AES_ALGORITHM_NAME = "AES";
 
    private static final String CBC_NO_PADDING = "/CBC/NoPadding";
+
    /**
     * Encryption specification with algorithm, mode and padding
     *

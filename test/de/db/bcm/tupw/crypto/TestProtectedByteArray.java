@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, DB Systel GmbH
+ * Copyright (c) 2021, DB Systel GmbH
  * All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -18,9 +18,8 @@
  *
  * Author: Frank Schwab, DB Systel GmbH
  *
- * Changes:
+ * Changes: 
  *     2020-03-11: V1.0.0: Created. fhs
- *     2020-04-29: V1.0.1: Removed unnecessary constants. fhs
  */
 package de.db.bcm.tupw.crypto;
 
@@ -34,7 +33,7 @@ import static org.junit.Assert.*;
  * Test cases for SecureSecretKeySpec
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.0.1
+ * @version 1.0.0
  */
 public class TestProtectedByteArray {
 
@@ -42,6 +41,8 @@ public class TestProtectedByteArray {
     * Private constants
     */
    static final byte FILL_VALUE = (byte) 0x55;
+   static final byte OTHER_VALUE = (byte) 0xAA;
+   static final int CHANGE_INDEX = 7;
 
    static final String EXPECTED_EXCEPTION = "Expected exception not thrown";
 
@@ -67,12 +68,12 @@ public class TestProtectedByteArray {
    @Test
    public void TestNullArgument() {
       try {
-         ProtectedByteArray pba = new ProtectedByteArray(null);
+         ProtectedByteArray sba = new ProtectedByteArray(null);
 
          fail(EXPECTED_EXCEPTION);
       }
       catch (NullPointerException e) {
-         assertEquals("Exception: " + e.toString(), "Array to protect is null", e.getMessage());
+         assertEquals("Exception: " + e.toString(), "Source array is null", e.getMessage());
       }
       catch (Exception e) {
          e.printStackTrace();
@@ -82,11 +83,24 @@ public class TestProtectedByteArray {
 
    @Test
    public void TestEmptyArgument() {
-      ProtectedByteArray pba = new ProtectedByteArray(new byte[0]);
+      ProtectedByteArray sba = new ProtectedByteArray(new byte[0]);
 
-      byte[] result = pba.getData();
+      byte[] result = sba.getData();
 
       assertEquals("Empty byte array is retrieved with wrong length", 0, result.length);
+
+      try {
+         final byte notExistent = sba.getAt(1);
+
+         fail(EXPECTED_EXCEPTION);
+      }
+      catch (ArrayIndexOutOfBoundsException e) {
+         assertTrue("Exception: " + e.toString(), e.getMessage().contains("Illegal index"));
+      }
+      catch (Exception e) {
+         e.printStackTrace();
+         fail("Exception: " + e.toString());
+      }
    }
 
    @Test
@@ -95,10 +109,17 @@ public class TestProtectedByteArray {
 
       Arrays.fill(ba, FILL_VALUE);
 
-      ProtectedByteArray pba = new ProtectedByteArray(ba);
+      ProtectedByteArray sba = new ProtectedByteArray(ba);
 
-      assertArrayEquals("Data was not correctly retrieved", ba, pba.getData());
-      assertEquals("Retrieved data has different length from stored data", ba.length, pba.length());
+      assertArrayEquals("Data was not correctly retrieved", ba, sba.getData());
+      assertEquals("Retrieved data has different length from stored data", ba.length, sba.length());
+      assertEquals("Retrieved data at index 0 has different value from stored data", ba[0], sba.getAt(0));
+
+      sba.setAt(CHANGE_INDEX, OTHER_VALUE);
+      assertEquals("Retrieved data with 'getAt' has different value from what was set", OTHER_VALUE, sba.getAt(CHANGE_INDEX));
+
+      final byte[] retrievedBa = sba.getData();
+      assertEquals("Retrieved data with 'getData' has different value from what was set", OTHER_VALUE, retrievedBa[CHANGE_INDEX]);
    }
 
    @Test
@@ -107,13 +128,13 @@ public class TestProtectedByteArray {
 
       Arrays.fill(ba, FILL_VALUE);
 
-      ProtectedByteArray pba = new ProtectedByteArray(ba);
+      ProtectedByteArray sba = new ProtectedByteArray(ba);
 
-      pba.close();
-      assertFalse("ProtectedByteArray still valid after close", pba.isValid());
+      sba.close();
+      assertFalse("ProtectedByteArray still valid after close", sba.isValid());
 
       try {
-         pba.getData();
+         sba.getData();
 
          fail(EXPECTED_EXCEPTION);
       }
@@ -134,13 +155,13 @@ public class TestProtectedByteArray {
 
       Arrays.fill(ba, FILL_VALUE);
 
-      final ProtectedByteArray pba1 = new ProtectedByteArray(ba);
-      final ProtectedByteArray pba2 = new ProtectedByteArray(ba);
+      final ProtectedByteArray sba1 = new ProtectedByteArray(ba);
+      final ProtectedByteArray sba2 = new ProtectedByteArray(ba);
 
-      assertEquals("ProtectedByteArray are not equal when they should be", pba1, pba2);
-      assertEquals("ProtectedByteArray do not have identical hash codes", pba1.hashCode(), pba2.hashCode());
+      assertEquals("ProtectedByteArray are not equal when they should be", sba1, sba2);
+      assertEquals("ProtectedByteArray do not have identical hash codes", sba1.hashCode(), sba2.hashCode());
 
-      final ProtectedByteArray pba3 = new ProtectedByteArray(new byte[32]);
-      assertNotEquals("ProtectedByteArray are equal when they should not be (different keys)", pba1, pba3);
+      final ProtectedByteArray sba3 = new ProtectedByteArray(new byte[32]);
+      assertNotEquals("ProtectedByteArray are equal when they should not be (different keys)", sba1, sba3);
    }
 }
