@@ -31,6 +31,7 @@
  *     2020-12-29: V1.4.0: Made thread safe. fhs
  *     2021-05-21: V1.5.0: More store size variation for small source sizes, check max source size. fhs
  *     2021-05-27: V2.0.0: Byte array is protected by an index dependent masker now, no more need for an obfuscation array. fhs
+ *     2021-06-09: V2.0.1: Simplified constructors. fhs
  */
 package de.db.bcm.tupw.crypto;
 
@@ -45,8 +46,8 @@ import java.util.Objects;
  * The array is stored shuffled and masked.
  * </p>
  *
- * @author Frank Schwab
- * @version 2.0.0
+ * @author Frank Schwab, DB Systel GmbH
+ * @version 2.0.1
  */
 public final class ProtectedByteArray implements AutoCloseable {
    //******************************************************************
@@ -138,12 +139,13 @@ public final class ProtectedByteArray implements AutoCloseable {
     * @throws IllegalArgumentException if {@code sourceArray} is too large.
     */
    public ProtectedByteArray(final byte[] sourceArray) {
+      this(sourceArray, 0);
+   }
+
+   public ProtectedByteArray(final byte[] sourceArray, final int offset) {
       Objects.requireNonNull(sourceArray, "Source array is null");
 
-      if (sourceArray.length > MAX_SOURCE_ARRAY_LENGTH)
-         throw new IllegalArgumentException("Source array is too large");
-
-      initializeInstance(sourceArray);
+      initializeInstance(sourceArray, offset, sourceArray.length - offset);
    }
 
    /**
@@ -162,17 +164,7 @@ public final class ProtectedByteArray implements AutoCloseable {
    public ProtectedByteArray(final byte[] sourceArray, final int offset, final int len) {
       Objects.requireNonNull(sourceArray, "Source array is null");
 
-      if (len > MAX_SOURCE_ARRAY_LENGTH)
-         throw new IllegalArgumentException("Length is too large");
-
-      checkOffsetAndLength(sourceArray, offset, len);
-
-      final byte[] intermediateArray = new byte[len];
-      System.arraycopy(sourceArray, offset, intermediateArray, 0, len);
-
-      initializeInstance(intermediateArray);
-
-      Arrays.fill(intermediateArray, FILL_BYTE); // Clear sensitive data
+      initializeInstance(sourceArray, offset, len);
    }
 
 
@@ -241,7 +233,7 @@ public final class ProtectedByteArray implements AutoCloseable {
    /**
     * Checks whether this ProtectedByteArray is valid
     *
-    * @return {@code True}, if this ProtecedByteArray is valid.
+    * @return {@code True}, if this ProtectedByteArray is valid.
     * {@code False}, if it has been deleted
     */
    public synchronized boolean isValid() {
@@ -318,18 +310,17 @@ public final class ProtectedByteArray implements AutoCloseable {
     * Initialize this instance from a source array
     *
     * @param sourceArray Array to use as source
+    * @param offset      The offset of the data in the byte array.
+    * @param len         The length of the data in the byte array.
     */
-   private void initializeInstance(byte[] sourceArray) {
-      this.hashCode = Arrays.hashCode(sourceArray);   // Calculate hash code of source once
+   private void initializeInstance(final byte[] sourceArray, final int offset, final int len) {
+      checkOffsetAndLength(sourceArray, offset, len);
 
-      this.indexMasker = new MaskedIndex();
+      initializeDataStructures(len);
 
-      initializeDataStructures(sourceArray.length);
+      setValues(sourceArray, offset, len);
 
-      setValues(sourceArray);
-
-      this.hasChanged = false;
-      this.isValid = true;
+      calculateHashCode();
    }
 
 
@@ -348,6 +339,9 @@ public final class ProtectedByteArray implements AutoCloseable {
     *                                        {@code offset} in array {@code sourceArray}.
     */
    private void checkOffsetAndLength(final byte[] sourceArray, final int offset, final int len) {
+      if (len > MAX_SOURCE_ARRAY_LENGTH)
+         throw new IllegalArgumentException("Source array is too large");
+
       if ((offset < 0) || (len < 0))
          throw new ArrayIndexOutOfBoundsException("offset or length less than zero");
 
@@ -438,6 +432,8 @@ public final class ProtectedByteArray implements AutoCloseable {
          }
       } while (count < arrayLength);
 
+      // These seemingly unnecessary assignments clear the indices
+      // so one can not see their values in a memory dump
       i1 = 0;
       i2 = 0;
    }
@@ -465,6 +461,8 @@ public final class ProtectedByteArray implements AutoCloseable {
     * @param sourceLength Length of source array
     */
    private void initializeDataStructures(final int sourceLength) {
+      this.indexMasker = new MaskedIndex();
+
       final int storeLength = getStoreLength(sourceLength);
 
       this.byteArray = new byte[storeLength];
@@ -479,6 +477,8 @@ public final class ProtectedByteArray implements AutoCloseable {
 
       this.indexStart = convertIndex(getStartIndex(sourceLength, storeLength, sprng), INDEX_START);
       this.storedArrayLength = convertIndex(sourceLength, INDEX_LENGTH);
+
+      this.isValid = true;
    }
 
    /**
@@ -556,10 +556,17 @@ public final class ProtectedByteArray implements AutoCloseable {
     * Sets the destination array to the values in the source array.
     *
     * @param sourceArray Source byte array
+    * @param offset      The offset of the data in the byte array.
+    * @param len         The length of the data in the byte array.
     */
-   private void setValues(final byte[] sourceArray) {
-      for (int i = 0; i < sourceArray.length; i++)
-         this.byteArray[getArrayIndex(i)] = (byte) (this.indexMasker.getByteMask(i) ^ sourceArray[i]);
+   private void setValues(final byte[] sourceArray, final int offset, final int len) {
+      int sourceIndex = offset;
+
+      for (int i = 0; i < len; i++) {
+         this.byteArray[getArrayIndex(i)] = (byte) (this.indexMasker.getByteMask(i) ^ sourceArray[sourceIndex]);
+
+         sourceIndex++;
+      }
    }
 
    /**
@@ -568,7 +575,7 @@ public final class ProtectedByteArray implements AutoCloseable {
     * @return Values stored in protected byte array
     */
    private byte[] getValues() {
-      final byte[] result = new byte[this.length()];
+      final byte[] result = new byte[getRealLength()];
 
       for (int i = 0; i < result.length; i++)
          result[i] = (byte) (this.indexMasker.getByteMask(i) ^ this.byteArray[getArrayIndex(i)]);
@@ -580,9 +587,9 @@ public final class ProtectedByteArray implements AutoCloseable {
     * Calculates the hash code of the content
     */
    private void calculateHashCode() {
-      byte[] content = getValues();
+      final byte[] content = getValues();
 
-      this.hashCode = Arrays.hashCode(content);   // Calculate hash code of source once
+      this.hashCode = Arrays.hashCode(content);
 
       Arrays.fill(content, FILL_BYTE);  // Clear sensitive data
 
