@@ -30,6 +30,7 @@
  *     2020-04-28: V1.5.1: Added missing null check. fhs
  *     2020-12-04: V1.5.2: Corrected several SonarLint findings. fhs
  *     2020-12-29: V1.6.0: Made thread safe. fhs
+ *     2021-07-13: V1.6.1: Made blinding method a little easier to read. fhs
  */
 package de.db.bcm.tupw.crypto;
 
@@ -43,7 +44,7 @@ import java.util.Objects;
  * Implements blinding for byte arrays
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.6.0
+ * @version 1.6.1
  */
 public class ByteArrayBlinding {
    //******************************************************************
@@ -112,21 +113,30 @@ public class ByteArrayBlinding {
 
       checkMinimumLength(minimumLength);
 
-      final byte[] packedSourceLength = PackedUnsignedInteger.fromInteger(sourceBytes.length);
+      final int sourceLength = sourceBytes.length;
 
-      final int[] blindingLength = getBalancedBlindingLengths(packedSourceLength.length, sourceBytes.length, minimumLength);
+      final byte[] packedSourceLength = PackedUnsignedInteger.fromInteger(sourceLength);
+      final int packedSourceLengthLength = packedSourceLength.length;
 
-      final byte[] prefixBlinding = createBlinding(blindingLength[INDEX_LENGTHS_PREFIX_LENGTH]);
-      final byte[] postfixBlinding = createBlinding(blindingLength[INDEX_LENGTHS_POSTFIX_LENGTH]);
+      // Get the prefix and the postfix blinding lengths.
+      // Java does not support multiple return values, so we have to take the detour with an array as the return value.
+      final int[] blindingLength = getBalancedBlindingLengths(packedSourceLengthLength, sourceLength, minimumLength);
+      final int prefixLength = blindingLength[INDEX_LENGTHS_PREFIX_LENGTH];
+      final int postfixLength = blindingLength[INDEX_LENGTHS_POSTFIX_LENGTH];
 
-      final int resultLength = 2 + packedSourceLength.length + prefixBlinding.length + sourceBytes.length + postfixBlinding.length;
+      // There ought to be a method to put random bytes into a part of an existing array like e.g. "next(bytes, offset, length)".
+      // Unfortunately Java does not provide such a method so we have to allocate temporary arrays for the blinders and copy them.
+      final byte[] prefixBlinding = createBlinding(prefixLength);
+      final byte[] postfixBlinding = createBlinding(postfixLength);
+
+      final int resultLength = 2 + packedSourceLengthLength + prefixLength + sourceLength + postfixLength;
 
       final byte[] result = new byte[resultLength];
 
-      result[0] = (byte) prefixBlinding.length;
-      result[1] = (byte) postfixBlinding.length;
+      result[0] = (byte) prefixLength;
+      result[1] = (byte) postfixLength;
 
-      int resultIndex = 2;
+      int resultIndex = LENGTHS_LENGTH;
 
       resultIndex += copyByteArrayAndZapSource(packedSourceLength, result, resultIndex);
 
