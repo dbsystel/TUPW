@@ -34,11 +34,11 @@
     * @version 1.0.0
     */
    public class TestSecureRandomFactory {
-
       private static final String LINUX_NAME = "Linux";
       private static final String NATIVE_NAME = "Native";
       private static final String NONBLOCKING_NAME = "Nonblocking";
       private static final String WINDOWS_NAME = "Windows";
+      private static final String END_QUOTE = "'";
 
       /*
        * Private constants
@@ -68,11 +68,13 @@
 
          final String thisOS = getOsName();
 
+         final String errorMessagePrefix = "OS is '" + thisOS + "' but optimal algorithm '" + optimalAlgorithm + "' does not start with '";
+
          if (startsWithIgnoreCase(thisOS, WINDOWS_NAME)) {
-            assertTrue("OS is '" + thisOS + "' but optimal algorithm '" + optimalAlgorithm + "' does not start with '" + WINDOWS_NAME + "'", startsWithIgnoreCase(optimalAlgorithm, WINDOWS_NAME));
+            assertTrue(errorMessagePrefix + WINDOWS_NAME + END_QUOTE, startsWithIgnoreCase(optimalAlgorithm, WINDOWS_NAME));
          } else if (startsWithIgnoreCase(thisOS, LINUX_NAME)) {
-            assertTrue("OS is '" + thisOS + "' but optimal algorithm '" + optimalAlgorithm + "' does not start with '" + NATIVE_NAME + "'", startsWithIgnoreCase(optimalAlgorithm, NATIVE_NAME));
-            assertTrue("OS is '" + thisOS + "' but optimal algorithm '" + optimalAlgorithm + "' does not end with '" + NONBLOCKING_NAME + "'", startsWithIgnoreCase(optimalAlgorithm, NONBLOCKING_NAME));
+            assertTrue(errorMessagePrefix + NATIVE_NAME + END_QUOTE, startsWithIgnoreCase(optimalAlgorithm, NATIVE_NAME));
+            assertTrue(errorMessagePrefix + NONBLOCKING_NAME + END_QUOTE, startsWithIgnoreCase(optimalAlgorithm, NONBLOCKING_NAME));
          }
       }
 
