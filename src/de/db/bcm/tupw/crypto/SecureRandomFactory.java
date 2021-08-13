@@ -25,6 +25,7 @@
  *     2020-03-23: V1.3.0: Restructured source code according to DBS programming guidelines. fhs
  *     2020-12-04: V1.3.1: Corrected several SonarLint findings. fhs
  *     2020-12-29: V1.4.0: Made thread safe. fhs
+ *     2021-08-13: V1.5.0: Make algorithm to find SecureRandom algorithm more robust. fhs
  */
 package de.db.bcm.tupw.crypto;
 
@@ -37,7 +38,7 @@ import java.util.Set;
  * A class to get the most secure SecureRandom instance
  *
  * @author Frank Schwab
- * @version 1.4.0
+ * @version 1.5.0
  */
 public class SecureRandomFactory {
    //******************************************************************
@@ -128,29 +129,48 @@ public class SecureRandomFactory {
    private static String getOptimalSecureRandomAlgorithmName() {
       String result = "";
 
+      // These are the algorithms we are looking for
+      boolean foundWindows = false;
+      boolean foundNativeNonBlocking = false;
+      boolean foundNativeOther = false;
+
+      String windowsAlgorithm = "";
+      String nativeNonBlockingAlgorithm = "";
+      String nativeOtherAlgorithm = "";
+
       // Scan through the list of SecureRandom algorithms
       final Set<String> algorithms = Security.getAlgorithms("SecureRandom");
 
+      // The order of the entries is not defined so loop through all entries
+      // and remember what we found
       for (String algorithm : algorithms) {
          // Use the native windows SPRNG on Windows
          if (algorithm.startsWith("WINDOWS-")) {
-            result = algorithm;
-            break;
+            foundWindows = true;
+            windowsAlgorithm = algorithm;
          }
 
+         // Use a nonblocking native SPRNG on other OSes
          if (algorithm.startsWith("NATIVE")) {
             if (algorithm.endsWith("NONBLOCKING")) {
-               // Use native non-blocking SPRNG on *ux, if it exists
-               result = algorithm;
-               break;
-            } else if (!algorithm.endsWith("BLOCKING"))  { // Never use the BLOCKING provider
-               // This is probably "NATIVEPRNG"
-               result = algorithm;
-               break;
+               foundNativeNonBlocking = true;
+               nativeNonBlockingAlgorithm = algorithm;
+            } else if (!algorithm.endsWith("BLOCKING")) {
+               foundNativeOther = true;
+               nativeOtherAlgorithm = algorithm;
             }
          }
       }
 
+      // Now choose the appropriate algorithm
+      if (foundWindows)
+         result = windowsAlgorithm;
+      else if (foundNativeNonBlocking)
+         result = nativeNonBlockingAlgorithm;
+      else if (foundNativeOther)
+         result = nativeOtherAlgorithm;
+
+      // If none of the "good" algorithms was found return an empty string
       return result;
    }
 }

@@ -414,7 +414,7 @@ public class Base32Encoding {
     * @return Value corresponding to character {@code c}
     */
    private static byte charToValue(char c, byte[] mapCharToByte) {
-      final int index = (int) c - CODEPOINT_ZERO;
+      final int index = c - CODEPOINT_ZERO;
 
       if ((index >= 0) && (index < mapCharToByte.length)) {
          final byte result = mapCharToByte[index];
