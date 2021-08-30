@@ -24,6 +24,7 @@
  *     2020-03-23: V1.2.0: Restructured source code according to DBS programming guidelines. fhs
  *     2020-12-04: V1.2.1: Corrected several SonarLint findings. fhs
  *     2020-12-29: V1.3.0: Made thread safe. fhs
+ *     2021-08-30: V2.0.0: Removed deprecated "DecryptData" methods. fhs
  */
 package de.db.bcm.tupw.crypto;
 
@@ -44,7 +45,7 @@ import java.util.Objects;
  * for the special case of a file as the source for the key input.</p>
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.3.0
+ * @version 2.0.0
  */
 
 public class FileAndKeyEncryption implements AutoCloseable {
@@ -292,49 +293,6 @@ public class FileAndKeyEncryption implements AutoCloseable {
             DataIntegrityException,
             InvalidCryptoParameterException {
       return m_SplitKeyEncryption.decryptDataAsString(stringToDecrypt);
-   }
-
-   /**
-    * Decrypt an encrypted string under a subject as a string
-    *
-    * <p>This is the <b>old</b> interface and is deprecated. Use {@link #decryptDataAsString(String, String)} instead.</p>
-    *
-    * @deprecated Replaced by the {@code DecryptDataAs...} methods
-    * @param stringToDecrypt String to decrypt
-    * @param subject         The subject of this decryption
-    * @return Decrypted string
-    * @throws CharacterCodingException           if the data contain a byte sequence that can not be interpreted as a valid UTF-8 byte sequence
-    * @throws DataIntegrityException             if the checksum does not match the data
-    * @throws IllegalArgumentException           if the given string does not adhere to the format specification
-    * @throws InvalidCryptoParameterException    if a parameter of a cryptographic method is invalid (must never happen)
-    * @throws NullPointerException               if {@code stringToDecrypt} or {@code subject} is {@code null}
-    */
-   @Deprecated
-   public synchronized String decryptData(final String stringToDecrypt, final String subject) throws CharacterCodingException,
-            DataIntegrityException,
-            InvalidCryptoParameterException {
-      return decryptDataAsString(stringToDecrypt, subject);
-   }
-
-   /**
-    * Decrypt an encrypted string as a string
-    *
-    * <p>This is the <b>old</b> interface and is deprecated. Use {@link #decryptDataAsString(String, String)} instead.</p>
-    *
-    * @deprecated Replaced by the {@code DecryptDataAs...} methods
-    * @param stringToDecrypt String to decrypt
-    * @return Decrypted string
-    * @throws CharacterCodingException           if the data contain a byte sequence that can not be interpreted as a valid UTF-8 byte sequence
-    * @throws DataIntegrityException             if the checksum does not match the data
-    * @throws IllegalArgumentException           if the given string does not adhere to the format specification
-    * @throws InvalidCryptoParameterException    if a parameter of a cryptographic method is invalid (must never happen)
-    * @throws NullPointerException               if {@code stringToDecrypt}is {@code null}
-    */
-   @Deprecated
-   public synchronized String decryptData(final String stringToDecrypt) throws CharacterCodingException,
-            DataIntegrityException,
-            InvalidCryptoParameterException {
-      return decryptDataAsString(stringToDecrypt);
    }
 
    /*

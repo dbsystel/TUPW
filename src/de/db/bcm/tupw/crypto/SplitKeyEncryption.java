@@ -68,7 +68,7 @@
  *     2021-01-04: V5.4.2: Corrected wrong method and variable names. fhs
  *     2021-05-17: V5.4.3: New version because Base32Encoding had a small change. fhs
  *     2021-05-28: V5.5.0: New version because of refactored ProtectedByteArray. fhs
- *     2021-08-30: V6.0.0: Some refactoring, removed deprecated DecryptData methods. fhs
+ *     2021-08-30: V6.0.0: Some refactoring, removed deprecated "DecryptData" methods. fhs
  */
 package de.db.bcm.tupw.crypto;
 
