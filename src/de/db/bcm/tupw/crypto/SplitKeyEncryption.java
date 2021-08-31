@@ -70,6 +70,7 @@
  *     2021-05-28: V5.5.0: New version because of refactored ProtectedByteArray. fhs
  *     2021-08-30: V6.0.0: Some refactoring, removed deprecated "DecryptData" methods. fhs
  *     2021-08-30: V6.1.0: Ensure deletion of sensitive data. fhs
+ *     2021-08-30: V6.1.1: Some refactoring. fhs
  */
 package de.db.bcm.tupw.crypto;
 
@@ -96,7 +97,7 @@ import java.util.Objects;
  * Implement encryption by key generated from several source bytes and a key
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 6.1.0
+ * @version 6.1.1
  */
 
 public class SplitKeyEncryption implements AutoCloseable {
@@ -347,11 +348,17 @@ public class SplitKeyEncryption implements AutoCloseable {
       Objects.requireNonNull(characterArrayToEncrypt, "Character array to encrypt is null");
       Objects.requireNonNull(subject, NULL_SUBJECT_ERROR_MESSAGE);
 
-      final byte[] byteArrayToEncrypt = CharacterArrayHelper.convertCharacterArrayToUTF8ByteArray(characterArrayToEncrypt);
+      String result;
 
-      final String result = makeEncryptionStringFromSourceBytes(byteArrayToEncrypt, subject);
+      byte[] byteArrayToEncrypt = null;
 
-      ArrayHelper.clear(byteArrayToEncrypt);
+      try {
+         byteArrayToEncrypt = CharacterArrayHelper.convertCharacterArrayToUTF8ByteArray(characterArrayToEncrypt);
+
+         result = makeEncryptionStringFromSourceBytes(byteArrayToEncrypt, subject);
+      } finally {
+         ArrayHelper.safeClear(byteArrayToEncrypt);
+      }
 
       return result;
    }
@@ -383,11 +390,17 @@ public class SplitKeyEncryption implements AutoCloseable {
       Objects.requireNonNull(stringToEncrypt, "String to encrypt is null");
       Objects.requireNonNull(subject, NULL_SUBJECT_ERROR_MESSAGE);
 
-      final byte[] byteArrayToEncrypt = stringToEncrypt.getBytes(CHARACTER_ENCODING_FOR_DATA);
+      byte[] byteArrayToEncrypt = null;
 
-      final String result = makeEncryptionStringFromSourceBytes(byteArrayToEncrypt, subject);
+      String result;
 
-      ArrayHelper.clear(byteArrayToEncrypt);
+      try {
+         byteArrayToEncrypt = stringToEncrypt.getBytes(CHARACTER_ENCODING_FOR_DATA);
+
+         result = makeEncryptionStringFromSourceBytes(byteArrayToEncrypt, subject);
+      } finally {
+         ArrayHelper.clear(byteArrayToEncrypt);
+      }
 
       return result;
    }
@@ -436,8 +449,10 @@ public class SplitKeyEncryption implements AutoCloseable {
          checkChecksumForEncryptionParts(encryptionParts, subjectBytes);
 
          result = rawDataDecryption(encryptionParts, subjectBytes);
-      } catch (BadPaddingException | IllegalBlockSizeException | InvalidAlgorithmParameterException | InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException e) {
-         throw new InvalidCryptoParameterException("Invalid cryptographic parameter: " + e.toString(), e);
+      } catch (final BadPaddingException | IllegalBlockSizeException | InvalidAlgorithmParameterException | InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException e) {
+         throw new InvalidCryptoParameterException("Invalid cryptographic parameter: " + e, e);
+      } finally {
+         ArrayHelper.clear(subjectBytes);
       }
 
       return result;
@@ -481,9 +496,13 @@ public class SplitKeyEncryption implements AutoCloseable {
          InvalidCryptoParameterException {
       final byte[] decryptedContent = decryptDataAsByteArray(stringToDecrypt, subject);
 
-      final char[] result = CharacterArrayHelper.convertUTF8ByteArrayToCharacterArray(decryptedContent);
+      final char[] result;
 
-      ArrayHelper.clear(decryptedContent);
+      try {
+         result = CharacterArrayHelper.convertUTF8ByteArrayToCharacterArray(decryptedContent);
+      } finally {
+         ArrayHelper.clear(decryptedContent);
+      }
 
       return result;
    }
@@ -529,6 +548,7 @@ public class SplitKeyEncryption implements AutoCloseable {
       // (which throws a "CharacterCodingException") and that is converted to a string.
       final char[] decryptedContent = decryptDataAsCharacterArray(stringToDecrypt, subject);
 
+      // No need to use try here, as the only exception can happen in the line above
       final String result = new String(decryptedContent);
 
       ArrayHelper.clear(decryptedContent);
@@ -630,20 +650,7 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @throws NullPointerException     if any sourceByte array is {@code null}
     */
    private void checkSourceBytes(final byte[]... sourceBytes) {
-      EntropyCalculator ec = new EntropyCalculator();
-
-      int sourceLength;
-
-      for (int i = 0; i < sourceBytes.length; i++) {
-         Objects.requireNonNull(sourceBytes[i], (i + 1) + ". source byte array is null");
-
-         sourceLength = sourceBytes[i].length;
-
-         if (sourceLength > 0) {
-            ec.addBytes(sourceBytes[i]);
-         } else
-            throw new IllegalArgumentException((i + 1) + ". source byte array has 0 length");
-      }
+      final EntropyCalculator ec = getEntropyCalculatorForSourceBytes(sourceBytes);
 
       if (ec.getInformationInBits() < MINIMUM_SOURCE_BITS) {
          final double entropy = ec.getEntropy();
@@ -659,6 +666,26 @@ public class SplitKeyEncryption implements AutoCloseable {
 
       if (ec.getCount() > MAXIMUM_SOURCE_BYTES_LENGTH)
          throw new IllegalArgumentException("There are more than " + MAXIMUM_SOURCE_BYTES_LENGTH + " source bytes");
+   }
+
+   /**
+    * Feed source bytes into the entropy calculator
+    *
+    * @param sourceBytes Source bytes to calculate the entropy for
+    */
+   private EntropyCalculator getEntropyCalculatorForSourceBytes(byte[][] sourceBytes) {
+      EntropyCalculator result = new EntropyCalculator();
+
+      for (int i = 0; i < sourceBytes.length; i++) {
+         Objects.requireNonNull(sourceBytes[i], (i + 1) + ". source byte array is null");
+
+         if (sourceBytes[i].length > 0) {
+            result.addBytes(sourceBytes[i]);
+         } else
+            throw new IllegalArgumentException((i + 1) + ". source byte array has 0 length");
+      }
+
+      return result;
    }
 
    /**
@@ -762,8 +789,8 @@ public class SplitKeyEncryption implements AutoCloseable {
          hmac.init(hmacKeySpec);
 
          baseKeyBytes = baseKey.getData();
-         hmac.update(baseKeyBytes);
 
+         hmac.update(baseKeyBytes);
          hmac.update(PREFIX_SALT);
          hmac.update(subjectBytes);
          computedKey = hmac.doFinal(SUFFIX_SALT);
@@ -1036,8 +1063,8 @@ public class SplitKeyEncryption implements AutoCloseable {
 
       try (EncryptionParts encryptionParts = rawDataEncryption(sourceBytes, subjectBytes)) {
          result = makeEncryptionStringFromEncryptionParts(encryptionParts);
-      } catch (BadPaddingException | IllegalBlockSizeException | InvalidAlgorithmParameterException | InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException e) {
-         throw new InvalidCryptoParameterException("Invalid cryptographic parameter: " + e.toString(), e);
+      } catch (final BadPaddingException | IllegalBlockSizeException | InvalidAlgorithmParameterException | InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException e) {
+         throw new InvalidCryptoParameterException("Invalid cryptographic parameter: " + e, e);
       }
 
       return result;
