@@ -69,6 +69,7 @@
  *     2021-05-17: V5.4.3: New version because Base32Encoding had a small change. fhs
  *     2021-05-28: V5.5.0: New version because of refactored ProtectedByteArray. fhs
  *     2021-08-30: V6.0.0: Some refactoring, removed deprecated "DecryptData" methods. fhs
+ *     2021-08-30: V6.1.0: Ensure deletion of sensitive data. fhs
  */
 package de.db.bcm.tupw.crypto;
 
@@ -95,7 +96,7 @@ import java.util.Objects;
  * Implement encryption by key generated from several source bytes and a key
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 6.0.0
+ * @version 6.1.0
  */
 
 public class SplitKeyEncryption implements AutoCloseable {
@@ -311,8 +312,8 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @throws InvalidCryptoParameterException if a parameter of a cryptographic method is invalid (must never happen)
     * @throws NullPointerException            if {@code byteArrayToEncrypt} or {@code subject} is {@code null}
     */
-   public synchronized String encryptData(final byte[] byteArrayToEncrypt, final String subject) throws
-         InvalidCryptoParameterException {
+   public synchronized String encryptData(final byte[] byteArrayToEncrypt, final String subject)
+         throws InvalidCryptoParameterException {
       Objects.requireNonNull(byteArrayToEncrypt, "Byte array to encrypt is null");
       Objects.requireNonNull(subject, NULL_SUBJECT_ERROR_MESSAGE);
 
@@ -327,8 +328,8 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @throws InvalidCryptoParameterException if a parameter of a cryptographic method is invalid (must never happen)
     * @throws NullPointerException            if {@code byteArrayToEncrypt} is {@code null}
     */
-   public String encryptData(final byte[] byteArrayToEncrypt) throws
-         InvalidCryptoParameterException {
+   public String encryptData(final byte[] byteArrayToEncrypt)
+         throws InvalidCryptoParameterException {
       return encryptData(byteArrayToEncrypt, NO_SUBJECT);
    }
 
@@ -341,8 +342,8 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @throws InvalidCryptoParameterException if a parameter of a cryptographic method is invalid (must never happen)
     * @throws NullPointerException            if {@code characterArrayToEncrypt} or {@code subject} is {@code null}
     */
-   public synchronized String encryptData(final char[] characterArrayToEncrypt, final String subject) throws
-         InvalidCryptoParameterException {
+   public synchronized String encryptData(final char[] characterArrayToEncrypt, final String subject)
+         throws InvalidCryptoParameterException {
       Objects.requireNonNull(characterArrayToEncrypt, "Character array to encrypt is null");
       Objects.requireNonNull(subject, NULL_SUBJECT_ERROR_MESSAGE);
 
@@ -363,8 +364,8 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @throws InvalidCryptoParameterException if a parameter of a cryptographic method is invalid (must never happen)
     * @throws NullPointerException            if {@code characterArrayToEncrypt} is {@code null}
     */
-   public String encryptData(final char[] characterArrayToEncrypt) throws
-         InvalidCryptoParameterException {
+   public String encryptData(final char[] characterArrayToEncrypt)
+         throws InvalidCryptoParameterException {
       return encryptData(characterArrayToEncrypt, NO_SUBJECT);
    }
 
@@ -377,8 +378,8 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @throws InvalidCryptoParameterException if a parameter of a cryptographic method is invalid (must never happen)
     * @throws NullPointerException            if {@code stringToEncrypt} or {@code subject} is {@code null}
     */
-   public synchronized String encryptData(final String stringToEncrypt, final String subject) throws
-         InvalidCryptoParameterException {
+   public synchronized String encryptData(final String stringToEncrypt, final String subject)
+         throws InvalidCryptoParameterException {
       Objects.requireNonNull(stringToEncrypt, "String to encrypt is null");
       Objects.requireNonNull(subject, NULL_SUBJECT_ERROR_MESSAGE);
 
@@ -399,8 +400,8 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @throws InvalidCryptoParameterException if a parameter of a cryptographic method is invalid (must never happen)
     * @throws NullPointerException            if {@code stringToEncrypt} is {@code null}
     */
-   public String encryptData(final String stringToEncrypt) throws
-         InvalidCryptoParameterException {
+   public String encryptData(final String stringToEncrypt)
+         throws InvalidCryptoParameterException {
       return encryptData(stringToEncrypt, NO_SUBJECT);
    }
 
@@ -421,8 +422,8 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @throws InvalidCryptoParameterException if a parameter of a cryptographic method is invalid (must never happen)
     * @throws NullPointerException            if {@code stringToDecrypt} or {@code subject} is {@code null}
     */
-   public synchronized byte[] decryptDataAsByteArray(final String stringToDecrypt, final String subject) throws
-         DataIntegrityException,
+   public synchronized byte[] decryptDataAsByteArray(final String stringToDecrypt, final String subject)
+         throws DataIntegrityException,
          InvalidCryptoParameterException {
       Objects.requireNonNull(stringToDecrypt, "String to decrypt is null");
       Objects.requireNonNull(subject, NULL_SUBJECT_ERROR_MESSAGE);
@@ -454,8 +455,8 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @throws InvalidCryptoParameterException if a parameter of a cryptographic method is invalid (must never happen)
     * @throws NullPointerException            if {@code stringToDecrypt} is {@code null}
     */
-   public byte[] decryptDataAsByteArray(final String stringToDecrypt) throws
-         DataIntegrityException,
+   public byte[] decryptDataAsByteArray(final String stringToDecrypt)
+         throws DataIntegrityException,
          InvalidCryptoParameterException {
       return decryptDataAsByteArray(stringToDecrypt, NO_SUBJECT);
    }
@@ -474,8 +475,8 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @throws InvalidCryptoParameterException if a parameter of a cryptographic method is invalid (must never happen)
     * @throws NullPointerException            if {@code stringToDecrypt} or {@code subject} is {@code null}
     */
-   public synchronized char[] decryptDataAsCharacterArray(final String stringToDecrypt, final String subject) throws
-         CharacterCodingException,
+   public synchronized char[] decryptDataAsCharacterArray(final String stringToDecrypt, final String subject)
+         throws CharacterCodingException,
          DataIntegrityException,
          InvalidCryptoParameterException {
       final byte[] decryptedContent = decryptDataAsByteArray(stringToDecrypt, subject);
@@ -500,7 +501,8 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @throws InvalidCryptoParameterException if a parameter of a cryptographic method is invalid (must never happen)
     * @throws NullPointerException            if {@code stringToDecrypt} or {@code subject} is {@code null}
     */
-   public char[] decryptDataAsCharacterArray(final String stringToDecrypt) throws CharacterCodingException,
+   public char[] decryptDataAsCharacterArray(final String stringToDecrypt)
+         throws CharacterCodingException,
          DataIntegrityException,
          InvalidCryptoParameterException {
       return decryptDataAsCharacterArray(stringToDecrypt, NO_SUBJECT);
@@ -518,7 +520,8 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @throws InvalidCryptoParameterException if a parameter of a cryptographic method is invalid (must never happen)
     * @throws NullPointerException            if {@code stringToDecrypt} or {@code subject} is {@code null}
     */
-   public synchronized String decryptDataAsString(final String stringToDecrypt, final String subject) throws CharacterCodingException,
+   public synchronized String decryptDataAsString(final String stringToDecrypt, final String subject)
+         throws CharacterCodingException,
          DataIntegrityException,
          InvalidCryptoParameterException {
       // "new String(byteArray)" is *not* used here, as this does not throw a "CharacterCodingException"
@@ -544,7 +547,8 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @throws InvalidCryptoParameterException if a parameter of a cryptographic method is invalid (must never happen)
     * @throws NullPointerException            if {@code stringToDecrypt} or {@code subject} is {@code null}
     */
-   public String decryptDataAsString(final String stringToDecrypt) throws CharacterCodingException,
+   public String decryptDataAsString(final String stringToDecrypt)
+         throws CharacterCodingException,
          DataIntegrityException,
          InvalidCryptoParameterException {
       return decryptDataAsString(stringToDecrypt, NO_SUBJECT);
@@ -576,7 +580,8 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @return HMAC instance
     * @throws NoSuchAlgorithmException if the specified HMAC algorithm is not implemented
     */
-   private Mac getHMACInstance() throws NoSuchAlgorithmException {
+   private Mac getHMACInstance()
+         throws NoSuchAlgorithmException {
       if (HMAC_INSTANCE == null)
          HMAC_INSTANCE = Mac.getInstance(HMAC_256_ALGORITHM_NAME);
 
@@ -742,25 +747,33 @@ public class SplitKeyEncryption implements AutoCloseable {
    private SecureSecretKeySpec getSecretKeySpecForKeyWithSubject(final ProtectedByteArray hmacKey,
                                                                  final ProtectedByteArray baseKey,
                                                                  final String forAlgorithmName,
-                                                                 final byte[] subjectBytes) throws InvalidKeyException, NoSuchAlgorithmException {
+                                                                 final byte[] subjectBytes)
+         throws InvalidKeyException,
+         NoSuchAlgorithmException {
       final Mac hmac = getHMACInstance();
 
+      byte[] baseKeyBytes = null;
+      byte[] computedKey = null;
+      SecureSecretKeySpec result;
+
       final byte[] hmacKeyBytes = hmacKey.getData();
-      final SecureSecretKeySpec hmacKeySpec = new SecureSecretKeySpec(hmacKeyBytes, HMAC_256_ALGORITHM_NAME);
-      ArrayHelper.clear(hmacKeyBytes);
 
-      hmac.init(hmacKeySpec);
+      try (final SecureSecretKeySpec hmacKeySpec = new SecureSecretKeySpec(hmacKeyBytes, HMAC_256_ALGORITHM_NAME)) {
+         hmac.init(hmacKeySpec);
 
-      final byte[] baseKeyBytes = baseKey.getData();
-      hmac.update(baseKeyBytes);
-      ArrayHelper.clear(baseKeyBytes);
+         baseKeyBytes = baseKey.getData();
+         hmac.update(baseKeyBytes);
 
-      hmac.update(PREFIX_SALT);
-      hmac.update(subjectBytes);
+         hmac.update(PREFIX_SALT);
+         hmac.update(subjectBytes);
+         computedKey = hmac.doFinal(SUFFIX_SALT);
 
-      final byte[] computedKey = hmac.doFinal(SUFFIX_SALT);
-      final SecureSecretKeySpec result = new SecureSecretKeySpec(computedKey, forAlgorithmName);
-      ArrayHelper.clear(computedKey);
+         result = new SecureSecretKeySpec(computedKey, forAlgorithmName);
+      } finally {
+         ArrayHelper.clear(hmacKeyBytes);
+         ArrayHelper.safeClear(baseKeyBytes);
+         ArrayHelper.safeClear(computedKey);
+      }
 
       return result;
    }
@@ -806,7 +819,9 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @throws InvalidKeyException      if the key is not valid for the HMAC algorithm (must never happen)
     * @throws NoSuchAlgorithmException if there is no HMAC-256 algorithm (must never happen)
     */
-   private SecureSecretKeySpec getSecretKeySpecForEncryptionDependingOnSubject(final byte[] subjectBytes) throws InvalidKeyException, NoSuchAlgorithmException {
+   private SecureSecretKeySpec getSecretKeySpecForEncryptionDependingOnSubject(final byte[] subjectBytes)
+         throws InvalidKeyException,
+         NoSuchAlgorithmException {
       if (subjectBytes.length > 0)
          return getSecretKeySpecForKeyWithSubject(this.m_HMACKey, this.m_EncryptionKey, AES_ALGORITHM_NAME, subjectBytes);
       else
@@ -820,7 +835,9 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @throws InvalidKeyException      if the key is not valid for the HMAC algorithm (must never happen)
     * @throws NoSuchAlgorithmException if there is no HMAC-256 algorithm (must never happen)
     */
-   private SecureSecretKeySpec getSecretKeySpecForHMACDependingOnSubject(final byte[] subjectBytes) throws InvalidKeyException, NoSuchAlgorithmException {
+   private SecureSecretKeySpec getSecretKeySpecForHMACDependingOnSubject(final byte[] subjectBytes)
+         throws InvalidKeyException,
+         NoSuchAlgorithmException {
       if (subjectBytes.length > 0)
          return getSecretKeySpecForKeyWithSubject(this.m_EncryptionKey, this.m_HMACKey, HMAC_256_ALGORITHM_NAME, subjectBytes);
       else
@@ -840,7 +857,8 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @throws IllegalBlockSizeException          if the block size is not valid for the encryption algorithm (must never happen)
     * @throws NoSuchPaddingException             if there is no NoPadding padding (must never happen)
     */
-   private byte[] rawDataDecryption(final EncryptionParts encryptionParts, final byte[] subjectBytes) throws BadPaddingException,
+   private byte[] rawDataDecryption(final EncryptionParts encryptionParts, final byte[] subjectBytes)
+         throws BadPaddingException,
          IllegalBlockSizeException,
          InvalidAlgorithmParameterException,
          InvalidKeyException,
@@ -851,11 +869,16 @@ public class SplitKeyEncryption implements AutoCloseable {
 
       final Cipher aesCipher = Cipher.getInstance(encryptionSpecification);
 
-      final byte[] paddedDecryptedDataBytes = decryptWithSubject(encryptionParts, aesCipher, subjectBytes);
+      byte[] paddedDecryptedDataBytes = null;
+      byte[] result;
 
-      final byte[] result = getUnpaddedDataBytes(encryptionParts.formatId, paddedDecryptedDataBytes);
+      try {
+         paddedDecryptedDataBytes = decryptWithSubject(encryptionParts, aesCipher, subjectBytes);
 
-      ArrayHelper.clear(paddedDecryptedDataBytes);
+         result = getUnpaddedDataBytes(encryptionParts.formatId, paddedDecryptedDataBytes);
+      } finally {
+         ArrayHelper.safeClear(paddedDecryptedDataBytes);
+      }
 
       return result;
    }
@@ -932,34 +955,46 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @throws InvalidKeyException      if the key is not valid for the HMAC algorithm (must never happen)
     * @throws NoSuchAlgorithmException if there is no HMAC-256 algorithm (must never happen)
     */
-   private byte[] getChecksumForEncryptionParts(final EncryptionParts encryptionParts, final byte[] subjectBytes) throws InvalidKeyException, NoSuchAlgorithmException {
+   private byte[] getChecksumForEncryptionParts(final EncryptionParts encryptionParts, final byte[] subjectBytes)
+         throws InvalidKeyException,
+         NoSuchAlgorithmException {
+      byte[] result;
+
       final Mac hmac = getHMACInstance();
 
-      SecureSecretKeySpec hmacSecretKeySpec;
-
-      if (encryptionParts.formatId >= FORMAT_ID_USE_CORRECT_HMAC_KEY)
-         hmacSecretKeySpec = getSecretKeySpecForHMACDependingOnSubject(subjectBytes);
-      else
-         hmacSecretKeySpec = getDefaultSecretKeySpecForHMAC();
-
-      byte[] result = null;
-
-      try {
+      try (final SecureSecretKeySpec hmacSecretKeySpec = getHMACKeyForFormat(encryptionParts.formatId, subjectBytes)) {
          hmac.init(hmacSecretKeySpec);
 
          hmac.update(encryptionParts.formatId);
          hmac.update(encryptionParts.iv);
-
          hmac.update(encryptionParts.encryptedData);
-         result = hmac.doFinal();
 
-         hmacSecretKeySpec.close();
-      } catch (Exception ex) {
-         hmacSecretKeySpec.close();
-         throw (ex);
+         result = hmac.doFinal();
       }
 
       return result;
+   }
+
+   /**
+    * Get the correct HMAC key for the specified format id
+    *
+    * @param formatId     Format id
+    * @param subjectBytes Subject bytes
+    * @return HMAC key
+    * @throws InvalidKeyException      if the key is not valid for the HMAC algorithm (must never happen)
+    * @throws NoSuchAlgorithmException if there is no HMAC-256 algorithm (must never happen)
+    */
+   private SecureSecretKeySpec getHMACKeyForFormat(final byte formatId, final byte[] subjectBytes)
+         throws InvalidKeyException,
+         NoSuchAlgorithmException {
+      SecureSecretKeySpec hmacSecretKeySpec;
+
+      if (formatId >= FORMAT_ID_USE_CORRECT_HMAC_KEY)
+         hmacSecretKeySpec = getSecretKeySpecForHMACDependingOnSubject(subjectBytes);
+      else
+         hmacSecretKeySpec = getDefaultSecretKeySpecForHMAC();
+
+      return hmacSecretKeySpec;
    }
 
    /**
@@ -971,7 +1006,10 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @throws InvalidKeyException      if the key is not valid for the HMAC algorithm (must never happen)
     * @throws NoSuchAlgorithmException if there is no HMAC-256 algorithm (must never happen)
     */
-   private void checkChecksumForEncryptionParts(final EncryptionParts encryptionParts, final byte[] subjectBytes) throws DataIntegrityException, InvalidKeyException, NoSuchAlgorithmException {
+   private void checkChecksumForEncryptionParts(final EncryptionParts encryptionParts, final byte[] subjectBytes)
+         throws DataIntegrityException,
+         InvalidKeyException,
+         NoSuchAlgorithmException {
       final byte[] calculatedChecksum = getChecksumForEncryptionParts(encryptionParts, subjectBytes);
 
       if (!SafeArrays.constantTimeEquals(calculatedChecksum, encryptionParts.checksum))
@@ -990,7 +1028,8 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @return Formatted encryption string
     * @throws InvalidCryptoParameterException if a parameter of a cryptographic method is invalid (must never happen)
     */
-   private String makeEncryptionStringFromSourceBytes(final byte[] sourceBytes, final String subject) throws InvalidCryptoParameterException {
+   private String makeEncryptionStringFromSourceBytes(final byte[] sourceBytes, final String subject)
+         throws InvalidCryptoParameterException {
       String result;
 
       final byte[] subjectBytes = subject.getBytes(CHARACTER_ENCODING_FOR_DATA);
@@ -1017,7 +1056,8 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @throws IllegalBlockSizeException          if an invalid block size was specified (must never happen)
     * @throws NoSuchPaddingException             if an invalid padding was specified (must never happen)
     */
-   private EncryptionParts rawDataEncryption(final byte[] sourceBytes, final byte[] subjectBytes) throws BadPaddingException,
+   private EncryptionParts rawDataEncryption(final byte[] sourceBytes, final byte[] subjectBytes)
+         throws BadPaddingException,
          IllegalBlockSizeException,
          InvalidAlgorithmParameterException,
          InvalidKeyException,
@@ -1031,29 +1071,45 @@ public class SplitKeyEncryption implements AutoCloseable {
 
       final Cipher aesCipher = Cipher.getInstance(encryptionSpecification);
 
-      // Ensure that blinded array needs at least 2 AES blocks, so the length of the encrypted data
-      // can not be inferred to be no longer than block size - 3 bytes (= 13 bytes for AES).
-      final byte[] unpaddedEncodedStringBytes = ByteArrayBlinding.buildBlindedByteArray(sourceBytes, aesCipher.getBlockSize() + 1);
+      byte[] unpaddedEncodedStringBytes = null;
 
-      final byte[] paddedEncodedStringBytes = RandomPadding.addPadding(unpaddedEncodedStringBytes, aesCipher.getBlockSize());
+      byte[] paddedEncodedStringBytes = null;
 
-      ArrayHelper.clear(unpaddedEncodedStringBytes);
+      try {
+         // Ensure that blinded array needs at least 2 AES blocks, so the length of the encrypted data
+         // can not be inferred to be no longer than block size - 3 bytes (= 13 bytes for AES).
+         unpaddedEncodedStringBytes = ByteArrayBlinding.buildBlindedByteArray(sourceBytes, aesCipher.getBlockSize() + 1);
 
-      // Get a random iv
-      result.iv = new byte[aesCipher.getBlockSize()];
+         paddedEncodedStringBytes = RandomPadding.addPadding(unpaddedEncodedStringBytes, aesCipher.getBlockSize());
 
-      getSecureRandomInstance().nextBytes(result.iv);
+         result.iv = getInitializationVector(aesCipher.getBlockSize());
 
-      try (final SecureSecretKeySpec encryptionKey = getSecretKeySpecForEncryptionDependingOnSubject(subjectBytes)) {
-         // Encrypt the source string with the iv
-         aesCipher.init(Cipher.ENCRYPT_MODE, encryptionKey, new IvParameterSpec(result.iv));
+         try (final SecureSecretKeySpec encryptionKey = getSecretKeySpecForEncryptionDependingOnSubject(subjectBytes)) {
+            // Encrypt the source string with the iv
+            aesCipher.init(Cipher.ENCRYPT_MODE, encryptionKey, new IvParameterSpec(result.iv));
 
-         result.encryptedData = aesCipher.doFinal(paddedEncodedStringBytes);
+            result.encryptedData = aesCipher.doFinal(paddedEncodedStringBytes);
+         }
+
+         result.checksum = getChecksumForEncryptionParts(result, subjectBytes);
       } finally {
-         ArrayHelper.clear(paddedEncodedStringBytes);
+         ArrayHelper.safeClear(unpaddedEncodedStringBytes);
+         ArrayHelper.safeClear(paddedEncodedStringBytes);
       }
 
-      result.checksum = getChecksumForEncryptionParts(result, subjectBytes);
+      return result;
+   }
+
+   /**
+    * Get a random initialization vector
+    *
+    * @param blockSize Size of initialization vector
+    * @return Random initalization vector
+    */
+   private byte[] getInitializationVector(final int blockSize) {
+      final byte[] result = new byte[blockSize];
+
+      getSecureRandomInstance().nextBytes(result);
 
       return result;
    }
@@ -1067,9 +1123,11 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @throws InvalidKeyException      if the key is not valid for the HMAC algorithm (must never happen)
     * @throws NoSuchAlgorithmException if there is no HMAC-256 algorithm (must never happen)
     */
-   private byte[] getHmacValueOfSourceBytes(final byte[] key, final byte[]... sourceBytes) throws InvalidKeyException,
+   private byte[] getHmacValueOfSourceBytes(final byte[] key, final byte[]... sourceBytes)
+         throws InvalidKeyException,
          NoSuchAlgorithmException {
       final Mac hmac = getHMACInstance();
+
       byte[] result;
 
       try (SecureSecretKeySpec hmacKey = new SecureSecretKeySpec(key, HMAC_256_ALGORITHM_NAME)) {
@@ -1092,22 +1150,29 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @throws InvalidKeyException      if the key is not valid for the HMAC algorithm (must never happen)
     * @throws NoSuchAlgorithmException if there is no HMAC-256 algorithm (must never happen)
     */
-   private void setKeysFromKeyAndSourceBytes(final byte[] hmacKey, final byte[]... sourceBytes) throws InvalidKeyException,
+   private void setKeysFromKeyAndSourceBytes(final byte[] hmacKey, final byte[]... sourceBytes)
+         throws InvalidKeyException,
          NoSuchAlgorithmException {
-      final byte[] hmacOfSourceBytes = getHmacValueOfSourceBytes(hmacKey, sourceBytes);
+      byte[] hmacOfSourceBytes = null;
+      byte[] keyPart = null;
 
-      // 1. half of file HMAC is used as the encryption key of this instance
-      byte[] keyPart = Arrays.copyOfRange(hmacOfSourceBytes, 0, 16);
+      try {
+         hmacOfSourceBytes = getHmacValueOfSourceBytes(hmacKey, sourceBytes);
 
-      this.m_EncryptionKey = new ProtectedByteArray(keyPart);
-      ArrayHelper.clear(keyPart);
+         // 1. half of file HMAC is used as the encryption key of this instance
+         keyPart = Arrays.copyOfRange(hmacOfSourceBytes, 0, 16);
 
-      // 2. half of file HMAC is used as the HMAC key of this instance
-      keyPart = Arrays.copyOfRange(hmacOfSourceBytes, 16, 32);
+         this.m_EncryptionKey = new ProtectedByteArray(keyPart);
 
-      ArrayHelper.clear(hmacOfSourceBytes);
+         // 2. half of file HMAC is used as the HMAC key of this instance
+         keyPart = Arrays.copyOfRange(hmacOfSourceBytes, 16, 32);
 
-      this.m_HMACKey = new ProtectedByteArray(keyPart);
-      ArrayHelper.clear(keyPart);
+         ArrayHelper.clear(hmacOfSourceBytes);
+
+         this.m_HMACKey = new ProtectedByteArray(keyPart);
+      } finally {
+         ArrayHelper.safeClear(hmacOfSourceBytes);
+         ArrayHelper.safeClear(keyPart);
+      }
    }
 }

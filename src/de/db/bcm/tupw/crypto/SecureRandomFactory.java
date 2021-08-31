@@ -26,6 +26,7 @@
  *     2020-12-04: V1.3.1: Corrected several SonarLint findings. fhs
  *     2020-12-29: V1.4.0: Made thread safe. fhs
  *     2021-08-13: V1.5.0: Make algorithm to find SecureRandom algorithm more robust. fhs
+ *     2021-08-31: V1.6.0: Pick strong default instance, if necessary. fhs
  */
 package de.db.bcm.tupw.crypto;
 
@@ -38,7 +39,7 @@ import java.util.Set;
  * A class to get the most secure SecureRandom instance
  *
  * @author Frank Schwab
- * @version 1.5.0
+ * @version 1.6.0
  */
 public class SecureRandomFactory {
    //******************************************************************
@@ -86,11 +87,11 @@ public class SecureRandomFactory {
             result = SecureRandom.getInstance(m_SecureRandomAlgorithmName);
          } catch (NoSuchAlgorithmException e) {
             // The chosen algorithm was not present, so use the default, which is guaranteed to work
-            result = new SecureRandom();
+            result = getDefaultInstance();
          }
       else {
          // Choose the default if there could no optimal algorithm be found
-         result = new SecureRandom();
+         result = getDefaultInstance();
       }
 
       return result;
@@ -171,6 +172,25 @@ public class SecureRandomFactory {
          result = nativeOtherAlgorithm;
 
       // If none of the "good" algorithms was found return an empty string
+      return result;
+   }
+
+   /**
+    * Get the default SecureRandom instance
+    *
+    * @return Default SecureRandom instance
+    */
+   private static SecureRandom getDefaultInstance() {
+      SecureRandom result;
+
+      try {
+         result = SecureRandom.getInstanceStrong();
+      } catch (NoSuchAlgorithmException ex) {
+         result = new SecureRandom();
+      }
+
+      m_SecureRandomAlgorithmName = result.getAlgorithm();
+
       return result;
    }
 }
