@@ -60,8 +60,8 @@ public class SecureRandomFactory {
    // Instance variables
    //******************************************************************
 
-   private static String SECURE_RANDOM_ALGORITHM_NAME;
-   private static SecureRandom SECURE_RANDOM_SINGLETON;
+   private static String m_SecureAlgorithmName;
+   private static SecureRandom m_SecureRandomSingleton;
 
 
    //******************************************************************
@@ -79,13 +79,13 @@ public class SecureRandomFactory {
       SecureRandom result;
 
       // Only get the name of the SecureRandom algorithm if it has not been determined, yet.
-      if (SECURE_RANDOM_ALGORITHM_NAME == null)
-         SECURE_RANDOM_ALGORITHM_NAME = getOptimalSecureRandomAlgorithmName();
+      if (m_SecureAlgorithmName == null)
+         m_SecureAlgorithmName = getOptimalSecureRandomAlgorithmName();
 
       // Use the optimal algorithm, if there is one
-      if (SECURE_RANDOM_ALGORITHM_NAME.length() > 0)
+      if (m_SecureAlgorithmName.length() > 0)
          try {
-            result = SecureRandom.getInstance(SECURE_RANDOM_ALGORITHM_NAME);
+            result = SecureRandom.getInstance(m_SecureAlgorithmName);
          } catch (NoSuchAlgorithmException e) {
             // The chosen algorithm was not present, so use the default, which is guaranteed to work
             result = getDefaultInstance();
@@ -106,10 +106,10 @@ public class SecureRandomFactory {
     * @return Optimal SecureRandom singleton instance
     */
    public static synchronized SecureRandom getSensibleSingleton() {
-      if (SECURE_RANDOM_SINGLETON == null)
-         SECURE_RANDOM_SINGLETON = getSensibleInstance();
+      if (m_SecureRandomSingleton == null)
+         m_SecureRandomSingleton = getSensibleInstance();
 
-      return SECURE_RANDOM_SINGLETON;
+      return m_SecureRandomSingleton;
    }
 
 
@@ -190,7 +190,7 @@ public class SecureRandomFactory {
          result = new SecureRandom();
       }
 
-      SECURE_RANDOM_ALGORITHM_NAME = result.getAlgorithm();
+      m_SecureAlgorithmName = result.getAlgorithm();
 
       return result;
    }

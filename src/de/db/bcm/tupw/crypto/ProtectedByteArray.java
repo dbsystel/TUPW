@@ -32,8 +32,11 @@
  *     2021-05-21: V1.5.0: More store size variation for small source sizes, check max source size. fhs
  *     2021-05-27: V2.0.0: Byte array is protected by an index dependent masker now, no more need for an obfuscation array. fhs
  *     2021-06-09: V2.0.1: Simplified constructors. fhs
+ *     2021-09-01: V2.0.2: Some refactoring. fhs
  */
 package de.db.bcm.tupw.crypto;
+
+import de.db.bcm.tupw.arrays.ArrayHelper;
 
 import java.security.SecureRandom;
 import java.util.Arrays;
@@ -47,7 +50,7 @@ import java.util.Objects;
  * </p>
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 2.0.1
+ * @version 2.0.2
  */
 public final class ProtectedByteArray implements AutoCloseable {
    //******************************************************************
@@ -77,11 +80,6 @@ public final class ProtectedByteArray implements AutoCloseable {
     */
    private static final int INDEX_START  = -97;
 
-   /**
-    * Bytes to fill arrays with for security reasons
-    */
-   private static final byte FILL_BYTE = (byte) 0;
-
    //******************************************************************
    // Instance variables
    //******************************************************************
@@ -89,42 +87,42 @@ public final class ProtectedByteArray implements AutoCloseable {
    /**
     * Byte array to store the data in
     */
-   private byte[] byteArray;
+   private byte[] m_ByteArray;
 
    /**
     * Index array into {@code byteArray}
     */
-   private int[] indexArray;
+   private int[] m_IndexArray;
 
    /**
     * Length of data in {@code byteArray} in obfuscated form
     */
-   private int storedArrayLength;
+   private int m_StoredArrayLength;
 
    /**
     * Start position in index array
     */
-   private int indexStart;
+   private int m_IndexStart;
 
    /**
     * Hash code of data in {@code byteArray}
     */
-   private int hashCode;
+   private int m_HashCode;
 
    /**
     * Indicator whether the bytes of the source array have changed
     */
-   private boolean hasChanged;
+   private boolean m_HasChanged;
 
    /**
     * Is data valid?
     */
-   private boolean isValid;
+   private boolean m_IsValid;
 
    /**
     * Index masker
     */
-   private MaskedIndex indexMasker;
+   private MaskedIndex m_IndexMasker;
 
 
    //******************************************************************
@@ -199,7 +197,7 @@ public final class ProtectedByteArray implements AutoCloseable {
    public synchronized byte getAt(final int externalIndex) {
       checkStateAndExternalIndex(externalIndex);
 
-      return (byte) (this.indexMasker.getByteMask(externalIndex) ^ this.byteArray[getArrayIndex(externalIndex)]);
+      return (byte) (this.m_IndexMasker.getByteMask(externalIndex) ^ this.m_ByteArray[getArrayIndex(externalIndex)]);
    }
 
    /**
@@ -213,9 +211,9 @@ public final class ProtectedByteArray implements AutoCloseable {
    public synchronized void setAt(final int externalIndex, final byte newValue) {
       checkStateAndExternalIndex(externalIndex);
 
-      this.byteArray[getArrayIndex(externalIndex)] = (byte) (this.indexMasker.getByteMask(externalIndex) ^ newValue);
+      this.m_ByteArray[getArrayIndex(externalIndex)] = (byte) (this.m_IndexMasker.getByteMask(externalIndex) ^ newValue);
 
-      this.hasChanged = true;
+      this.m_HasChanged = true;
    }
 
    /**
@@ -237,7 +235,7 @@ public final class ProtectedByteArray implements AutoCloseable {
     * {@code False}, if it has been deleted
     */
    public synchronized boolean isValid() {
-      return this.isValid;
+      return this.m_IsValid;
    }
 
    /**
@@ -250,10 +248,10 @@ public final class ProtectedByteArray implements AutoCloseable {
    public synchronized int hashCode() {
       checkState();
 
-      if (this.hasChanged)
+      if (this.m_HasChanged)
          calculateHashCode();
 
-      return this.hashCode;
+      return this.m_HashCode;
    }
 
    /**
@@ -271,13 +269,21 @@ public final class ProtectedByteArray implements AutoCloseable {
       if (getClass() != obj.getClass())
          return false;
 
-      final ProtectedByteArray other = (ProtectedByteArray) obj;
-      final byte[] thisClearArray = this.getData();
-      final byte[] otherClearArray = other.getData();
-      final boolean result = Arrays.equals(thisClearArray, otherClearArray);
+      boolean result;
 
-      Arrays.fill(thisClearArray, FILL_BYTE); // Clear sensitive data
-      Arrays.fill(otherClearArray, FILL_BYTE); // Clear sensitive data
+      byte[] thisClearArray = null;
+      byte[] otherClearArray = null;
+
+      try {
+         final ProtectedByteArray other = (ProtectedByteArray) obj;
+         thisClearArray = this.getData();
+         otherClearArray = other.getData();
+         result = Arrays.equals(thisClearArray, otherClearArray);
+      } finally {
+         // Clear sensitive data
+         ArrayHelper.safeClear(thisClearArray);
+         ArrayHelper.safeClear(otherClearArray);
+      }
 
       return result;
    }
@@ -293,7 +299,7 @@ public final class ProtectedByteArray implements AutoCloseable {
     */
    @Override
    public synchronized void close() {
-      if (this.isValid)
+      if (this.m_IsValid)
          clearData();
    }
 
@@ -355,7 +361,7 @@ public final class ProtectedByteArray implements AutoCloseable {
     * @throws IllegalStateException if the protected array has already been destroyed
     */
    private void checkState() {
-      if (!this.isValid)
+      if (!this.m_IsValid)
          throw new IllegalStateException("ProtectedByteArray has already been destroyed");
    }
 
@@ -402,8 +408,8 @@ public final class ProtectedByteArray implements AutoCloseable {
     * Initializes the index array.
     */
    private void initializeIndexArray() {
-      for (int i = 0; i < this.indexArray.length; i++)
-         this.indexArray[i] = i;
+      for (int i = 0; i < this.m_IndexArray.length; i++)
+         this.m_IndexArray[i] = i;
    }
 
    /**
@@ -416,7 +422,7 @@ public final class ProtectedByteArray implements AutoCloseable {
 
       int count = 0;
 
-      final int arrayLength = this.indexArray.length;
+      final int arrayLength = this.m_IndexArray.length;
 
       do {
          i1 = sprng.nextInt(arrayLength);
@@ -424,9 +430,9 @@ public final class ProtectedByteArray implements AutoCloseable {
 
          // Swapping is inlined for performance
          if (i1 != i2) {
-            swap = this.indexArray[i1];
-            this.indexArray[i1] = this.indexArray[i2];
-            this.indexArray[i2] = swap;
+            swap = this.m_IndexArray[i1];
+            this.m_IndexArray[i1] = this.m_IndexArray[i2];
+            this.m_IndexArray[i2] = swap;
 
             count++;
          }
@@ -442,8 +448,8 @@ public final class ProtectedByteArray implements AutoCloseable {
     * Masks the index array.
     */
    private void maskIndexArray() {
-      for (int i = 0; i < this.indexArray.length; i++)
-         this.indexArray[i] ^= this.indexMasker.getIntMask(i);
+      for (int i = 0; i < this.m_IndexArray.length; i++)
+         this.m_IndexArray[i] ^= this.m_IndexMasker.getIntMask(i);
    }
 
    /**
@@ -461,24 +467,24 @@ public final class ProtectedByteArray implements AutoCloseable {
     * @param sourceLength Length of source array
     */
    private void initializeDataStructures(final int sourceLength) {
-      this.indexMasker = new MaskedIndex();
+      this.m_IndexMasker = new MaskedIndex();
 
       final int storeLength = getStoreLength(sourceLength);
 
-      this.byteArray = new byte[storeLength];
+      this.m_ByteArray = new byte[storeLength];
 
       SecureRandom sprng = SecureRandomFactory.getSensibleSingleton();
 
-      sprng.nextBytes(this.byteArray);   // Initialize the data with random values
+      sprng.nextBytes(this.m_ByteArray);   // Initialize the data with random values
 
-      this.indexArray = new int[storeLength];
+      this.m_IndexArray = new int[storeLength];
 
       setUpIndexArray(sprng);
 
-      this.indexStart = convertIndex(getStartIndex(sourceLength, storeLength, sprng), INDEX_START);
-      this.storedArrayLength = convertIndex(sourceLength, INDEX_LENGTH);
+      this.m_IndexStart = convertIndex(getStartIndex(sourceLength, storeLength, sprng), INDEX_START);
+      this.m_StoredArrayLength = convertIndex(sourceLength, INDEX_LENGTH);
 
-      this.isValid = true;
+      this.m_IsValid = true;
    }
 
    /**
@@ -502,19 +508,23 @@ public final class ProtectedByteArray implements AutoCloseable {
     * Clears all data
     */
    private void clearData() {
-      Arrays.fill(this.byteArray, FILL_BYTE); // Clear sensitive data
+      this.m_HashCode = 0;
 
-      Arrays.fill(this.indexArray, 0);
+      this.m_StoredArrayLength = 0;
 
-      this.hashCode = 0;
+      this.m_IndexStart = 0;
 
-      this.storedArrayLength = 0;
+      this.m_HasChanged = false;
 
-      this.indexStart = 0;
+      this.m_IsValid = false;
 
-      this.hasChanged = false;
+      ArrayHelper.clear(this.m_ByteArray);
+      this.m_ByteArray = null;
 
-      this.isValid = false;
+      ArrayHelper.clear(this.m_IndexArray);
+      this.m_IndexArray = null;
+
+      this.m_IndexMasker = null;
    }
 
    /**
@@ -525,7 +535,7 @@ public final class ProtectedByteArray implements AutoCloseable {
     * @return Converted index
     */
    private int convertIndex(final int sourceIndex, final int forPosition) {
-      return this.indexMasker.getIntMask(forPosition) ^ sourceIndex;
+      return this.m_IndexMasker.getIntMask(forPosition) ^ sourceIndex;
    }
 
    /**
@@ -535,9 +545,9 @@ public final class ProtectedByteArray implements AutoCloseable {
     * @return The index into the byte array
     */
    private int getArrayIndex(final int externalIndex) {
-      final int position = externalIndex + convertIndex(this.indexStart, INDEX_START);
+      final int position = externalIndex + convertIndex(this.m_IndexStart, INDEX_START);
 
-      return convertIndex(this.indexArray[position], position);
+      return convertIndex(this.m_IndexArray[position], position);
    }
 
    /*
@@ -549,7 +559,7 @@ public final class ProtectedByteArray implements AutoCloseable {
     * @return Real length
     */
    private int getRealLength() {
-      return convertIndex(this.storedArrayLength, INDEX_LENGTH);
+      return convertIndex(this.m_StoredArrayLength, INDEX_LENGTH);
    }
 
    /**
@@ -563,7 +573,7 @@ public final class ProtectedByteArray implements AutoCloseable {
       int sourceIndex = offset;
 
       for (int i = 0; i < len; i++) {
-         this.byteArray[getArrayIndex(i)] = (byte) (this.indexMasker.getByteMask(i) ^ sourceArray[sourceIndex]);
+         this.m_ByteArray[getArrayIndex(i)] = (byte) (this.m_IndexMasker.getByteMask(i) ^ sourceArray[sourceIndex]);
 
          sourceIndex++;
       }
@@ -578,7 +588,7 @@ public final class ProtectedByteArray implements AutoCloseable {
       final byte[] result = new byte[getRealLength()];
 
       for (int i = 0; i < result.length; i++)
-         result[i] = (byte) (this.indexMasker.getByteMask(i) ^ this.byteArray[getArrayIndex(i)]);
+         result[i] = (byte) (this.m_IndexMasker.getByteMask(i) ^ this.m_ByteArray[getArrayIndex(i)]);
 
       return result;
    }
@@ -589,10 +599,10 @@ public final class ProtectedByteArray implements AutoCloseable {
    private void calculateHashCode() {
       final byte[] content = getValues();
 
-      this.hashCode = Arrays.hashCode(content);
+      this.m_HashCode = Arrays.hashCode(content);
 
-      Arrays.fill(content, FILL_BYTE);  // Clear sensitive data
+      ArrayHelper.clear(content);  // Clear sensitive data
 
-      this.hasChanged = false;
+      this.m_HasChanged = false;
    }
 }

@@ -205,6 +205,10 @@ public class SplitKeyEncryption implements AutoCloseable {
     */
    private static final byte[] SUFFIX_SALT = {(byte) 112, (byte) 87}; // i.e. "pW"
 
+   //******************************************************************
+   // Instance variables
+   //******************************************************************
+
    /**
     * Instance of HMAC calculator
     *
@@ -213,7 +217,7 @@ public class SplitKeyEncryption implements AutoCloseable {
     * <p>Unfortunately it can not be made final as the constructor of this class
     * may throw an exception.</p>
     */
-   private Mac HMAC_INSTANCE;
+   private Mac m_HMAC;
 
    /**
     * Instance of SecureRandom pseudo random number generator (PRNG)
@@ -221,7 +225,7 @@ public class SplitKeyEncryption implements AutoCloseable {
     * <p>This is placed here so the expensive instantiation of the SecureRandom class is
     * done only once.</p>
     */
-   private SecureRandom SECURE_RANDOM_INSTANCE;
+   private SecureRandom m_SecureRandom;
 
 
    //******************************************************************
@@ -602,10 +606,10 @@ public class SplitKeyEncryption implements AutoCloseable {
     */
    private Mac getHMACInstance()
          throws NoSuchAlgorithmException {
-      if (HMAC_INSTANCE == null)
-         HMAC_INSTANCE = Mac.getInstance(HMAC_256_ALGORITHM_NAME);
+      if (m_HMAC == null)
+         m_HMAC = Mac.getInstance(HMAC_256_ALGORITHM_NAME);
 
-      return HMAC_INSTANCE;
+      return m_HMAC;
    }
 
    /**
@@ -614,10 +618,10 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @return SecureRandom instance
     */
    private SecureRandom getSecureRandomInstance() {
-      if (SECURE_RANDOM_INSTANCE == null)
-         SECURE_RANDOM_INSTANCE = SecureRandomFactory.getSensibleSingleton();
+      if (m_SecureRandom == null)
+         m_SecureRandom = SecureRandomFactory.getSensibleSingleton();
 
-      return SECURE_RANDOM_INSTANCE;
+      return m_SecureRandom;
    }
 
    /*

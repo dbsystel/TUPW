@@ -346,7 +346,7 @@ public class Base32Encoding {
 
       String result = new String(resultArray, 0, lastIndex[0]);
 
-      Arrays.fill(resultArray, '\0');
+      ArrayHelper.clear(resultArray);
 
       return result;
    }

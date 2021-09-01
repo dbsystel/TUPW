@@ -33,6 +33,8 @@
  */
 package de.db.bcm.tupw.crypto;
 
+import de.db.bcm.tupw.arrays.ArrayHelper;
+
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import javax.security.auth.Destroyable;
@@ -80,8 +82,8 @@ public class SecureSecretKeySpec implements KeySpec, SecretKey, Destroyable, Aut
    // Instance variables
    //******************************************************************
 
-   private final ProtectedByteArray key;
-   private final ProtectedByteArray algorithm;
+   private final transient ProtectedByteArray key;
+   private final transient ProtectedByteArray algorithm;
 
 
    //******************************************************************
@@ -219,15 +221,20 @@ public class SecureSecretKeySpec implements KeySpec, SecretKey, Destroyable, Aut
          return false;
 
       final SecretKey other = (SecretKey) obj;
-      final byte[] thisKey = this.getEncoded();
-      final byte[] otherKey = other.getEncoded();
 
-      final boolean result = Arrays.equals(thisKey, otherKey);
+      boolean result = this.getAlgorithm().equalsIgnoreCase(other.getAlgorithm());
 
-      Arrays.fill(thisKey, (byte) 0);
-      Arrays.fill(otherKey, (byte) 0);
+      if (result) {
+         final byte[] thisKey = this.getEncoded();
+         final byte[] otherKey = other.getEncoded();
 
-      return (result && this.getAlgorithm().equalsIgnoreCase(other.getAlgorithm()));
+         result = Arrays.equals(thisKey, otherKey);
+
+         ArrayHelper.clear(thisKey);
+         ArrayHelper.clear(otherKey);
+      }
+
+      return result;
    }
 
    /*
@@ -358,7 +365,7 @@ public class SecureSecretKeySpec implements KeySpec, SecretKey, Destroyable, Aut
 
       final ProtectedByteArray result = new ProtectedByteArray(algorithmBytes);
 
-      Arrays.fill(algorithmBytes, (byte) 0); // Clear sensitive data
+      ArrayHelper.clear(algorithmBytes); // Clear sensitive data
 
       return result;
    }

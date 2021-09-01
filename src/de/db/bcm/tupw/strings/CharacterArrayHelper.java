@@ -26,6 +26,8 @@
  */
 package de.db.bcm.tupw.strings;
 
+import de.db.bcm.tupw.arrays.ArrayHelper;
+
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.*;
@@ -42,13 +44,6 @@ import java.util.Arrays;
  * @version 1.1.0
  */
 public class CharacterArrayHelper {
-   //******************************************************************
-   // Constants
-   //******************************************************************
-   private static final char FILL_CHAR = '\0';
-   private static final byte FILL_BYTE = (byte) 0;
-
-
    //******************************************************************
    // Class variables
    //******************************************************************
@@ -87,6 +82,7 @@ public class CharacterArrayHelper {
          final CharBuffer tempCharBuffer = CharBuffer.wrap(sourceCharacterArray);
 
          ByteBuffer tempByteBuffer = null;
+
          try {
             tempByteBuffer = UTF8_ENCODER.encode(tempCharBuffer);
          } catch (CharacterCodingException e) {
@@ -100,7 +96,8 @@ public class CharacterArrayHelper {
          // In this case we will not get here
          // If we get here there was no runtime exception and tempByteBuffer is not null
          result = Arrays.copyOf(tempByteBuffer.array(), tempByteBuffer.limit());
-         Arrays.fill(tempByteBuffer.array(), FILL_BYTE);
+
+         ArrayHelper.clear(tempByteBuffer.array());
       }
 
       return result;
@@ -121,7 +118,7 @@ public class CharacterArrayHelper {
          final CharBuffer tempCharBuffer = UTF8_DECODER.decode(tempByteBuffer);
 
          result = Arrays.copyOf(tempCharBuffer.array(), tempCharBuffer.limit());
-         Arrays.fill(tempCharBuffer.array(), FILL_CHAR);
+         ArrayHelper.clear(tempCharBuffer.array());
       }
 
       return result;

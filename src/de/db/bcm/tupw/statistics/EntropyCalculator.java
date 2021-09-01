@@ -32,6 +32,8 @@
 
 package de.db.bcm.tupw.statistics;
 
+import de.db.bcm.tupw.arrays.ArrayHelper;
+
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -62,7 +64,7 @@ public class EntropyCalculator {
     * Reset the entropy statistics
     */
    public synchronized void reset() {
-      Arrays.fill(m_Counter, 0);
+      ArrayHelper.clear(m_Counter);
 
       m_ByteCount = 0;
    }

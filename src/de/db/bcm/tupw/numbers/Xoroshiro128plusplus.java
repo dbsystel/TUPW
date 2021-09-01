@@ -24,7 +24,7 @@
  *
  * The state must be seeded so that it is not everywhere zero. If you have
  * a 64-bit seed, we suggest to seed a splitmix64 generator and use its
- * output to fill s.
+ * output to fill the state.
  *
  * Changes:
  *     2020-02-27: V1.0.0: Created. fhs

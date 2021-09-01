@@ -20,6 +20,7 @@
  *
  * Changes:
  *     2021-08-30: V1.0.0: Created. fhs
+ *     2021-09-01: V1.0.1: Added clear methods for integer arrays. fhs
  */
 package de.db.bcm.tupw.arrays;
 
@@ -29,7 +30,7 @@ import java.util.Arrays;
  * Helper class for array operations that need a simpler interface
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.0.0
+ * @version 1.0.1
  */
 public class ArrayHelper {
    //******************************************************************
@@ -38,8 +39,9 @@ public class ArrayHelper {
 
    // Fill values for clear methods
 
-   private static final byte FILL_BYTE = (byte) 0;
-   private static final char FILL_CHAR = '\0';
+   private static final byte CLEAR_BYTE = (byte) 0;
+   private static final char CLEAR_CHAR = '\0';
+   private static final byte CLEAR_INT = 0;
 
    //******************************************************************
    // Constructor
@@ -64,7 +66,7 @@ public class ArrayHelper {
     * @param a Byte array to clear
     */
    public static void clear(final byte[] a) {
-      Arrays.fill(a, FILL_BYTE);
+      Arrays.fill(a, CLEAR_BYTE);
    }
 
    /**
@@ -73,7 +75,16 @@ public class ArrayHelper {
     * @param a Character array to clear
     */
    public static void clear(final char[] a) {
-      Arrays.fill(a, FILL_CHAR);
+      Arrays.fill(a, CLEAR_CHAR);
+   }
+
+   /**
+    * Clear an integer array
+    *
+    * @param a Integer array to clear
+    */
+   public static void clear(final int[] a) {
+      Arrays.fill(a, CLEAR_INT);
    }
 
    /**
@@ -83,7 +94,7 @@ public class ArrayHelper {
     */
    public static void safeClear(final byte[] a) {
       if (a != null)
-         Arrays.fill(a, FILL_BYTE);
+         Arrays.fill(a, CLEAR_BYTE);
    }
 
    /**
@@ -93,6 +104,16 @@ public class ArrayHelper {
     */
    public static void safeClear(final char[] a) {
       if (a != null)
-         Arrays.fill(a, FILL_CHAR);
+         Arrays.fill(a, CLEAR_CHAR);
+   }
+
+   /**
+    * Clear an integer array and do not throw an exception if it is null
+    *
+    * @param a Integer array to clear
+    */
+   public static void safeClear(final int[] a) {
+      if (a != null)
+         Arrays.fill(a, CLEAR_INT);
    }
 }

@@ -21,17 +21,26 @@
  * Changes:
  *     2018-05-25: V1.0.0: Created. fhs
  *     2019-08-02: V1.0.1: Added missing call to super in constructor without arguments. fhs
+ *     2021-09-01: V1.0.2: Added serialVersionUID. fhs
  */
 package de.db.bcm.tupw.crypto;
 
 /**
  * Exception to indicate that data was tampered with
  *
- * @author FrankSchwab
- * @version 1.0.1
+ * @author FrankSchwab, DB Systel GmbH
+ * @version 1.0.2
  */
 public class DataIntegrityException extends Exception {
+   //******************************************************************
+   // Serialization constant
+   //******************************************************************
 
+   private static final long serialVersionUID = -1531713327290769502L;
+
+   //******************************************************************
+   // Public methods
+   //******************************************************************
    public DataIntegrityException() {
       super();
    }

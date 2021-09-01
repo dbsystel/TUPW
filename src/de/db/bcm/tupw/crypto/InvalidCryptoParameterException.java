@@ -20,16 +20,18 @@
  *
  * Changes:
  *     2020-03-19: V1.0.0: Created. fhs
+ *     2021-09-01: V1.0.1: Added serialVersionUID. fhs
  */
 package de.db.bcm.tupw.crypto;
 
 /**
  * Exception to indicate that some parameter to a cryptographic method is invalid
  *
- * @author FrankSchwab
- * @version 1.0.0
+ * @author FrankSchwab, DB Systel GmbH
+ * @version 1.0.1
  */
 public class InvalidCryptoParameterException extends Exception {
+   private static final long serialVersionUID = 5118897280592222265L;
 
    public InvalidCryptoParameterException() {
       super();

@@ -34,6 +34,7 @@
  */
 package de.db.bcm.tupw.crypto;
 
+import de.db.bcm.tupw.arrays.ArrayHelper;
 import de.db.bcm.tupw.numbers.PackedUnsignedInteger;
 
 import java.security.SecureRandom;
@@ -125,7 +126,7 @@ public class ByteArrayBlinding {
       final int postfixLength = blindingLength[INDEX_LENGTHS_POSTFIX_LENGTH];
 
       // There ought to be a method to put random bytes into a part of an existing array like e.g. "next(bytes, offset, length)".
-      // Unfortunately Java does not provide such a method so we have to allocate temporary arrays for the blinders and copy them.
+      // Unfortunately Java does not provide such a method, so we have to allocate temporary arrays for the blinders and copy them.
       final byte[] prefixBlinding = createBlinding(prefixLength);
       final byte[] postfixBlinding = createBlinding(postfixLength);
 
@@ -170,12 +171,12 @@ public class ByteArrayBlinding {
             if (sourceBytes[INDEX_SOURCE_POSTFIX_LENGTH] >= 0) {
                final int postfixBlindingLength = sourceBytes[INDEX_SOURCE_POSTFIX_LENGTH];
 
-               final int totalBlindingsLength = prefixBlindingLength + postfixBlindingLength;
+               final int totalBlindingLength = prefixBlindingLength + postfixBlindingLength;
                final int dataLength = PackedUnsignedInteger.toIntegerFromArray(sourceBytes, INDEX_SOURCE_PACKED_LENGTH);
 
                // The largest number in the following addition can only be just over 1073741823
                // This can never overflow into negative values
-               if ((totalBlindingsLength + dataLength) <= sourceBytes.length)
+               if ((totalBlindingLength + dataLength) <= sourceBytes.length)
                   return Arrays.copyOfRange(sourceBytes, prefixBlindingLength, dataLength + prefixBlindingLength);
             }
          }
@@ -286,7 +287,7 @@ public class ByteArrayBlinding {
    private static int copyByteArrayAndZapSource(final byte[] sourceBytes, final byte[] destinationBytes, final int startToIndex) {
       final int result = copyByteArray(sourceBytes, destinationBytes, startToIndex);
 
-      Arrays.fill(sourceBytes, (byte) 0);
+      ArrayHelper.clear(sourceBytes);
 
       return result;
    }

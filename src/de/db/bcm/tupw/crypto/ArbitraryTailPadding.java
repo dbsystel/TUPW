@@ -31,6 +31,7 @@
  *     2020-08-13: V2.2.1: Improved getPaddingByteValue method. fhs
  *     2020-12-04: V2.2.2: Corrected several SonarLint findings. fhs
  *     2020-12-29: V2.3.0: Made thread safe. fhs
+ *     2021-09-01: V2.3.1: Renamed instance variable. fhs
  */
 package de.db.bcm.tupw.crypto;
 
@@ -42,7 +43,7 @@ import java.util.Objects;
  * Implements arbitrary tail padding for block ciphers
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 2.3.0
+ * @version 2.3.1
  */
 public class ArbitraryTailPadding {
    //******************************************************************
@@ -60,7 +61,7 @@ public class ArbitraryTailPadding {
     * <p>This is placed here so the expensive instantiation of the SecureRandom
     * class is done only once.</p>
     */
-   private static final SecureRandom SECURE_PRNG = SecureRandomFactory.getSensibleSingleton();
+   private static final SecureRandom m_SecureRandom = SecureRandomFactory.getSensibleSingleton();
 
 
    //******************************************************************
@@ -155,13 +156,13 @@ public class ArbitraryTailPadding {
    private static byte getPaddingByteValue(final byte[] unpaddedSourceData) {
       final byte[] padByte = new byte[1];
 
-      SECURE_PRNG.nextBytes(padByte);
+      m_SecureRandom.nextBytes(padByte);
 
       if (unpaddedSourceData.length > 0) {
          final byte lastByte = unpaddedSourceData[unpaddedSourceData.length - 1];
 
          while (padByte[0] == lastByte)
-            SECURE_PRNG.nextBytes(padByte);
+            m_SecureRandom.nextBytes(padByte);
       }
 
       return padByte[0];
