@@ -21,6 +21,7 @@
  * Changes:
  *     2020-03-23: V1.0.0: Created. fhs
  *     2020-12-29: V1.1.0: Made thread safe. fhs
+ *     2021-09-03: V1.1.1: Fixed comparison with constant of wrong type. fhs
  */
 
 package de.db.bcm.tupw.numbers;
@@ -31,7 +32,7 @@ package de.db.bcm.tupw.numbers;
  * <p>All subclasses need to implement the {@code nextLong()} method. All other {@code next} methods are implemented here.</p>
  *
  * @author Frank Schwab
- * @version 1.1.0
+ * @version 1.1.1
  */
 public class SimplePseudoRandomNumberGenerator {
    //******************************************************************
@@ -169,7 +170,7 @@ public class SimplePseudoRandomNumberGenerator {
       final int maxValue = size - 1;  // This is always nonnegative
 
       // If the size is a power of 2 we are done
-      if ((size & maxValue) == 0L)
+      if ((size & maxValue) == 0)
          result = this.nextShort() & maxValue;
       else {
          // Size is not a power of two, so we need to calculate a pseudo-random
@@ -205,7 +206,7 @@ public class SimplePseudoRandomNumberGenerator {
       final int maxValue = size - 1;  // This is always nonnegative
 
       // If the size is a power of 2 we are done
-      if ((size & maxValue) == 0L)
+      if ((size & maxValue) == 0)
          result = this.nextByte() & maxValue;
       else {
          // Size is not a power of two, so we need to calculate a pseudo-random

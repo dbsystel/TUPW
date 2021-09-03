@@ -18,8 +18,9 @@
  *
  * Author: Frank Schwab, DB Systel GmbH
  *
- * Changes: 
+ * Changes:
  *     2020-03-11: V1.0.0: Created. fhs
+ *     2021-09-03: V1.0.1: Use try-with-resources. fhs
  */
 package de.db.bcm.tupw.crypto;
 
@@ -33,7 +34,7 @@ import static org.junit.Assert.*;
  * Test cases for SecureSecretKeySpec
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.0.0
+ * @version 1.0.1
  */
 public class TestProtectedByteArray {
 
@@ -67,9 +68,7 @@ public class TestProtectedByteArray {
 
    @Test
    public void TestNullArgument() {
-      try {
-         ProtectedByteArray sba = new ProtectedByteArray(null);
-
+      try (final ProtectedByteArray sba = new ProtectedByteArray(null)) {
          fail(EXPECTED_EXCEPTION);
       }
       catch (NullPointerException e) {
@@ -83,23 +82,21 @@ public class TestProtectedByteArray {
 
    @Test
    public void TestEmptyArgument() {
-      ProtectedByteArray sba = new ProtectedByteArray(new byte[0]);
+      try (final ProtectedByteArray sba = new ProtectedByteArray(new byte[0])) {
+         byte[] result = sba.getData();
 
-      byte[] result = sba.getData();
+         assertEquals("Empty byte array is retrieved with wrong length", 0, result.length);
 
-      assertEquals("Empty byte array is retrieved with wrong length", 0, result.length);
+         try {
+            sba.getAt(1);
 
-      try {
-         final byte notExistent = sba.getAt(1);
-
-         fail(EXPECTED_EXCEPTION);
-      }
-      catch (ArrayIndexOutOfBoundsException e) {
-         assertTrue("Exception: " + e.toString(), e.getMessage().contains("Illegal index"));
-      }
-      catch (Exception e) {
-         e.printStackTrace();
-         fail("Exception: " + e.toString());
+            fail(EXPECTED_EXCEPTION);
+         } catch (ArrayIndexOutOfBoundsException e) {
+            assertTrue("Exception: " + e.toString(), e.getMessage().contains("Illegal index"));
+         } catch (Exception e) {
+            e.printStackTrace();
+            fail("Exception: " + e.toString());
+         }
       }
    }
 
@@ -109,17 +106,17 @@ public class TestProtectedByteArray {
 
       Arrays.fill(ba, FILL_VALUE);
 
-      ProtectedByteArray sba = new ProtectedByteArray(ba);
+      try (final ProtectedByteArray sba = new ProtectedByteArray(ba)) {
+         assertArrayEquals("Data was not correctly retrieved", ba, sba.getData());
+         assertEquals("Retrieved data has different length from stored data", ba.length, sba.length());
+         assertEquals("Retrieved data at index 0 has different value from stored data", ba[0], sba.getAt(0));
 
-      assertArrayEquals("Data was not correctly retrieved", ba, sba.getData());
-      assertEquals("Retrieved data has different length from stored data", ba.length, sba.length());
-      assertEquals("Retrieved data at index 0 has different value from stored data", ba[0], sba.getAt(0));
+         sba.setAt(CHANGE_INDEX, OTHER_VALUE);
+         assertEquals("Retrieved data with 'getAt' has different value from what was set", OTHER_VALUE, sba.getAt(CHANGE_INDEX));
 
-      sba.setAt(CHANGE_INDEX, OTHER_VALUE);
-      assertEquals("Retrieved data with 'getAt' has different value from what was set", OTHER_VALUE, sba.getAt(CHANGE_INDEX));
-
-      final byte[] retrievedBa = sba.getData();
-      assertEquals("Retrieved data with 'getData' has different value from what was set", OTHER_VALUE, retrievedBa[CHANGE_INDEX]);
+         final byte[] retrievedBa = sba.getData();
+         assertEquals("Retrieved data with 'getData' has different value from what was set", OTHER_VALUE, retrievedBa[CHANGE_INDEX]);
+      }
    }
 
    @Test
@@ -128,24 +125,22 @@ public class TestProtectedByteArray {
 
       Arrays.fill(ba, FILL_VALUE);
 
-      ProtectedByteArray sba = new ProtectedByteArray(ba);
+      try (final ProtectedByteArray sba = new ProtectedByteArray(ba)) {
+         sba.close();
+         assertFalse("ProtectedByteArray still valid after close", sba.isValid());
 
-      sba.close();
-      assertFalse("ProtectedByteArray still valid after close", sba.isValid());
+         try {
+            sba.getData();
 
-      try {
-         sba.getData();
+            fail(EXPECTED_EXCEPTION);
+         } catch (IllegalStateException e) {
+            final String message = e.getMessage();
 
-         fail(EXPECTED_EXCEPTION);
-      }
-      catch (IllegalStateException e) {
-         final String message = e.getMessage();
-
-         assertEquals("IllegalStateException with wrong message: " + message, "ProtectedByteArray has already been destroyed", message);
-      }
-      catch (Exception e) {
-         e.printStackTrace();
-         fail("Exception: " + e.toString());
+            assertEquals("IllegalStateException with wrong message: " + message, "ProtectedByteArray has already been destroyed", message);
+         } catch (Exception e) {
+            e.printStackTrace();
+            fail("Exception: " + e.toString());
+         }
       }
    }
 
@@ -155,13 +150,14 @@ public class TestProtectedByteArray {
 
       Arrays.fill(ba, FILL_VALUE);
 
-      final ProtectedByteArray sba1 = new ProtectedByteArray(ba);
-      final ProtectedByteArray sba2 = new ProtectedByteArray(ba);
+      try (final ProtectedByteArray sba1 = new ProtectedByteArray(ba);
+           final ProtectedByteArray sba2 = new ProtectedByteArray(ba)) {
+         assertEquals("ProtectedByteArray are not equal when they should be", sba1, sba2);
+         assertEquals("ProtectedByteArray do not have identical hash codes", sba1.hashCode(), sba2.hashCode());
 
-      assertEquals("ProtectedByteArray are not equal when they should be", sba1, sba2);
-      assertEquals("ProtectedByteArray do not have identical hash codes", sba1.hashCode(), sba2.hashCode());
-
-      final ProtectedByteArray sba3 = new ProtectedByteArray(new byte[32]);
-      assertNotEquals("ProtectedByteArray are equal when they should not be (different keys)", sba1, sba3);
+         try (final ProtectedByteArray sba3 = new ProtectedByteArray(new byte[32])) {
+            assertNotEquals("ProtectedByteArray are equal when they should not be (different keys)", sba1, sba3);
+         }
+      }
    }
 }

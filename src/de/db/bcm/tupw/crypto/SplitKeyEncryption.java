@@ -71,6 +71,7 @@
  *     2021-08-30: V6.0.0: Some refactoring, removed deprecated "DecryptData" methods. fhs
  *     2021-08-30: V6.1.0: Ensure deletion of sensitive data. fhs
  *     2021-08-30: V6.1.1: Some refactoring. fhs
+ *     2021-09-03: V6.1.2: Some refactoring in tests. fhs
  */
 package de.db.bcm.tupw.crypto;
 

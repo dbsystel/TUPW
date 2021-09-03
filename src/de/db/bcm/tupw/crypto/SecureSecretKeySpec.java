@@ -30,6 +30,7 @@
  *     2020-12-04: V2.5.0: Corrected several SonarLint findings and made class serializable. fhs
  *     2020-12-29: V2.6.0: Made thread safe. fhs
  *     2021-05-26: V2.7.0: This class is no longer serializable. It never should have been. fhs
+ *     2021-09-03: V2.7.1: Correct signatures of Serializable methods. fhs
  */
 package de.db.bcm.tupw.crypto;
 
@@ -51,7 +52,7 @@ import java.util.Objects;
  * <p>It is intended to be used as a drop-in replacement for {@code SecretKeySpec}.</p>
  *
  * @author Frank Schwab
- * @version 2.7.0
+ * @version 2.7.1
  */
 public class SecureSecretKeySpec implements KeySpec, SecretKey, Destroyable, AutoCloseable {
    /*
@@ -380,7 +381,11 @@ public class SecureSecretKeySpec implements KeySpec, SecretKey, Destroyable, Aut
       throw new NotSerializableException("Secret keys must not be serialized");
    }
 
-   private void readObject(ObjectInputStream in) throws IOException {
+   private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+      throw new NotSerializableException("Secret keys must not be deserialized");
+   }
+
+   private void readObjectNoData() throws ObjectStreamException {
       throw new NotSerializableException("Secret keys must not be deserialized");
    }
 }

@@ -76,6 +76,7 @@ public class TestBase32Encoding {
          String encodedBytes = Base32Encoding.encode(testByteArray);
 
          final byte[] decodedBytes = Base32Encoding.decode(encodedBytes);
+
          assertArrayEquals("Decoded byte array is not the same as original byte array", testByteArray, decodedBytes);
       }
    }
@@ -145,7 +146,7 @@ public class TestBase32Encoding {
    @Test
    public void TestPaddedNothingEncode() {
       try {
-         String b32Text = Base32Encoding.encode(null);
+         Base32Encoding.encode(null);
 
          fail("Expected exception not thrown");
       }
@@ -160,7 +161,7 @@ public class TestBase32Encoding {
    @Test
    public void TestPaddedNothingDecode() {
       try {
-         byte[] decodedBytes = Base32Encoding.decode(null);
+         Base32Encoding.decode(null);
 
          fail("Expected exception not thrown");
       }
@@ -178,7 +179,7 @@ public class TestBase32Encoding {
 
       for (String wrongLengthEncoding : invalidLengthEncoding) {
          try {
-            byte[] decodedBytes = Base32Encoding.decode(wrongLengthEncoding);
+            Base32Encoding.decode(wrongLengthEncoding);
 
             fail("Expected exception not thrown on encoding '" + wrongLengthEncoding + "'");
          } catch (IllegalArgumentException ex) {
@@ -195,7 +196,7 @@ public class TestBase32Encoding {
 
       for (String wrongLengthEncoding : invalidLengthEncoding) {
          try {
-            byte[] decodedBytes = Base32Encoding.decode(wrongLengthEncoding);
+            Base32Encoding.decode(wrongLengthEncoding);
 
             fail("Expected exception not thrown");
          } catch (IllegalArgumentException ex) {
@@ -295,7 +296,7 @@ public class TestBase32Encoding {
    @Test
    public void TestUnpaddedNothingEncode() {
       try {
-         String b32Text = Base32Encoding.encodeNoPadding(null);
+         Base32Encoding.encodeNoPadding(null);
 
          fail("Expected exception not thrown");
       }
@@ -313,7 +314,7 @@ public class TestBase32Encoding {
 
       for (String wrongLengthEncoding : invalidLengthEncoding) {
          try {
-            byte[] decodedBytes = Base32Encoding.decode(wrongLengthEncoding);
+            Base32Encoding.decode(wrongLengthEncoding);
 
             fail("Expected exception not thrown on encoding '" + wrongLengthEncoding + "'");
          } catch (IllegalArgumentException ex) {
@@ -330,7 +331,7 @@ public class TestBase32Encoding {
 
       for (String wrongLengthEncoding : invalidLengthEncoding) {
          try {
-            byte[] decodedBytes = Base32Encoding.decode(wrongLengthEncoding);
+            Base32Encoding.decode(wrongLengthEncoding);
 
             fail("Expected exception not thrown");
          } catch (IllegalArgumentException ex) {
@@ -424,7 +425,7 @@ public class TestBase32Encoding {
    @Test
    public void TestPaddedNothingSpellSafeEncode() {
       try {
-         String b32Text = Base32Encoding.encodeSpellSafe(null);
+         Base32Encoding.encodeSpellSafe(null);
 
          fail("Expected exception not thrown");
       }
@@ -439,7 +440,7 @@ public class TestBase32Encoding {
    @Test
    public void TestPaddedNothingSpellSafeDecode() {
       try {
-         byte[] decodedBytes = Base32Encoding.decodeSpellSafe(null);
+         Base32Encoding.decodeSpellSafe(null);
 
          fail("Expected exception not thrown");
       }
@@ -457,7 +458,7 @@ public class TestBase32Encoding {
 
       for (String wrongLengthEncoding : invalidLengthEncoding) {
          try {
-            byte[] decodedBytes = Base32Encoding.decode(wrongLengthEncoding);
+            Base32Encoding.decode(wrongLengthEncoding);
 
             fail("Expected exception not thrown on encoding '" + wrongLengthEncoding + "'");
          } catch (IllegalArgumentException ex) {
@@ -474,7 +475,7 @@ public class TestBase32Encoding {
 
       for (String wrongLengthEncoding : invalidLengthEncoding) {
          try {
-            byte[] decodedBytes = Base32Encoding.decode(wrongLengthEncoding);
+            Base32Encoding.decode(wrongLengthEncoding);
 
             fail("Expected exception not thrown");
          } catch (IllegalArgumentException ex) {
@@ -568,7 +569,7 @@ public class TestBase32Encoding {
    @Test
    public void TestUnpaddedNothingSpellSafeEncode() {
       try {
-         String b32Text = Base32Encoding.encodeSpellSafeNoPadding(null);
+         Base32Encoding.encodeSpellSafeNoPadding(null);
 
          fail("Expected exception not thrown");
       }
@@ -586,7 +587,7 @@ public class TestBase32Encoding {
 
       for (String wrongLengthEncoding : invalidLengthEncoding) {
          try {
-            byte[] decodedBytes = Base32Encoding.decode(wrongLengthEncoding);
+            Base32Encoding.decode(wrongLengthEncoding);
 
             fail("Expected exception not thrown on encoding '" + wrongLengthEncoding + "'");
          } catch (IllegalArgumentException ex) {
@@ -603,7 +604,7 @@ public class TestBase32Encoding {
 
       for (String wrongLengthEncoding : invalidLengthEncoding) {
          try {
-            byte[] decodedBytes = Base32Encoding.decode(wrongLengthEncoding);
+            Base32Encoding.decode(wrongLengthEncoding);
 
             fail("Expected exception not thrown");
          } catch (IllegalArgumentException ex) {

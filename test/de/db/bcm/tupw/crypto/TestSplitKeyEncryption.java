@@ -23,6 +23,7 @@
  *     2020-03-09: V1.0.1: Test 0 length source byte array. fhs
  *     2020-03-20: V1.1.0: Test new interfaces for byte and character arrays. fhs
  *     2020-05-14: V1.2.0: More tests for basic encryption/decryption and usage of the close interface. fhs
+ *     2021-09-03: V1.2.1: Use try-with-resources. fhs
  */
 package de.db.bcm.tupw.crypto;
 
@@ -39,7 +40,7 @@ import static org.junit.Assert.*;
  * Test cases for file and key encryption.
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.2.0
+ * @version 1.2.1
  */
 public class TestSplitKeyEncryption {
 
@@ -48,19 +49,19 @@ public class TestSplitKeyEncryption {
     */
    /**
     * HMAC key to be used for encryption
-    *
+    * <p>
     * This is the static HMAC key which is only known to the program
     * TODO: Do not use this constant byte array. Roll your own!!!!
     */
    private static final byte[] CONSTANT_HMAC_KEY = {
-           (byte) 0xC1, (byte) 0xC2, (byte) 0xC8, (byte) 0x0F,
-           (byte) 0xDE, (byte) 0x75, (byte) 0xD7, (byte) 0xA9,
-           (byte) 0xFC, (byte) 0x92, (byte) 0x56, (byte) 0xEA,
-           (byte) 0x3C, (byte) 0x0C, (byte) 0x7A, (byte) 0x08,
-           (byte) 0x8A, (byte) 0x6E, (byte) 0xB5, (byte) 0x78,
-           (byte) 0x15, (byte) 0x79, (byte) 0xCF, (byte) 0xB4,
-           (byte) 0x02, (byte) 0x0F, (byte) 0x38, (byte) 0x3C,
-           (byte) 0x61, (byte) 0x4F, (byte) 0x9D, (byte) 0xDB};
+         (byte) 0xC1, (byte) 0xC2, (byte) 0xC8, (byte) 0x0F,
+         (byte) 0xDE, (byte) 0x75, (byte) 0xD7, (byte) 0xA9,
+         (byte) 0xFC, (byte) 0x92, (byte) 0x56, (byte) 0xEA,
+         (byte) 0x3C, (byte) 0x0C, (byte) 0x7A, (byte) 0x08,
+         (byte) 0x8A, (byte) 0x6E, (byte) 0xB5, (byte) 0x78,
+         (byte) 0x15, (byte) 0x79, (byte) 0xCF, (byte) 0xB4,
+         (byte) 0x02, (byte) 0x0F, (byte) 0x38, (byte) 0x3C,
+         (byte) 0x61, (byte) 0x4F, (byte) 0x9D, (byte) 0xDB};
 
    /**
     * HMAC key to be used for encryption
@@ -187,7 +188,7 @@ public class TestSplitKeyEncryption {
       SOURCE_BYTES_2 = SOURCE_TEXT_3.getBytes(GET_BYTES_CHARACTER_SET);
       SOURCE_BYTES_3 = SOURCE_TEXT_2.getBytes(GET_BYTES_CHARACTER_SET);
 
-      for(int i=0; i < NON_RANDOM_SOURCE_BYTES.length; i++)
+      for (int i = 0; i < NON_RANDOM_SOURCE_BYTES.length; i++)
          NON_RANDOM_SOURCE_BYTES[i] = (byte) (0xff - (i & 0xff));
    }
 
@@ -213,11 +214,7 @@ public class TestSplitKeyEncryption {
    public void TestEncryptionDecryptionForByteArray() {
       Random rnd = new Random();
 
-      SplitKeyEncryption myEncryptor = null;
-
-      try {
-         myEncryptor = new SplitKeyEncryption(COMPUTED_HMAC_KEY, SOURCE_BYTES_1, SOURCE_BYTES_2, SOURCE_BYTES_3, SOURCE_BYTES_4);
-
+      try (final SplitKeyEncryption myEncryptor = new SplitKeyEncryption(COMPUTED_HMAC_KEY, SOURCE_BYTES_1, SOURCE_BYTES_2, SOURCE_BYTES_3, SOURCE_BYTES_4)) {
          for (int i = 1; i <= 100; i++) {
             final byte[] testByteArray = new byte[rnd.nextInt(501)];
 
@@ -229,12 +226,7 @@ public class TestSplitKeyEncryption {
 
             assertArrayEquals("Decrypted byte array is not the same as original byte array", testByteArray, decryptedByteArray);
          }
-
-         myEncryptor.close();
       } catch (Exception e) {
-         if (myEncryptor != null)
-            myEncryptor.close();
-
          e.printStackTrace();
          fail("Exception: " + e.toString());
       }
@@ -245,24 +237,15 @@ public class TestSplitKeyEncryption {
     */
    @Test
    public void TestEncryptionDecryptionForCharacterArray() {
-      SplitKeyEncryption myEncryptor = null;
+      final char[] testCharArray = {'T', 'h', 'í', 's', ' ', 'ì', 's', ' ', 'a', ' ', 'T', 'ä', 's', 't'};
 
-      try {
-         final char[] testCharArray = {'T', 'h', 'í', 's', ' ', 'ì', 's', ' ', 'a', ' ', 'T', 'ä', 's', 't'};
-
-         myEncryptor = new SplitKeyEncryption(COMPUTED_HMAC_KEY, SOURCE_BYTES_1, SOURCE_BYTES_2, SOURCE_BYTES_3, SOURCE_BYTES_4);
-
+      try (final SplitKeyEncryption myEncryptor = new SplitKeyEncryption(COMPUTED_HMAC_KEY, SOURCE_BYTES_1, SOURCE_BYTES_2, SOURCE_BYTES_3, SOURCE_BYTES_4)) {
          String encryptedText = myEncryptor.encryptData(testCharArray);
 
          char[] decryptedCharArray = myEncryptor.decryptDataAsCharacterArray(encryptedText);
 
-         myEncryptor.close();
-
          assertArrayEquals("Decrypted character array is not the same as original character array", testCharArray, decryptedCharArray);
       } catch (Exception e) {
-         if (myEncryptor != null)
-            myEncryptor.close();
-
          e.printStackTrace();
          fail("Exception: " + e.toString());
       }
@@ -273,23 +256,13 @@ public class TestSplitKeyEncryption {
     */
    @Test
    public void TestEncryptionDecryptionForString() {
-      SplitKeyEncryption myEncryptor = null;
-
-      try {
-         myEncryptor = new SplitKeyEncryption(COMPUTED_HMAC_KEY, SOURCE_BYTES_1, SOURCE_BYTES_2, SOURCE_BYTES_3, SOURCE_BYTES_4);
-
+      try (final SplitKeyEncryption myEncryptor = new SplitKeyEncryption(COMPUTED_HMAC_KEY, SOURCE_BYTES_1, SOURCE_BYTES_2, SOURCE_BYTES_3, SOURCE_BYTES_4)) {
          String encryptedText = myEncryptor.encryptData(CLEAR_TEXT_V5);
 
          String decryptedText = myEncryptor.decryptDataAsString(encryptedText);
 
-         if (myEncryptor != null)
-            myEncryptor.close();
-
          assertEquals(TEXT_DECRYPTION_MISMATCH_MESSAGE, CLEAR_TEXT_V5, decryptedText);
       } catch (Exception e) {
-         if (myEncryptor != null)
-            myEncryptor.close();
-
          e.printStackTrace();
          fail("Exception: " + e.toString());
       }
@@ -300,23 +273,13 @@ public class TestSplitKeyEncryption {
     */
    @Test
    public void TestEncryptionDecryptionWithSubject() {
-      SplitKeyEncryption myEncryptor = null;
-
-      try {
-         myEncryptor = new SplitKeyEncryption(COMPUTED_HMAC_KEY, SOURCE_BYTES_1, SOURCE_BYTES_2, SOURCE_BYTES_3, SOURCE_BYTES_4);
-
+      try (final SplitKeyEncryption myEncryptor = new SplitKeyEncryption(COMPUTED_HMAC_KEY, SOURCE_BYTES_1, SOURCE_BYTES_2, SOURCE_BYTES_3, SOURCE_BYTES_4)) {
          String encryptedText = myEncryptor.encryptData(CLEAR_TEXT_V5, SUBJECT);
 
          String decryptedText = myEncryptor.decryptDataAsString(encryptedText, SUBJECT);
 
-         if (myEncryptor != null)
-            myEncryptor.close();
-
          assertEquals(TEXT_DECRYPTION_MISMATCH_MESSAGE, CLEAR_TEXT_V5, decryptedText);
       } catch (Exception e) {
-         if (myEncryptor != null)
-            myEncryptor.close();
-
          e.printStackTrace();
          fail("Exception: " + e.toString());
       }
@@ -327,25 +290,15 @@ public class TestSplitKeyEncryption {
     */
    @Test
    public void TestEmptyEncryptionDecryption() {
-      SplitKeyEncryption myEncryptor = null;
+      final String emptyString = "";
 
-      try {
-         final String emptyString = "";
-
-         myEncryptor = new SplitKeyEncryption(COMPUTED_HMAC_KEY, SOURCE_BYTES_1, SOURCE_BYTES_2, SOURCE_BYTES_3, SOURCE_BYTES_4);
-
+      try (final SplitKeyEncryption myEncryptor = new SplitKeyEncryption(COMPUTED_HMAC_KEY, SOURCE_BYTES_1, SOURCE_BYTES_2, SOURCE_BYTES_3, SOURCE_BYTES_4)) {
          final String encryptedText = myEncryptor.encryptData(emptyString);
 
          final String decryptedText = myEncryptor.decryptDataAsString(encryptedText);
 
-         if (myEncryptor != null)
-            myEncryptor.close();
-
          assertEquals(TEXT_DECRYPTION_MISMATCH_MESSAGE, emptyString, decryptedText);
       } catch (Exception e) {
-         if (myEncryptor != null)
-            myEncryptor.close();
-
          e.printStackTrace();
          fail("Exception: " + e.toString());
       }
@@ -356,25 +309,15 @@ public class TestSplitKeyEncryption {
     */
    @Test
    public void TestEmptyEncryptionDecryptionWithSubject() {
-      SplitKeyEncryption myEncryptor = null;
+      final String emptyString = "";
 
-      try {
-         final String emptyString = "";
-
-         myEncryptor = new SplitKeyEncryption(COMPUTED_HMAC_KEY, SOURCE_BYTES_1, SOURCE_BYTES_2, SOURCE_BYTES_3, SOURCE_BYTES_4);
-
+      try (final SplitKeyEncryption myEncryptor = new SplitKeyEncryption(COMPUTED_HMAC_KEY, SOURCE_BYTES_1, SOURCE_BYTES_2, SOURCE_BYTES_3, SOURCE_BYTES_4)) {
          final String encryptedText = myEncryptor.encryptData(emptyString, SUBJECT);
 
          final String decryptedText = myEncryptor.decryptDataAsString(encryptedText, SUBJECT);
 
-         if (myEncryptor != null)
-            myEncryptor.close();
-
          assertEquals(TEXT_DECRYPTION_MISMATCH_MESSAGE, emptyString, decryptedText);
       } catch (Exception e) {
-         if (myEncryptor != null)
-            myEncryptor.close();
-
          e.printStackTrace();
          fail("Exception: " + e.toString());
       }
@@ -385,21 +328,11 @@ public class TestSplitKeyEncryption {
     */
    @Test
    public void TestKnownDecryption() {
-      SplitKeyEncryption myEncryptor = null;
-
-      try {
-         myEncryptor = new SplitKeyEncryption(CONSTANT_HMAC_KEY, NON_RANDOM_SOURCE_BYTES);
-
+      try (final SplitKeyEncryption myEncryptor = new SplitKeyEncryption(CONSTANT_HMAC_KEY, NON_RANDOM_SOURCE_BYTES)) {
          String decryptedText = myEncryptor.decryptDataAsString(ENCRYPTED_TEXT_V3);
-
-         if (myEncryptor != null)
-            myEncryptor.close();
 
          assertEquals(TEXT_DECRYPTION_MISMATCH_MESSAGE, CLEAR_TEXT_V3, decryptedText);
       } catch (Exception e) {
-         if (myEncryptor != null)
-            myEncryptor.close();
-
          e.printStackTrace();
          fail("Exception: " + e.toString());
       }
@@ -410,21 +343,11 @@ public class TestSplitKeyEncryption {
     */
    @Test
    public void TestKnownDecryptionWithSubject() {
-      SplitKeyEncryption myEncryptor = null;
-
-      try {
-         myEncryptor = new SplitKeyEncryption(CONSTANT_HMAC_KEY, NON_RANDOM_SOURCE_BYTES);
-
+      try (final SplitKeyEncryption myEncryptor = new SplitKeyEncryption(CONSTANT_HMAC_KEY, NON_RANDOM_SOURCE_BYTES)) {
          String decryptedText = myEncryptor.decryptDataAsString(ENCRYPTED_TEXT_V5, SUBJECT);
-
-         if (myEncryptor != null)
-            myEncryptor.close();
 
          assertEquals(TEXT_DECRYPTION_MISMATCH_MESSAGE, CLEAR_TEXT_V5, decryptedText);
       } catch (Exception e) {
-         if (myEncryptor != null)
-            myEncryptor.close();
-
          e.printStackTrace();
          fail("Exception: " + e.toString());
       }
@@ -435,29 +358,19 @@ public class TestSplitKeyEncryption {
     */
    @Test
    public void TestDecryptionToCharArrayWithInvalidByteArray() {
-      SplitKeyEncryption myEncryptor = null;
+      final byte[] testByteArray = new byte[256];
 
-      try {
-         final byte[] testByteArray = new byte[256];
+      for (int i = 0; i < testByteArray.length; i++)
+         testByteArray[i] = (byte) (0xff - i);
 
-         for (int i = 0; i < testByteArray.length; i++)
-            testByteArray[i] = (byte) (0xff - i);
-
-         myEncryptor = new SplitKeyEncryption(COMPUTED_HMAC_KEY, SOURCE_BYTES_1, SOURCE_BYTES_2, SOURCE_BYTES_3, SOURCE_BYTES_4);
-
+      try (final SplitKeyEncryption myEncryptor = new SplitKeyEncryption(COMPUTED_HMAC_KEY, SOURCE_BYTES_1, SOURCE_BYTES_2, SOURCE_BYTES_3, SOURCE_BYTES_4)) {
          String encryptedText = myEncryptor.encryptData(testByteArray);
 
          // This must throw an exception as the original byte array is not a valid UTF-8 encoding
          myEncryptor.decryptDataAsCharacterArray(encryptedText);
 
-         if (myEncryptor != null)
-            myEncryptor.close();
-
          fail("Expected exception not thrown");
       } catch (Exception e) {
-         if (myEncryptor != null)
-            myEncryptor.close();
-
          String message = e.toString();
          assertTrue("Unexpected exception: " + message, message.contains("MalformedInputException"));
       }
@@ -468,29 +381,19 @@ public class TestSplitKeyEncryption {
     */
    @Test
    public void TestDecryptionToStringWithInvalidByteArray() {
-      SplitKeyEncryption myEncryptor = null;
+      final byte[] testByteArray = new byte[256];
 
-      try {
-         final byte[] testByteArray = new byte[256];
+      for (int i = 0; i < testByteArray.length; i++)
+         testByteArray[i] = (byte) (0xff - i);
 
-         for (int i = 0; i < testByteArray.length; i++)
-            testByteArray[i] = (byte) (0xff - i);
-
-         myEncryptor = new SplitKeyEncryption(COMPUTED_HMAC_KEY, SOURCE_BYTES_1, SOURCE_BYTES_2, SOURCE_BYTES_3, SOURCE_BYTES_4);
-
+      try (final SplitKeyEncryption myEncryptor = new SplitKeyEncryption(COMPUTED_HMAC_KEY, SOURCE_BYTES_1, SOURCE_BYTES_2, SOURCE_BYTES_3, SOURCE_BYTES_4)) {
          String encryptedText = myEncryptor.encryptData(testByteArray);
 
          // This must throw an exception as the original byte array is not a valid UTF-8 encoding
          myEncryptor.decryptDataAsString(encryptedText);
 
-         if (myEncryptor != null)
-            myEncryptor.close();
-
          fail("Expected exception not thrown");
       } catch (Exception e) {
-         if (myEncryptor != null)
-            myEncryptor.close();
-
          String message = e.toString();
          assertTrue("Unexpected exception: " + message, message.contains("MalformedInputException"));
       }
@@ -501,21 +404,11 @@ public class TestSplitKeyEncryption {
     */
    @Test
    public void TestDecryptionWithWrongSubject() {
-      SplitKeyEncryption myEncryptor = null;
-
-      try {
-         myEncryptor = new SplitKeyEncryption(CONSTANT_HMAC_KEY, NON_RANDOM_SOURCE_BYTES);
-
-         String decryptedText = myEncryptor.decryptDataAsString(ENCRYPTED_TEXT_V5, WRONG_SUBJECT);
-
-         if (myEncryptor != null)
-            myEncryptor.close();
+      try (final SplitKeyEncryption myEncryptor = new SplitKeyEncryption(CONSTANT_HMAC_KEY, NON_RANDOM_SOURCE_BYTES)) {
+         myEncryptor.decryptDataAsString(ENCRYPTED_TEXT_V5, WRONG_SUBJECT);
 
          fail("Expected exception not thrown");
       } catch (Exception e) {
-         if (myEncryptor != null)
-            myEncryptor.close();
-
          assertEquals("Exception: " + e.toString(), CHECKSUM_ERROR_MESSAGE, e.getMessage());
       }
    }
@@ -525,21 +418,11 @@ public class TestSplitKeyEncryption {
     */
    @Test
    public void TestKnownDecryptionWithInvalidHMAC() {
-      SplitKeyEncryption myEncryptor = null;
-
-      try {
-         myEncryptor = new SplitKeyEncryption(CONSTANT_HMAC_KEY, NON_RANDOM_SOURCE_BYTES);
-
-         String decryptedText = myEncryptor.decryptDataAsString(ENCRYPTED_TEXT_WITH_INVALID_HMAC);
-
-         if (myEncryptor != null)
-            myEncryptor.close();
+      try (final SplitKeyEncryption myEncryptor = new SplitKeyEncryption(CONSTANT_HMAC_KEY, NON_RANDOM_SOURCE_BYTES)) {
+         myEncryptor.decryptDataAsString(ENCRYPTED_TEXT_WITH_INVALID_HMAC);
 
          fail("Expected exception not thrown");
       } catch (Exception e) {
-         if (myEncryptor != null)
-            myEncryptor.close();
-
          assertEquals("Exception: " + e.toString(), CHECKSUM_ERROR_MESSAGE, e.getMessage());
       }
    }
@@ -550,21 +433,11 @@ public class TestSplitKeyEncryption {
     */
    @Test
    public void TestKnownDecryptionWithInvalidEncryption() {
-      SplitKeyEncryption myEncryptor = null;
-
-      try {
-         myEncryptor = new SplitKeyEncryption(CONSTANT_HMAC_KEY, NON_RANDOM_SOURCE_BYTES);
-
-         String decryptedText = myEncryptor.decryptDataAsString(ENCRYPTED_TEXT_WITH_INVALID_ENCRYPTION);
-
-         if (myEncryptor != null)
-            myEncryptor.close();
+      try (final SplitKeyEncryption myEncryptor = new SplitKeyEncryption(CONSTANT_HMAC_KEY, NON_RANDOM_SOURCE_BYTES)) {
+         myEncryptor.decryptDataAsString(ENCRYPTED_TEXT_WITH_INVALID_ENCRYPTION);
 
          fail("Expected exception not thrown");
       } catch (Exception e) {
-         if (myEncryptor != null)
-            myEncryptor.close();
-
          assertEquals("Exception: " + e.toString(), CHECKSUM_ERROR_MESSAGE, e.getMessage());
       }
    }
@@ -574,21 +447,11 @@ public class TestSplitKeyEncryption {
     */
    @Test
    public void TestKnownDecryptionWithInvalidIV() {
-      SplitKeyEncryption myEncryptor = null;
-
-      try {
-         myEncryptor = new SplitKeyEncryption(CONSTANT_HMAC_KEY, NON_RANDOM_SOURCE_BYTES);
-
-         String decryptedText = myEncryptor.decryptDataAsString(ENCRYPTED_TEXT_WITH_INVALID_IV);
-
-         if (myEncryptor != null)
-            myEncryptor.close();
+      try (final SplitKeyEncryption myEncryptor = new SplitKeyEncryption(CONSTANT_HMAC_KEY, NON_RANDOM_SOURCE_BYTES)) {
+         myEncryptor.decryptDataAsString(ENCRYPTED_TEXT_WITH_INVALID_IV);
 
          fail("Expected exception not thrown");
       } catch (Exception e) {
-         if (myEncryptor != null)
-            myEncryptor.close();
-
          assertEquals("Exception: " + e.toString(), CHECKSUM_ERROR_MESSAGE, e.getMessage());
       }
    }
@@ -598,21 +461,11 @@ public class TestSplitKeyEncryption {
     */
    @Test
    public void TestKnownDecryptionWithUnknownFormatId() {
-      SplitKeyEncryption myEncryptor = null;
-
-      try {
-         myEncryptor = new SplitKeyEncryption(CONSTANT_HMAC_KEY, NON_RANDOM_SOURCE_BYTES);
-
-         String decryptedText = myEncryptor.decryptDataAsString(ENCRYPTED_TEXT_WITH_UNKNOWN_FORMAT_ID);
-
-         if (myEncryptor != null)
-            myEncryptor.close();
+      try (final SplitKeyEncryption myEncryptor = new SplitKeyEncryption(CONSTANT_HMAC_KEY, NON_RANDOM_SOURCE_BYTES)) {
+         myEncryptor.decryptDataAsString(ENCRYPTED_TEXT_WITH_UNKNOWN_FORMAT_ID);
 
          fail("Expected exception not thrown");
       } catch (Exception e) {
-         if (myEncryptor != null)
-            myEncryptor.close();
-
          assertEquals("Exception: " + e.toString(), "Unknown format id", e.getMessage());
       }
    }
@@ -622,21 +475,11 @@ public class TestSplitKeyEncryption {
     */
    @Test
    public void TestKnownDecryptionWithInvalidFormatId() {
-      SplitKeyEncryption myEncryptor = null;
-
-      try {
-         myEncryptor = new SplitKeyEncryption(CONSTANT_HMAC_KEY, NON_RANDOM_SOURCE_BYTES);
-
-         String decryptedText = myEncryptor.decryptDataAsString(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
-
-         if (myEncryptor != null)
-            myEncryptor.close();
+      try (final SplitKeyEncryption myEncryptor = new SplitKeyEncryption(CONSTANT_HMAC_KEY, NON_RANDOM_SOURCE_BYTES)) {
+         myEncryptor.decryptDataAsString(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
 
          fail("Expected exception not thrown");
       } catch (Exception e) {
-         if (myEncryptor != null)
-            myEncryptor.close();
-
          assertEquals("Exception: " + e.toString(), INVALID_FORMAT_ID_ERROR_MESSAGE, e.getMessage());
       }
    }
@@ -646,21 +489,11 @@ public class TestSplitKeyEncryption {
     */
    @Test
    public void TestKnownDecryptionWithMissingFormatId() {
-      SplitKeyEncryption myEncryptor = null;
-
-      try {
-         myEncryptor = new SplitKeyEncryption(CONSTANT_HMAC_KEY, NON_RANDOM_SOURCE_BYTES);
-
-         String decryptedText = myEncryptor.decryptDataAsString(ENCRYPTED_TEXT_WITH_MISSING_FORMAT_ID);
-
-         if (myEncryptor != null)
-            myEncryptor.close();
+      try (final SplitKeyEncryption myEncryptor = new SplitKeyEncryption(CONSTANT_HMAC_KEY, NON_RANDOM_SOURCE_BYTES)) {
+         myEncryptor.decryptDataAsString(ENCRYPTED_TEXT_WITH_MISSING_FORMAT_ID);
 
          fail("Expected exception not thrown");
       } catch (Exception e) {
-         if (myEncryptor != null)
-            myEncryptor.close();
-
          assertEquals("Exception: " + e.toString(), INVALID_FORMAT_ID_ERROR_MESSAGE, e.getMessage());
       }
    }
@@ -670,21 +503,11 @@ public class TestSplitKeyEncryption {
     */
    @Test
    public void TestKnownDecryptionWithEmptyIV() {
-      SplitKeyEncryption myEncryptor = null;
-
-      try {
-         myEncryptor = new SplitKeyEncryption(CONSTANT_HMAC_KEY, NON_RANDOM_SOURCE_BYTES);
-
-         String decryptedText = myEncryptor.decryptDataAsString(ENCRYPTED_TEXT_WITH_EMPTY_IV);
-
-         if (myEncryptor != null)
-            myEncryptor.close();
+      try (final SplitKeyEncryption myEncryptor = new SplitKeyEncryption(CONSTANT_HMAC_KEY, NON_RANDOM_SOURCE_BYTES)) {
+         myEncryptor.decryptDataAsString(ENCRYPTED_TEXT_WITH_EMPTY_IV);
 
          fail("Expected exception not thrown");
       } catch (Exception e) {
-         if (myEncryptor != null)
-            myEncryptor.close();
-
          assertEquals("Exception: " + e.toString(), "Number of '$' separated parts in encrypted text is not 4", e.getMessage());
       }
    }
@@ -694,21 +517,11 @@ public class TestSplitKeyEncryption {
     */
    @Test
    public void TestKnownDecryptionWithMissingIV() {
-      SplitKeyEncryption myEncryptor = null;
-
-      try {
-         myEncryptor = new SplitKeyEncryption(CONSTANT_HMAC_KEY, NON_RANDOM_SOURCE_BYTES);
-
-         String decryptedText = myEncryptor.decryptDataAsString(ENCRYPTED_TEXT_WITH_MISSING_IV);
-
-         if (myEncryptor != null)
-            myEncryptor.close();
+      try (final SplitKeyEncryption myEncryptor = new SplitKeyEncryption(CONSTANT_HMAC_KEY, NON_RANDOM_SOURCE_BYTES)) {
+         myEncryptor.decryptDataAsString(ENCRYPTED_TEXT_WITH_MISSING_IV);
 
          fail("Expected exception not thrown");
       } catch (Exception e) {
-         if (myEncryptor != null)
-            myEncryptor.close();
-
          assertEquals("Exception: " + e.toString(), "Number of '$' separated parts in encrypted text is not 4", e.getMessage());
       }
    }
@@ -718,23 +531,13 @@ public class TestSplitKeyEncryption {
     */
    @Test
    public void TestKnownDecryptionWithEmptyHMAC() {
-      SplitKeyEncryption myEncryptor = null;
+      final byte[] emptyHMAC = new byte[0];
 
-      try {
-         byte[] emptyHMAC = new byte[0];
-
-         myEncryptor = new SplitKeyEncryption(emptyHMAC, SOURCE_BYTES_1, SOURCE_BYTES_2, SOURCE_BYTES_3, SOURCE_BYTES_4);
-
-         String decryptedText = myEncryptor.decryptDataAsString(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
-
-         if (myEncryptor != null)
-            myEncryptor.close();
+      try (final SplitKeyEncryption myEncryptor = new SplitKeyEncryption(emptyHMAC, SOURCE_BYTES_1, SOURCE_BYTES_2, SOURCE_BYTES_3, SOURCE_BYTES_4)) {
+         myEncryptor.decryptDataAsString(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
 
          fail("Expected exception not thrown");
       } catch (Exception e) {
-         if (myEncryptor != null)
-            myEncryptor.close();
-
          assertEquals("Exception: " + e.toString(), "HMAC key length is less than 14", e.getMessage());
       }
    }
@@ -744,23 +547,13 @@ public class TestSplitKeyEncryption {
     */
    @Test
    public void TestKnownDecryptionWithShortHMAC() {
-      SplitKeyEncryption myEncryptor = null;
+      final byte[] shortHMAC = new byte[10];
 
-      try {
-         byte[] shortHMAC = new byte[10];
-
-         myEncryptor = new SplitKeyEncryption(shortHMAC, SOURCE_BYTES_1, SOURCE_BYTES_2, SOURCE_BYTES_3, SOURCE_BYTES_4);
-
-         String decryptedText = myEncryptor.decryptDataAsString(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
-
-         if (myEncryptor != null)
-            myEncryptor.close();
+      try (final SplitKeyEncryption myEncryptor = new SplitKeyEncryption(shortHMAC, SOURCE_BYTES_1, SOURCE_BYTES_2, SOURCE_BYTES_3, SOURCE_BYTES_4)) {
+         myEncryptor.decryptDataAsString(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
 
          fail("Expected exception not thrown");
       } catch (Exception e) {
-         if (myEncryptor != null)
-            myEncryptor.close();
-
          assertEquals("Exception: " + e.toString(), "HMAC key length is less than 14", e.getMessage());
       }
    }
@@ -770,23 +563,13 @@ public class TestSplitKeyEncryption {
     */
    @Test
    public void TestKnownDecryptionWithTooLargeHMAC() {
-      SplitKeyEncryption myEncryptor = null;
+      final byte[] largeHMAC = new byte[70];
 
-      try {
-         byte[] largeHMAC = new byte[70];
-
-         myEncryptor = new SplitKeyEncryption(largeHMAC, SOURCE_BYTES_1, SOURCE_BYTES_2, SOURCE_BYTES_3, SOURCE_BYTES_4);
-
-         String decryptedText = myEncryptor.decryptDataAsString(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
-
-         if (myEncryptor != null)
-            myEncryptor.close();
+      try (final SplitKeyEncryption myEncryptor = new SplitKeyEncryption(largeHMAC, SOURCE_BYTES_1, SOURCE_BYTES_2, SOURCE_BYTES_3, SOURCE_BYTES_4)) {
+         myEncryptor.decryptDataAsString(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
 
          fail("Expected exception not thrown");
       } catch (Exception e) {
-         if (myEncryptor != null)
-            myEncryptor.close();
-
          assertEquals("Exception: " + e.toString(), "HMAC key length is larger than 32", e.getMessage());
       }
    }
@@ -796,23 +579,13 @@ public class TestSplitKeyEncryption {
     */
    @Test
    public void TestNullHMACKey() {
-      SplitKeyEncryption myEncryptor = null;
+      final byte[] aNullHMACKey = null;
 
-      try {
-         byte[] aNullHMACKey = null;
-
-         myEncryptor = new SplitKeyEncryption(aNullHMACKey, SOURCE_BYTES_1, SOURCE_BYTES_2, SOURCE_BYTES_3, SOURCE_BYTES_4);
-
-         String decryptedText = myEncryptor.decryptDataAsString(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
-
-         if (myEncryptor != null)
-            myEncryptor.close();
+      try (final SplitKeyEncryption myEncryptor = new SplitKeyEncryption(aNullHMACKey, SOURCE_BYTES_1, SOURCE_BYTES_2, SOURCE_BYTES_3, SOURCE_BYTES_4)) {
+         myEncryptor.decryptDataAsString(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
 
          fail("Expected exception not thrown");
       } catch (Exception e) {
-         if (myEncryptor != null)
-            myEncryptor.close();
-
          assertEquals("Exception: " + e.toString(), "HMAC key is null", e.getMessage());
       }
    }
@@ -822,24 +595,13 @@ public class TestSplitKeyEncryption {
     */
    @Test
    public void TestOneNullByteArray() {
-      SplitKeyEncryption myEncryptor = null;
+      final byte[] aSourceByteArray = null;
 
-      try {
-         byte[] aSourceByteArray = null;
-
-         //noinspection ConstantConditions
-         myEncryptor = new SplitKeyEncryption(COMPUTED_HMAC_KEY, aSourceByteArray);
-
-         String decryptedText = myEncryptor.decryptDataAsString(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
-
-         if (myEncryptor != null)
-            myEncryptor.close();
+      try (final SplitKeyEncryption myEncryptor = new SplitKeyEncryption(COMPUTED_HMAC_KEY, aSourceByteArray)) {
+         myEncryptor.decryptDataAsString(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
 
          fail("Expected exception not thrown");
       } catch (Exception e) {
-         if (myEncryptor != null)
-            myEncryptor.close();
-
          assertEquals("Exception: " + e.toString(), "1. source byte array is null", e.getMessage());
       }
    }
@@ -849,24 +611,14 @@ public class TestSplitKeyEncryption {
     */
    @Test
    public void TestAnotherNullByteArray() {
-      SplitKeyEncryption myEncryptor = null;
+      final byte[] aSourceByteArray = {(byte) 0xaa, (byte) 0xbb, (byte) 0xcc};
+      final byte[] anotherSourceByteArray = null;
 
-      try {
-         byte[] aSourceByteArray = {(byte) 0xaa, (byte) 0xbb, (byte) 0xcc};
-         byte[] anotherSourceByteArray = null;
-
-         myEncryptor = new SplitKeyEncryption(COMPUTED_HMAC_KEY, aSourceByteArray, anotherSourceByteArray);
-
-         String decryptedText = myEncryptor.decryptDataAsString(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
-
-         if (myEncryptor != null)
-            myEncryptor.close();
+      try (final SplitKeyEncryption myEncryptor = new SplitKeyEncryption(COMPUTED_HMAC_KEY, aSourceByteArray, anotherSourceByteArray)) {
+         myEncryptor.decryptDataAsString(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
 
          fail("Expected exception not thrown");
       } catch (Exception e) {
-         if (myEncryptor != null)
-            myEncryptor.close();
-
          assertEquals("Exception: " + e.toString(), "2. source byte array is null", e.getMessage());
       }
    }
@@ -876,24 +628,14 @@ public class TestSplitKeyEncryption {
     */
    @Test
    public void TestZeroLengthByteArray() {
-      SplitKeyEncryption myEncryptor = null;
+      final byte[] aSourceByteArray = {(byte) 0xaa, (byte) 0xbb, (byte) 0xcc};
+      final byte[] anotherSourceByteArray = {};
 
-      try {
-         byte[] aSourceByteArray = {(byte) 0xaa, (byte) 0xbb, (byte) 0xcc};
-         byte[] anotherSourceByteArray = {};
-
-         myEncryptor = new SplitKeyEncryption(COMPUTED_HMAC_KEY, aSourceByteArray, anotherSourceByteArray);
-
-         String decryptedText = myEncryptor.decryptDataAsString(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
-
-         if (myEncryptor != null)
-            myEncryptor.close();
+      try (final SplitKeyEncryption myEncryptor = new SplitKeyEncryption(COMPUTED_HMAC_KEY, aSourceByteArray, anotherSourceByteArray)) {
+         myEncryptor.decryptDataAsString(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
 
          fail("Expected exception not thrown");
       } catch (Exception e) {
-         if (myEncryptor != null)
-            myEncryptor.close();
-
          assertEquals("Exception: " + e.toString(), "2. source byte array has 0 length", e.getMessage());
       }
    }
@@ -903,23 +645,13 @@ public class TestSplitKeyEncryption {
     */
    @Test
    public void TestShortSourceBytes() {
-      SplitKeyEncryption myEncryptor = null;
+      final byte[] aSourceByteArray = {(byte) 0xAA, (byte) 0xBB, (byte) 0xCC};
 
-      try {
-         byte[] aSourceByteArray = {(byte) 0xAA, (byte) 0xBB, (byte) 0xCC};
-
-         myEncryptor = new SplitKeyEncryption(COMPUTED_HMAC_KEY, aSourceByteArray);
-
-         String decryptedText = myEncryptor.decryptDataAsString(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
-
-         if (myEncryptor != null)
-            myEncryptor.close();
+      try (final SplitKeyEncryption myEncryptor = new SplitKeyEncryption(COMPUTED_HMAC_KEY, aSourceByteArray)) {
+         myEncryptor.decryptDataAsString(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
 
          fail("Expected exception not thrown");
       } catch (Exception e) {
-         if (myEncryptor != null)
-            myEncryptor.close();
-
          final String exceptionMessage = e.toString();
 
          assertTrue("Unexpected exception: " + exceptionMessage, exceptionMessage.contains("not enough information provided"));
@@ -931,25 +663,15 @@ public class TestSplitKeyEncryption {
     */
    @Test
    public void TestUniformSourceBytes() {
-      SplitKeyEncryption myEncryptor = null;
+      final byte[] aSourceByteArray = new byte[300];
 
-      try {
-         byte[] aSourceByteArray = new byte[300];
+      Arrays.fill(aSourceByteArray, (byte) 0xAA);
 
-         Arrays.fill(aSourceByteArray, (byte) 0xAA);
-
-         myEncryptor = new SplitKeyEncryption(COMPUTED_HMAC_KEY, aSourceByteArray);
-
-         String decryptedText = myEncryptor.decryptDataAsString(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
-
-         if (myEncryptor != null)
-            myEncryptor.close();
+      try (final SplitKeyEncryption myEncryptor = new SplitKeyEncryption(COMPUTED_HMAC_KEY, aSourceByteArray)) {
+         myEncryptor.decryptDataAsString(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
 
          fail("Expected exception not thrown");
       } catch (Exception e) {
-         if (myEncryptor != null)
-            myEncryptor.close();
-
          final String exceptionMessage = e.toString();
 
          assertTrue("Unexpected exception: " + exceptionMessage, exceptionMessage.contains("no information provided"));
@@ -961,30 +683,20 @@ public class TestSplitKeyEncryption {
     */
    @Test
    public void TestNearlyUniformSourceBytes() {
-      SplitKeyEncryption myEncryptor = null;
+      byte[] aSourceByteArray = new byte[100];
 
-      try {
-         byte[] aSourceByteArray = new byte[100];
+      for (int i = 0; i < aSourceByteArray.length; i++) {
+         if ((i & 1) != 0)
+            aSourceByteArray[i] = (byte) 0x55;
+         else
+            aSourceByteArray[i] = (byte) 0xAA;
+      }
 
-         for(int i = 0; i < aSourceByteArray.length; i++) {
-            if ((i & 1) != 0)
-               aSourceByteArray[i] = (byte) 0x55;
-            else
-               aSourceByteArray[i] = (byte) 0xAA;
-         }
-
-         myEncryptor = new SplitKeyEncryption(COMPUTED_HMAC_KEY, aSourceByteArray);
-
-         String decryptedText = myEncryptor.decryptDataAsString(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
-
-         if (myEncryptor != null)
-            myEncryptor.close();
+      try (final SplitKeyEncryption myEncryptor = new SplitKeyEncryption(COMPUTED_HMAC_KEY, aSourceByteArray)) {
+         myEncryptor.decryptDataAsString(ENCRYPTED_TEXT_WITH_INVALID_FORMAT_ID);
 
          fail("Expected exception not thrown");
       } catch (Exception e) {
-         if (myEncryptor != null)
-            myEncryptor.close();
-
          final String exceptionMessage = e.toString();
 
          assertTrue("Unexpected exception: " + exceptionMessage, exceptionMessage.contains("at least 129"));

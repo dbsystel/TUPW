@@ -20,6 +20,7 @@
  *
  * Changes:
  *     2020-02-25: V1.0.0: Created. fhs
+ *     2021-09-03: V1.0.1: Corrected wrong comparison. fhs
  */
 package de.db.bcm.tupw.strings;
 
@@ -31,7 +32,7 @@ import static org.junit.Assert.*;
  * Test cases for arbitrary tail byte padding
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.0.0
+ * @version 1.0.1
  */
 public class TestCharacterArrayHelper {
 
@@ -56,14 +57,14 @@ public class TestCharacterArrayHelper {
 
    @Test
    public void TestFromByteToChar() {
-      byte[] orriginalByteArray = {116, 115, -61, -92, 84, 32, 97, 32, 115, -61, -84, 32, 115, -61, -83, 104, 84};
+      byte[] originalByteArray = {116, 115, -61, -92, 84, 32, 97, 32, 115, -61, -84, 32, 115, -61, -83, 104, 84};
       byte[] testByteArray = {116, 115, -61, -92, 84, 32, 97, 32, 115, -61, -84, 32, 115, -61, -83, 104, 84};
       char[] correctCharArray = {'t', 's', 'ä', 'T', ' ', 'a', ' ', 's', 'ì', ' ', 's', 'í', 'h', 'T'};
 
       try {
          char[] charArrayResult = CharacterArrayHelper.convertUTF8ByteArrayToCharacterArray(testByteArray);
 
-         assertArrayEquals("Original byte array is changed", orriginalByteArray, testByteArray);
+         assertArrayEquals("Original byte array is changed", originalByteArray, testByteArray);
          assertArrayEquals("Byte array is not correctly converted", correctCharArray, charArrayResult);
       } catch (Exception e) {
          fail("Unexpected exception " + e.toString());
@@ -79,7 +80,7 @@ public class TestCharacterArrayHelper {
       try {
          final byte[] byteArrayResult = CharacterArrayHelper.convertCharacterArrayToUTF8ByteArray(testCharArray);
 
-         assertArrayEquals("Original character array is changed", originalCharArray, originalCharArray);
+         assertArrayEquals("Original character array is changed", originalCharArray, testCharArray);
          assertArrayEquals("Character array is not correctly converted", correctByteArray, byteArrayResult);
       } catch (Exception e) {
          fail("Unexpected exception " + e.toString());

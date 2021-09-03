@@ -116,7 +116,7 @@ public class TestPackedUnsignedInteger {
       assertEquals("piMax4Bytes is not correctly converted to an integer", iMax4Bytes, test);
 
       try {
-         byte [] junk = PackedUnsignedInteger.fromInteger(-1);
+         PackedUnsignedInteger.fromInteger(-1);
 
          fail("Exception not thrown on fromInteger = -1");
       }
@@ -125,7 +125,7 @@ public class TestPackedUnsignedInteger {
       }
 
       try {
-         byte [] junk = PackedUnsignedInteger.fromInteger(iMinOverflow);
+         PackedUnsignedInteger.fromInteger(iMinOverflow);
 
          fail("Exception not thrown on fromInteger = " + iMinOverflow);
       }

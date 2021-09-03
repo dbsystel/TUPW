@@ -63,9 +63,9 @@ public class TestByteArrayBlinding {
 
    @Test
    public void TestBlinding() {
-      Random rng = new Random();
+      final Random rng = new Random();
 
-      byte[] data0 = new byte[0];
+      final byte[] data0 = new byte[0];
       rng.nextBytes(data0);
 
       byte[] blindedData = ByteArrayBlinding.buildBlindedByteArray(data0, 17);
@@ -75,7 +75,7 @@ public class TestByteArrayBlinding {
       assertEquals("Lengths are not the same after blinding and unblinding", data0.length, unblindedData.length);
       assertArrayEquals("Data is not the same after blinding and unblinding", data0, unblindedData);
 
-      byte[] data1 = new byte[1];
+      final byte[] data1 = new byte[1];
       rng.nextBytes(data1);
 
       blindedData = ByteArrayBlinding.buildBlindedByteArray(data1, 17);
@@ -85,7 +85,7 @@ public class TestByteArrayBlinding {
       assertEquals("Lengths are not the same after blinding and unblinding", data1.length, unblindedData.length);
       assertArrayEquals("Data is not the same after blinding and unblinding", data1, unblindedData);
 
-      byte[] data2 = new byte[16];
+      final byte[] data2 = new byte[16];
       rng.nextBytes(data2);
 
       blindedData = ByteArrayBlinding.buildBlindedByteArray(data2, 17);
@@ -95,7 +95,7 @@ public class TestByteArrayBlinding {
       assertEquals("Lengths are not the same after blinding and unblinding", data2.length, unblindedData.length);
       assertArrayEquals("Data is not the same after blinding and unblinding", data2, unblindedData);
 
-      byte[] data3 = new byte[20];
+      final byte[] data3 = new byte[20];
       rng.nextBytes(data3);
 
       blindedData = ByteArrayBlinding.buildBlindedByteArray(data3, 17);
@@ -105,7 +105,7 @@ public class TestByteArrayBlinding {
       assertEquals("Lengths are not the same after blinding and unblinding", data3.length, unblindedData.length);
       assertArrayEquals("Data is not the same after blinding and unblinding", data3, unblindedData);
 
-      byte[] data4 = new byte[18000];
+      final byte[] data4 = new byte[18000];
       rng.nextBytes(data4);
 
       blindedData = ByteArrayBlinding.buildBlindedByteArray(data4, 17);
@@ -134,6 +134,7 @@ public class TestByteArrayBlinding {
 
             blindedData = ByteArrayBlinding.buildBlindedByteArray(data1, minimumLength);
             unblindedData = ByteArrayBlinding.unBlindByteArray(blindedData);
+
             assertArrayEquals("Data is not the same after blinding and unblinding", data1, unblindedData);
          }
       }
