@@ -27,8 +27,7 @@ import org.junit.*;
 
 import java.util.Date;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.*;
 
 
 /**
@@ -141,7 +140,7 @@ public class TestPRNG {
       }
 
       for (int i = 0; i < checkLong.length; i++)
-         assertNotEquals("Xs128 Long[" + i + "] is zero", 0, checkLong[i]);
+         assertNotEquals("Xs128: Long value " + (TEST_START + i) + " was not generated at all in " + TEST_ITERATIONS + " iterations", 0, checkLong[i]);
    }
 
    @Test
@@ -155,7 +154,7 @@ public class TestPRNG {
       }
 
       for (int i = 0; i < checkInt.length; i++)
-         assertNotEquals("Xs128 Int[" + i + "] is zero", 0, checkInt[i]);
+         assertNotEquals("Xs128: Int value " + (TEST_START + i) + " was not generated at all in " + TEST_ITERATIONS + " iterations", 0, checkInt[i]);
    }
 
    @Test
@@ -169,7 +168,7 @@ public class TestPRNG {
       }
 
       for (int i = 0; i < checkShort.length; i++)
-         assertNotEquals("Xs128 Short[" + i + "] is zero", 0, checkShort[i]);
+         assertNotEquals("Xs128: Short value " + (TEST_START + i) + " was not generated at all in " + TEST_ITERATIONS + " iterations", 0, checkShort[i]);
    }
 
    @Test
@@ -183,7 +182,7 @@ public class TestPRNG {
       }
 
       for (int i = 0; i < checkByte.length; i++)
-         assertNotEquals("Xs128 Byte[" + i + "] is zero", 0, checkByte[i]);
+         assertNotEquals("Xs128: Byte value " + (TEST_START + i) + " was not generated at all in " + TEST_ITERATIONS + " iterations", 0, checkByte[i]);
    }
 
    @Test
@@ -209,7 +208,7 @@ public class TestPRNG {
       }
 
       for (int i = 0; i < checkLong.length; i++)
-         assertNotEquals("Sm64 Long[" + i + "] is zero", 0, checkLong[i]);
+         assertNotEquals("Sm64: Long value " + (TEST_START + i) + " was not generated at all in " + TEST_ITERATIONS + " iterations", 0, checkLong[i]);
    }
 
    @Test
@@ -223,7 +222,7 @@ public class TestPRNG {
       }
 
       for (int i = 0; i < checkInt.length; i++)
-         assertNotEquals("Sm64 Int[" + i + "] is zero", 0, checkInt[i]);
+         assertNotEquals("Sm64: Int value " + (TEST_START + i) + " was not generated at all in " + TEST_ITERATIONS + " iterations", 0, checkInt[i]);
    }
 
    @Test
@@ -237,7 +236,7 @@ public class TestPRNG {
       }
 
       for (int i = 0; i < checkShort.length; i++)
-         assertNotEquals("Sm64 Short[" + i + "] is zero", 0, checkShort[i]);
+         assertNotEquals("Sm64: Short value " + (TEST_START + i) + " was not generated at all in " + TEST_ITERATIONS + " iterations", 0, checkShort[i]);
    }
 
    @Test
@@ -251,6 +250,6 @@ public class TestPRNG {
       }
 
       for (int i = 0; i < checkByte.length; i++)
-         assertNotEquals("Sm64 Byte[" + i + "] is zero", 0, checkByte[i]);
+         assertNotEquals("Sm64: Byte value " + (TEST_START + i) + " was not generated at all in " + TEST_ITERATIONS + " iterations", 0, checkByte[i]);
    }
 }

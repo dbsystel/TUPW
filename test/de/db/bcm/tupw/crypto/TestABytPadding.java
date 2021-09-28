@@ -21,6 +21,7 @@
  * Changes:
  *     2015-12-20: V1.0.0: Created. fhs
  *     2020-04-29: V1.0.1: Simplified. fhs
+ *     2021-09-06: V1.0.2: Corrected SonarLint finding. fhs
  */
 package de.db.bcm.tupw.crypto;
 
@@ -35,7 +36,7 @@ import static org.junit.Assert.*;
  * Test cases for arbitrary tail byte padding
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.0.1
+ * @version 1.0.2
  */
 public class TestABytPadding {
    
@@ -106,7 +107,7 @@ public class TestABytPadding {
       byte[] paddedSourceData = ArbitraryTailPadding.addPadding(unpaddedSourceData, BLOCK_SIZE);
 
       assertTrue("Padded data not longer than unpadded data", paddedSourceData.length > unpaddedSourceData.length);
-      assertTrue("Padding length is not multiple of block size: " + paddedSourceData.length, (paddedSourceData.length % BLOCK_SIZE) == 0);
+      assertEquals("Padding length is not multiple of block size: " + paddedSourceData.length, 0, paddedSourceData.length % BLOCK_SIZE);
       assertTrue("Padding is longer than block size", (paddedSourceData.length - unpaddedSourceData.length) <= BLOCK_SIZE);
 
       byte[] unpaddedPaddedSourceData = ArbitraryTailPadding.removePadding(paddedSourceData);

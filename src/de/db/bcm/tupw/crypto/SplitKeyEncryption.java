@@ -1136,7 +1136,7 @@ public class SplitKeyEncryption implements AutoCloseable {
     * Get a random initialization vector
     *
     * @param blockSize Size of initialization vector
-    * @return Random initalization vector
+    * @return Random initialization vector
     */
    private byte[] getInitializationVector(final int blockSize) {
       final byte[] result = new byte[blockSize];
