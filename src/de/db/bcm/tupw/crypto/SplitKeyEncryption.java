@@ -72,6 +72,7 @@
  *     2021-08-30: V6.1.0: Ensure deletion of sensitive data. fhs
  *     2021-08-30: V6.1.1: Some refactoring. fhs
  *     2021-09-03: V6.1.2: Some refactoring in tests. fhs
+ *     2021-09-23: V6.1.3: Ensure "equals" always clears sensitive data in SecureSecretKeySpec. fhs
  */
 package de.db.bcm.tupw.crypto;
 
@@ -98,7 +99,7 @@ import java.util.Objects;
  * Implement encryption by key generated from several source bytes and a key
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 6.1.1
+ * @version 6.1.3
  */
 
 public class SplitKeyEncryption implements AutoCloseable {
