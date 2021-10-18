@@ -73,6 +73,7 @@
  *     2021-08-30: V6.1.1: Some refactoring. fhs
  *     2021-09-03: V6.1.2: Some refactoring in tests. fhs
  *     2021-09-23: V6.1.3: Ensure "equals" always clears sensitive data in SecureSecretKeySpec. fhs
+ *     2021-10-18: V6.1.4: Corrected entropy threshold constant. fhs
  */
 package de.db.bcm.tupw.crypto;
 
@@ -99,7 +100,7 @@ import java.util.Objects;
  * Implement encryption by key generated from several source bytes and a key
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 6.1.3
+ * @version 6.1.4
  */
 
 public class SplitKeyEncryption implements AutoCloseable {
@@ -195,7 +196,7 @@ public class SplitKeyEncryption implements AutoCloseable {
    /**
     * Threshold below which the source bytes are considered to have not enough variations
     */
-   private static final double ENTROPY_THRESHOLD = 0.0001;
+   private static final double ENTROPY_THRESHOLD = 0.0001220703125; // I.e. 1/2^13 which is representable as a simple floating point no.
 
    /**
     * Prefix salt for key modification with a "subject"
