@@ -74,7 +74,7 @@ This way an attacker will not be able to access a part the keys are generated fr
 
 BTW, Java's [SecretKeySpec](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/javax/crypto/spec/SecretKeySpec.html) class is *not* secure, so TUPW uses a drop-in replacement called [SecureSecretKeySpec](https://github.com/dbsystel/SecureSecretKeySpec) to securely store the keys it uses.
 
-The minimum JJRE version needed for this library is Java 8.
+The minimum JRE version needed for this library is Java 8.
 
 ## Format
 
