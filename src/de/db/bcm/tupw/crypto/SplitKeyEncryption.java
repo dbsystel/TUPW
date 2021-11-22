@@ -704,7 +704,7 @@ public class SplitKeyEncryption implements AutoCloseable {
     *                                  number of '$' separated parts
     */
    private EncryptionParts getPartsFromPrintableString(final String encryptionText) {
-      char formatCharacter = encryptionText.charAt(0);
+      final char formatCharacter = encryptionText.charAt(0);
 
       byte formatId;
 
