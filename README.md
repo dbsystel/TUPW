@@ -145,10 +145,10 @@ It may also be not present, at all.
 
 The decryption part of the program would typically be copied and used in an application to decrypt the credentials in the configuration file.
 
-The program can also be used in a pipe to decode a file like this:
+The program can also be used in a shell script to decode a file like this:
 
-    java -jar tupw.jar decrypt d:\keyfile.bin - < cat encrypted-secret.config > plain.config
-	
+    $(java -jar tupw.jar decrypt d:\keyfile.bin - < encrypted-secret.config)
+
 The trailing '-' tells the program that the input comes from stdin and not from the command line.
 This makes it possible to decrypt a secret configuration file, use it to start a server and then remove it after the sever has been started.
 
