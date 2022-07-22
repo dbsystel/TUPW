@@ -21,6 +21,7 @@
  * Changes:
  *     2021-08-30: V1.0.0: Created. fhs
  *     2021-09-01: V1.0.1: Added clear methods for integer arrays. fhs
+ *     2022-06-22: V1.0.2: Corrected data type of CLEAR_INT. fhs
  */
 package de.db.bcm.tupw.arrays;
 
@@ -30,7 +31,7 @@ import java.util.Arrays;
  * Helper class for array operations that need a simpler interface
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 1.0.1
+ * @version 1.0.2
  */
 public class ArrayHelper {
    //******************************************************************
@@ -41,7 +42,7 @@ public class ArrayHelper {
 
    private static final byte CLEAR_BYTE = (byte) 0;
    private static final char CLEAR_CHAR = '\0';
-   private static final byte CLEAR_INT = 0;
+   private static final int CLEAR_INT = 0;
 
    //******************************************************************
    // Constructor

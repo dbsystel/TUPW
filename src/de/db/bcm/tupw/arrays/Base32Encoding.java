@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021 DB Systel GmbH
+ * SPDX-FileCopyrightText: 2022 DB Systel GmbH
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -18,7 +18,7 @@
  *
  * Author: Frank Schwab, DB Systel GmbH
  *
- * Version: 1.3.0
+ * Version: 1.3.1
  *
  * Change history:
  *    2020-11-12: V1.0.0: Created. fhs
@@ -26,6 +26,7 @@
  *    2020-12-04: V1.1.1: Corrected several SonarLint findings. fhs
  *    2020-12-29: V1.2.0: Made thread safe. fhs
  *    2021-05-17: V1.3.0: Simplified byte to char mapping. fhs
+ *    2022-02-15: V1.3.1: Added some Finals. fhs
  */
 
 package de.db.bcm.tupw.arrays;
@@ -37,7 +38,7 @@ import java.util.Objects;
  * Converts byte arrays from and to Base32 encoding either, as specified in RFC4868, or in spell-safe format.
  *
  * @author Frank Schwab
- * @version 1.3.0
+ * @version 1.3.1
  */
 
 public class Base32Encoding {
@@ -156,7 +157,7 @@ public class Base32Encoding {
     * @param encodedValue The Base32 string to decode
     * @return The decoded Base32 string as a byte array
     */
-   public static synchronized byte[] decode(String encodedValue) {
+   public static synchronized byte[] decode(final String encodedValue) {
       return decodeNewBufferWithMapping(encodedValue, RFC_4648_CHAR_TO_VALUE);
    }
 
@@ -167,7 +168,7 @@ public class Base32Encoding {
     * @param destinationBuffer Byte array where the decoded values are placed
     * @return The length of the bytes written into the destination buffer
     */
-   public static synchronized int decode(String encodedValue, byte[] destinationBuffer) {
+   public static synchronized int decode(final String encodedValue, final byte[] destinationBuffer) {
       return decodeExistingBufferWithMapping(encodedValue, destinationBuffer, RFC_4648_CHAR_TO_VALUE);
    }
 
@@ -177,7 +178,7 @@ public class Base32Encoding {
     * @param encodedValue The Base32 string to decode
     * @return The decoded spell-safe Base32 string as a byte array
     */
-   public static synchronized byte[] decodeSpellSafe(String encodedValue) {
+   public static synchronized byte[] decodeSpellSafe(final String encodedValue) {
       return decodeNewBufferWithMapping(encodedValue, SPELL_SAFE_CHAR_TO_VALUE);
    }
 
@@ -188,7 +189,7 @@ public class Base32Encoding {
     * @param destinationBuffer Byte array where the decoded values are placed
     * @return The length of the bytes written into the destination buffer
     */
-   public static synchronized int decodeSpellSafe(String encodedValue, byte[] destinationBuffer) {
+   public static synchronized int decodeSpellSafe(final String encodedValue, final byte[] destinationBuffer) {
       return decodeExistingBufferWithMapping(encodedValue, destinationBuffer, SPELL_SAFE_CHAR_TO_VALUE);
    }
 
@@ -200,7 +201,7 @@ public class Base32Encoding {
     * @param aByteArray The byte array to encode
     * @return The Base32 representation of the bytes in {@code aByteArray}
     */
-   public static synchronized String encode(byte[] aByteArray) {
+   public static synchronized String encode(final byte[] aByteArray) {
       return encodeWorker(aByteArray, RFC_4648_VALUE_TO_CHAR, true);
    }
 
@@ -210,7 +211,7 @@ public class Base32Encoding {
     * @param aByteArray The byte array to encode
     * @return The Base32 representation of the bytes in {@code aByteArray}
     */
-   public static synchronized String encodeNoPadding(byte[] aByteArray) {
+   public static synchronized String encodeNoPadding(final byte[] aByteArray) {
       return encodeWorker(aByteArray, RFC_4648_VALUE_TO_CHAR, false);
    }
 
@@ -220,7 +221,7 @@ public class Base32Encoding {
     * @param aByteArray The byte array to encode
     * @return The spell-safe Base32 representation of the bytes in {@code aByteArray}
     */
-   public static synchronized String encodeSpellSafe(byte[] aByteArray) {
+   public static synchronized String encodeSpellSafe(final byte[] aByteArray) {
       return encodeWorker(aByteArray, SPELL_SAFE_VALUE_TO_CHAR, true);
    }
 
@@ -230,7 +231,7 @@ public class Base32Encoding {
     * @param aByteArray The byte array to encode
     * @return The spell-safe Base32 representation of the bytes in {@code aByteArray}
     */
-   public static synchronized String encodeSpellSafeNoPadding(byte[] aByteArray) {
+   public static synchronized String encodeSpellSafeNoPadding(final byte[] aByteArray) {
       return encodeWorker(aByteArray, SPELL_SAFE_VALUE_TO_CHAR, false);
    }
 
@@ -248,10 +249,10 @@ public class Base32Encoding {
     * @param mapCharToByte Mapping table to use
     * @return Newly created byte array with the decoded bytes
     */
-   private static byte[] decodeNewBufferWithMapping(String encodedValue, byte[] mapCharToByte) {
+   private static byte[] decodeNewBufferWithMapping(final String encodedValue, final byte[] mapCharToByte) {
       final int byteCount = checkEncodedValue(encodedValue);
 
-      byte[] result = new byte[byteCount];
+      final byte[] result = new byte[byteCount];
 
       if (byteCount > 0)
          decodeWorker(encodedValue, result, byteCount, mapCharToByte);
@@ -267,7 +268,9 @@ public class Base32Encoding {
     * @param mapCharToByte Mapping table to use
     * @return Number of bytes in the {@code destinationBuffer} that are filled
     */
-   private static int decodeExistingBufferWithMapping(String encodedValue, byte[] destinationBuffer, byte[] mapCharToByte) {
+   private static int decodeExistingBufferWithMapping(final String encodedValue,
+                                                      final byte[] destinationBuffer,
+                                                      final byte[] mapCharToByte) {
       final int byteCount = checkEncodedValue(encodedValue);
 
       if (byteCount <= destinationBuffer.length) {
@@ -288,19 +291,22 @@ public class Base32Encoding {
     * @param byteCount No. of bytes to be placed in {@code destinationBuffer}
     * @param mapCharToByte Array with mappings from the character to the corresponding byte
     */
-   private static void decodeWorker(String encodedValue, byte[] destinationBuffer, int byteCount, byte[] mapCharToByte) {
+   private static void decodeWorker(final String encodedValue,
+                                    final byte[] destinationBuffer,
+                                    final int byteCount,
+                                    final byte[] mapCharToByte) {
       byte actByte = 0;
       byte bitsRemaining = BITS_PER_BYTE;
       byte mask;
       int arrayIndex = 0;
 
       for (int i = 0; i < encodedValue.length(); i++) {
-         char encodedChar = encodedValue.charAt(i);
+         final char encodedChar = encodedValue.charAt(i);
 
          if (encodedChar == PADDING_CHARACTER)
             break;
 
-         byte charValue = charToValue(encodedChar, mapCharToByte);
+         final byte charValue = charToValue(encodedChar, mapCharToByte);
 
          if (bitsRemaining > BITS_PER_CHARACTER) {
             mask = (byte) (charValue << (bitsRemaining - BITS_PER_CHARACTER));
@@ -335,16 +341,16 @@ public class Base32Encoding {
     * @param withPadding {@code True}: Result will be padded, {@code False}: Result will not be padded
     * @return The Base32 representation of the bytes in {@code aByteArray}
     */
-   private static String encodeWorker(byte[] aByteArray, char[] mapByteToChar, boolean withPadding) {
-      int[] lastIndex = new int[1];   // Since Java can not return a value in a call parameter we need to specify this as an array
-      char[] resultArray = encodeInternal(aByteArray, lastIndex, mapByteToChar);
+   private static String encodeWorker(final byte[] aByteArray, final char[] mapByteToChar, final boolean withPadding) {
+      final int[] lastIndex = new int[1];   // Since Java can not return a value in a call parameter we need to specify this as an array
+      final char[] resultArray = encodeInternal(aByteArray, lastIndex, mapByteToChar);
 
       if (withPadding) {
          Arrays.fill(resultArray, lastIndex[0], resultArray.length, PADDING_CHARACTER);
          lastIndex[0] = resultArray.length;
       }
 
-      String result = new String(resultArray, 0, lastIndex[0]);
+      final String result = new String(resultArray, 0, lastIndex[0]);
 
       ArrayHelper.clear(resultArray);
 
@@ -359,13 +365,13 @@ public class Base32Encoding {
     * @param mapByteToChar Array with mappings from the byte to the corresponding character
     * @return The encoded bytes as a character array
     */
-   private static char[] encodeInternal(byte[] aByteArray, int[] lastIndex, char[] mapByteToChar) {
+   private static char[] encodeInternal(final byte[] aByteArray, final int[] lastIndex, final char[] mapByteToChar) {
       Objects.requireNonNull(aByteArray, "aByteArray must not be null");
 
       if (aByteArray.length > 0) {
          final int charCount = (int) (Math.ceil((double) aByteArray.length / BITS_PER_CHARACTER) * BITS_PER_BYTE);
 
-         char[] result = new char[charCount];
+         final char[] result = new char[charCount];
 
          byte actValue = 0;
          byte bitsRemaining = BITS_PER_CHARACTER;
@@ -413,7 +419,7 @@ public class Base32Encoding {
     * @param mapCharToByte Map array
     * @return Value corresponding to character {@code c}
     */
-   private static byte charToValue(char c, byte[] mapCharToByte) {
+   private static byte charToValue(final char c, final byte[] mapCharToByte) {
       final int index = c - CODEPOINT_ZERO;
 
       if ((index >= 0) && (index < mapCharToByte.length)) {
@@ -435,7 +441,7 @@ public class Base32Encoding {
     * @param encodedValue The encoded value to check
     * @return The number of decoded bytes in the encdoed value
     */
-   private static int checkEncodedValue(String encodedValue) {
+   private static int checkEncodedValue(final String encodedValue) {
       Objects.requireNonNull(encodedValue, "encodedValue must not be null");
 
       final int lengthWithoutPadding = lengthWithoutTrailingChar(encodedValue, PADDING_CHARACTER);
@@ -456,7 +462,7 @@ public class Base32Encoding {
     * @param trailingChar Trailing character to ignore
     * @return Length of {@code sourceString} without countign {@code trailingChar} at the end
     */
-   private static int lengthWithoutTrailingChar(String sourceString, char trailingChar) {
+   private static int lengthWithoutTrailingChar(final String sourceString, final char trailingChar) {
       for (int i = sourceString.length() - 1; i >= 0; i--) {
          if (sourceString.charAt(i) != trailingChar)
             return i + 1;
@@ -473,10 +479,10 @@ public class Base32Encoding {
     * @param lengthWithoutPadding Length of data without padding in Base32 string
     * @return {@code True}: Length is valid, {@code False}: Length is invalid
     */
-   private static boolean isLengthValid(int dataLength, int lengthWithoutPadding) {
-      int lastLength = lengthWithoutPadding % BITS_PER_BYTE;
+   private static boolean isLengthValid(final int dataLength, final int lengthWithoutPadding) {
+      final int lastLength = lengthWithoutPadding % BITS_PER_BYTE;
 
-      // 1/3/6 are invalid lengths of the last 8 character block
+      // 1/3/6 are invalid lengths of the last block
       if ((lastLength == 1) || (lastLength == 3) || (lastLength == 6))
          return false;
       else

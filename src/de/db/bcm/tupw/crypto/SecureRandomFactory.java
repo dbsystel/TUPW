@@ -153,6 +153,11 @@ public class SecureRandomFactory {
          }
 
          // Use a nonblocking native SPRNG on other OSes
+         // Nonblocking SPRNGs are no less secure than blocking SPRNGs, except for the first
+         // few seconds after system start.
+         // Blocking must be avoided. On systems with heavy usage of SPRNG
+         // blocks can last for minutes. See https://lwn.net/Articles/808575/,
+         // or https://unix.stackexchange.com/questions/324209/when-to-use-dev-random-vs-dev-urandom
          if (algorithm.startsWith("NATIVE")) {
             if (algorithm.endsWith("NONBLOCKING")) {
                foundNativeNonBlocking = true;
