@@ -148,7 +148,7 @@ public class StringSplitter {
 
                // Set the starting point for the next search.
                // The separatorIndex is the beginning of the separator, so shifting the position
-               // by it's size yields the index of the start of the part after the separator.
+               // by its size yields the index of the start of the part after the separator.
                startSearchIndex = separatorIndex + separatorLength;
             } else {
                // If the searchString starts with the separator add an empty string.

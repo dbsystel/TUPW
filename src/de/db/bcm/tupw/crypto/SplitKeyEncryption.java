@@ -696,12 +696,12 @@ public class SplitKeyEncryption implements AutoCloseable {
    }
 
    /**
-    * Convert an encrypted text into it's parts
+    * Convert an encrypted text into its parts
     *
     * @param encryptionText Text to be decrypted
     * @return Encryption parameters as <code>EncryptionParts</code> object
     * @throws IllegalArgumentException if the encrypted text has an invalid or unknown format id or not the correct
-    *                                  number of '$' separated parts
+    *                                  number of separated parts
     */
    private EncryptionParts getPartsFromPrintableString(final String encryptionText) {
       final char formatCharacter = encryptionText.charAt(0);
@@ -767,20 +767,20 @@ public class SplitKeyEncryption implements AutoCloseable {
    /**
     * Get SecureSecretKeySpec with respect to a subject
     *
-    * <p>This method returns a 256 bit key, whereas, when there is no subject
+    * <p>This method returns a 256 bit key, whereas, when there is no subject,
     * a 128 bit key is used.</p>
     *
     * @param hmacKey          The key to use for HMAC calculation
     * @param baseKey          The key the subject key is derived from as a byte array
-    * @param forAlgorithmName Algorithm name for the SecureSecretKeySpec to create
+    * @param keyAlgorithmName Algorithm name for the SecureSecretKeySpec to create
     * @param subjectBytes     The subject as a byte array
-    * @return SecureSecretKeySpec with the specified subject
+    * @return {@code SecureSecretKeySpec} built from the HMAC key, the base key and the subject
     * @throws InvalidKeyException      if the key is not valid for the HMAC algorithm (must never happen)
     * @throws NoSuchAlgorithmException if there is no HMAC-256 algorithm (must never happen)
     */
    private SecureSecretKeySpec getSecretKeySpecForKeyWithSubject(final ProtectedByteArray hmacKey,
                                                                  final ProtectedByteArray baseKey,
-                                                                 final String forAlgorithmName,
+                                                                 final String keyAlgorithmName,
                                                                  final byte[] subjectBytes)
          throws InvalidKeyException,
          NoSuchAlgorithmException {
@@ -802,7 +802,7 @@ public class SplitKeyEncryption implements AutoCloseable {
          hmac.update(subjectBytes);
          computedKey = hmac.doFinal(SUFFIX_SALT);
 
-         result = new SecureSecretKeySpec(computedKey, forAlgorithmName);
+         result = new SecureSecretKeySpec(computedKey, keyAlgorithmName);
       } finally {
          ArrayHelper.clear(hmacKeyBytes);
          ArrayHelper.safeClear(baseKeyBytes);
@@ -1193,12 +1193,12 @@ public class SplitKeyEncryption implements AutoCloseable {
       try {
          hmacOfSourceBytes = getHmacValueOfSourceBytes(hmacKey, sourceBytes);
 
-         // 1. half of file HMAC is used as the encryption key of this instance
+         // 1. half of source bytes HMAC is used as the encryption key of this instance
          keyPart = Arrays.copyOfRange(hmacOfSourceBytes, 0, 16);
 
          this.m_EncryptionKey = new ProtectedByteArray(keyPart);
 
-         // 2. half of file HMAC is used as the HMAC key of this instance
+         // 2. half of source bytes HMAC is used as the HMAC key of this instance
          keyPart = Arrays.copyOfRange(hmacOfSourceBytes, 16, 32);
 
          ArrayHelper.clear(hmacOfSourceBytes);
