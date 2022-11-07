@@ -168,9 +168,9 @@ public class MaskedIndex {
       destArray[toPos] = (byte) (work & 0xff);
       toPos = (toPos + 3) & 0x0f; work >>>= 8;
       destArray[toPos] = (byte) (work & 0xff);
-      toPos = (toPos + 3) & 0x0f;  work >>>= 8;;
+      toPos = (toPos + 3) & 0x0f;  work >>>= 8;
       destArray[toPos] = (byte) (work & 0xff);
-      toPos = (toPos + 3) & 0x0f;  work >>>= 8;;
+      toPos = (toPos + 3) & 0x0f;  work >>>= 8;
       destArray[toPos] = (byte) (work & 0xff);
    }
 
