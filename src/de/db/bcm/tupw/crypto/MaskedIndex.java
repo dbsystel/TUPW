@@ -23,6 +23,7 @@
  *     2021-09-01: V1.0.1: Some small refactoring. fhs
  *     2022-11-07: V1.1.0: Better mixing of bytes from and to buffers. fhs
  *     2022-11-08: V1.2.0: Name all constants. fhs
+ *     2022-12-22: V1.2.1: Removed unnecessary constant. fhs
  */
 package de.db.bcm.tupw.crypto;
 
@@ -37,7 +38,7 @@ import java.util.Arrays;
  * Class to get masks for array indices
  *
  * @author Frank Schwab, DB Systel
- * @version 1.2.0
+ * @version 1.2.1
  */
 public class MaskedIndex {
    //******************************************************************
@@ -84,11 +85,6 @@ public class MaskedIndex {
     */
    static final int INT_BYTE_MASK = 0xff;
 
-   /***
-    * Maximum allowed integer mask
-    */
-   static final int MAX_INTEGER_MASK = 0x7fffffff;
-
    //******************************************************************
    // Instance variables
    //******************************************************************
@@ -130,7 +126,7 @@ public class MaskedIndex {
     * @return The int mask for the given index
     */
    public synchronized int getIntMask(final int forIndex) {
-      final int sanitizedIndex = forIndex & MAX_INTEGER_MASK;
+      final int sanitizedIndex = forIndex & Integer.MAX_VALUE;
 
       getMaskBuffer(sanitizedIndex);
 
@@ -149,7 +145,7 @@ public class MaskedIndex {
     * @return The byte mask for the given index
     */
    public synchronized byte getByteMask(final int forIndex) {
-      final int sanitizedIndex = forIndex & MAX_INTEGER_MASK;
+      final int sanitizedIndex = forIndex & Integer.MAX_VALUE;
 
       getMaskBuffer(sanitizedIndex);
 
