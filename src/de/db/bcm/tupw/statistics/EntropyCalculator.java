@@ -34,7 +34,6 @@ package de.db.bcm.tupw.statistics;
 
 import de.db.bcm.tupw.arrays.ArrayHelper;
 
-import java.util.Arrays;
 import java.util.Objects;
 
 /**

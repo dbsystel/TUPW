@@ -80,7 +80,7 @@ public class Xoroshiro128plusplus extends SimplePseudoRandomNumberGenerator {
    public Xoroshiro128plusplus(final Long seed) {
       Objects.requireNonNull(seed, "Seed is null");
 
-      // In a real object oriented language one would place "this(seed.longValue());"
+      // In a real object-oriented language one would place "this(seed.longValue());"
       // here. But this is Java, so it is not possible to do this.
       initializeState(seed.longValue());
    }

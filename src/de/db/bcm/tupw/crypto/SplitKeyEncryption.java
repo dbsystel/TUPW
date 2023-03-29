@@ -27,7 +27,7 @@
  *     2018-05-25: V1.2.2: A few changes to enhance readability. fhs
  *     2018-06-13: V1.3.0: Use constant time array comparison on HMAC check to thwart
  *                          timing attacks. fhs
- *     2018-06-22: V1.3.1: Use a StringBuilder with sufficient intial capacity. fhs
+ *     2018-06-22: V1.3.1: Use a StringBuilder with sufficient initial capacity. fhs
  *     2018-06-22: V1.3.2: Use dynamic StringBuilder capacity calculation. fhs
  *     2018-06-22: V1.3.3: Rethrow exception if hashing went wrong. fhs
  *     2018-08-07: V1.3.4: Some small improvements. fhs
@@ -74,6 +74,7 @@
  *     2021-09-03: V6.1.2: Some refactoring in tests. fhs
  *     2021-09-23: V6.1.3: Ensure "equals" always clears sensitive data in SecureSecretKeySpec. fhs
  *     2021-10-18: V6.1.4: Corrected entropy threshold constant. fhs
+ *     2023-03-29: V6.1.5: Corrected some typos. fhs
  */
 package de.db.bcm.tupw.crypto;
 
@@ -725,7 +726,7 @@ public class SplitKeyEncryption implements AutoCloseable {
          separator = OLD_PARTS_SEPARATOR;
 
       final String[] parts = StringSplitter.split(encryptionText, separator);  // Use my own string splitter to avoid Java's RegEx inefficiency
-//        parts = encryptionText.split("\\Q$\\E");   // This should have been just "$". But Java stays true to it's motto: Why make it simple when there's a complicated way to do it?
+//        parts = encryptionText.split("\\Q$\\E");   // This should have been just "$". But Java stays true to its motto: Why make it simple when there's a complicated way to do it?
 
       final EncryptionParts result = new EncryptionParts();
 
@@ -884,7 +885,7 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @param encryptionParts The encryption parts of the data
     * @param subjectBytes    The subject for this decryption
     * @return Decrypted data as a byte array
-    * @throws InvalidAlgorithmParameterException if there was an invalid parameter for the encrpytion algorithm
+    * @throws InvalidAlgorithmParameterException if there was an invalid parameter for the encryption algorithm
     * @throws InvalidKeyException                if the key is not valid for the encryption algorithm (must never happen)
     * @throws NoSuchAlgorithmException           if there is no AES encryption (must never happen)
     * @throws BadPaddingException                if unpadding does not work (must never happen)
@@ -926,7 +927,7 @@ public class SplitKeyEncryption implements AutoCloseable {
     * @return The decrypted data
     * @throws BadPaddingException                if unpadding does not work (must never happen)
     * @throws IllegalBlockSizeException          if the block size is not valid for the encryption algorithm (must never happen)
-    * @throws InvalidAlgorithmParameterException if there was an invalid parameter for the encrpytion algorithm
+    * @throws InvalidAlgorithmParameterException if there was an invalid parameter for the encryption algorithm
     * @throws InvalidKeyException                if the key is not valid for the encryption algorithm (must never happen)
     * @throws NoSuchAlgorithmException           if there is no AES encryption (must never happen)
     */

@@ -31,6 +31,7 @@
  *     2020-03-23: V2.2.0: Restructured source code according to DBS programming guidelines. fhs
  *     2020-12-04: V2.2.1: Corrected several SonarLint findings. fhs
  *     2020-12-29: V2.3.0: Made thread safe. fhs
+ *     2023-03-29: V2.3.1: Made a little more efficient. fhs
  */
 package de.db.bcm.tupw.strings;
 
@@ -47,7 +48,7 @@ import java.util.ArrayList;
  * just to split a string at a simple character.</p>
  *
  * @author Frank Schwab, DB Systel GmbH
- * @version 2.3.0
+ * @version 2.3.1
  */
 public class StringSplitter {
    //******************************************************************
@@ -149,15 +150,15 @@ public class StringSplitter {
                // Set the starting point for the next search.
                // The separatorIndex is the beginning of the separator, so shifting the position
                // by its size yields the index of the start of the part after the separator.
-               startSearchIndex = separatorIndex + separatorLength;
             } else {
                // If the searchString starts with the separator add an empty string.
                if (separatorIndex == 0)
                   substrings.add("");
 
                // We found a consecutive occurrence of the separator, so skip it.
-               startSearchIndex = separatorIndex + separatorLength;
             }
+
+            startSearchIndex = separatorIndex + separatorLength;
          } else {
             // String.substring( startSearchIndex ) goes from 'startSearchIndex' to the end of the String.
             substrings.add(searchString.substring(startSearchIndex));

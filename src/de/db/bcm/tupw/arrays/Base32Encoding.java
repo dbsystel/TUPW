@@ -439,7 +439,7 @@ public class Base32Encoding {
     * Checks if {@code encodedValue} has a valid length and returns it, if it has one
     *
     * @param encodedValue The encoded value to check
-    * @return The number of decoded bytes in the encdoed value
+    * @return The number of decoded bytes in the encoded value
     */
    private static int checkEncodedValue(final String encodedValue) {
       Objects.requireNonNull(encodedValue, "encodedValue must not be null");
@@ -460,7 +460,7 @@ public class Base32Encoding {
     *
     * @param sourceString String to get the length for
     * @param trailingChar Trailing character to ignore
-    * @return Length of {@code sourceString} without countign {@code trailingChar} at the end
+    * @return Length of {@code sourceString} without counting {@code trailingChar} at the end
     */
    private static int lengthWithoutTrailingChar(final String sourceString, final char trailingChar) {
       for (int i = sourceString.length() - 1; i >= 0; i--) {

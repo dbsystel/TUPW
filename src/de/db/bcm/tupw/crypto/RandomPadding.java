@@ -148,11 +148,6 @@ public class RandomPadding {
     * {@code blockSize}
     */
    private static int getPaddingLength(final int unpaddedLength, final int blockSize) {
-      int result = (blockSize - (unpaddedLength % blockSize));
-
-//      if (result >= blockSize)
-//         result = 0;
-//
-      return result;
+      return (blockSize - (unpaddedLength % blockSize));
    }
 }

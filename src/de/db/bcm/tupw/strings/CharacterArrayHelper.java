@@ -70,7 +70,7 @@ public class CharacterArrayHelper {
    //******************************************************************
 
    /**
-    * Convert a character array into an UTF-8 encoded byte array
+    * Convert a character array into a UTF-8 encoded byte array
     *
     * @param sourceCharacterArray character array to encode
     * @return UTF-8 encoded byte array of the characters in {@code sourceCharacterArray}
@@ -104,7 +104,7 @@ public class CharacterArrayHelper {
    }
 
    /**
-    * Convert an UTF-8 encoded byte array into a character array
+    * Convert a UTF-8 encoded byte array into a character array
     *
     * @param sourceByteArray (Hopefully) UTF-8 encoded byte array
     * @return Character array from the UTF-8 encoded {@code sourceByteArray}

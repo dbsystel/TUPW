@@ -64,7 +64,7 @@ public class SecureSecretKeySpec implements KeySpec, SecretKey, Destroyable, Aut
 
    /**
     * Serial version UID for Serializable interface that is inherited from {@code javax.crypto.SecretKey}
-    * which inherits it from {@code java.secjurity.Key}
+    * which inherits it from {@code java.security.Key}
     */
    private static final long serialVersionUID = -6754161938847519344L;
 
@@ -104,7 +104,7 @@ public class SecureSecretKeySpec implements KeySpec, SecretKey, Destroyable, Aut
       // All the functionality of the other constructor has to be duplicated here
       // just because of the Java strangeness that a call to another constructor
       // *must* be the first statement in a constructor. This does not make sense,
-      // at all! Real object oriented languages do not have this limitation.
+      // at all! Real object-oriented languages do not have this limitation.
 
       checkKeyAndAlgorithm(key, algorithm);
 
